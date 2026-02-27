@@ -1,0 +1,108 @@
+name: Build & Push
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'           # ook triggeren op versie-tags zoals v1.2.3
+  workflow_dispatch:   # handmatig te triggeren via de Gitea UI
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Vereiste variabelen (stel in via Gitea → Settings → Actions → Variables):
+#
+#   REGISTRY      Hostname van jouw container registry
+#                 Voorbeelden:
+#                   - gitea.jouwdomein.be          (Gitea ingebouwde registry)
+#                   - registry.jouwdomein.be       (eigen Docker registry)
+#                   - ghcr.io                      (GitHub Container Registry)
+#
+#   IMAGE_NAME    Volledig pad van de image zonder tag
+#                 Voorbeelden:
+#                   - gitea.jouwdomein.be/scholengroep/leerdoelen-tracker
+#                   - ghcr.io/jouw-org/leerdoelen-tracker
+#
+# Vereiste secrets (stel in via Gitea → Settings → Actions → Secrets):
+#
+#   REGISTRY_USER   Gebruikersnaam om in te loggen op de registry
+#   REGISTRY_TOKEN  Wachtwoord of access token voor de registry
+#
+# DEPLOYMENT
+#   Deze workflow bouwt enkel de image en pusht ze naar de registry.
+#   De deployment naar jouw server doe je zelf, los van deze repo.
+#   Zie DEPLOYMENT.md voor voorbeelden (watchtower, Portainer, handmatig).
+# ──────────────────────────────────────────────────────────────────────────────
+
+env:
+  REGISTRY:   ${{ vars.REGISTRY }}
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+
+jobs:
+  build-and-push:
+    name: Build & Push image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Genereer image tags
+        id: meta
+        run: |
+          SHA_SHORT=$(echo "${{ gitea.sha }}" | cut -c1-8)
+
+          # Altijd een sha-tag aanmaken
+          TAGS="${{ env.IMAGE_NAME }}:sha-${SHA_SHORT}"
+
+          # Op main branch ook :latest taggen
+          if [ "${{ gitea.ref }}" = "refs/heads/main" ]; then
+            TAGS="${TAGS},${{ env.IMAGE_NAME }}:latest"
+          fi
+
+          # Op een versie-tag (v1.2.3) ook die tag meegeven
+          if [[ "${{ gitea.ref }}" == refs/tags/v* ]]; then
+            VERSION="${{ gitea.ref_name }}"
+            TAGS="${TAGS},${{ env.IMAGE_NAME }}:${VERSION}"
+          fi
+
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "sha_short=${SHA_SHORT}" >> $GITHUB_OUTPUT
+
+      - name: Inloggen op container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build en push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context:  ./backend
+          file:     ./backend/Dockerfile
+          push:     true
+          tags:     ${{ steps.meta.outputs.tags }}
+          # Layer cache via de registry — versnelt herhaalde builds sterk
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
+          cache-to:   type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
+          labels: |
+            org.opencontainers.image.revision=${{ gitea.sha }}
+            org.opencontainers.image.source=${{ gitea.server_url }}/${{ gitea.repository }}
+            org.opencontainers.image.created=${{ gitea.event.head_commit.timestamp }}
+
+      - name: Samenvatting
+        run: |
+          echo "## ✅ Build geslaagd" >> $GITEA_STEP_SUMMARY
+          echo "" >> $GITEA_STEP_SUMMARY
+          echo "| | |" >> $GITEA_STEP_SUMMARY
+          echo "|---|---|" >> $GITEA_STEP_SUMMARY
+          echo "| **Commit** | \`${{ steps.meta.outputs.sha_short }}\` |" >> $GITEA_STEP_SUMMARY
+          echo "| **Tags** | \`${{ steps.meta.outputs.tags }}\` |" >> $GITEA_STEP_SUMMARY
+          echo "" >> $GITEA_STEP_SUMMARY
+          echo "Image staat klaar in de registry. Trek ze op je server met:" >> $GITEA_STEP_SUMMARY
+          echo "\`\`\`" >> $GITEA_STEP_SUMMARY
+          echo "docker compose pull backend && docker compose up -d backend" >> $GITEA_STEP_SUMMARY
+          echo "\`\`\`" >> $GITEA_STEP_SUMMARY
