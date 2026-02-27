@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Beheer - Leerdoelen Tracker</title>
+    <style>
+        :root {
+            --primary: #4f46e5; --primary-dark: #4338ca;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+            --gray-300: #d1d5db; --gray-500: #6b7280; --gray-600: #4b5563;
+            --gray-700: #374151; --gray-800: #1f2937;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gray-100); color: var(--gray-800); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+        .header { background: linear-gradient(135deg, #1f2937, #374151); color: white; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; }
+        .badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(255,255,255,0.2); }
+        .btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 1rem; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: var(--gray-200); color: var(--gray-700); }
+        .btn-secondary:hover { background: var(--gray-300); }
+        .btn-light { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.25); }
+        .btn-light:hover { background: rgba(255,255,255,0.25); }
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: white; border-radius: 10px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 0.75rem; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.2rem; }
+        .section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem; }
+        .section-header h2 { font-size: 1.05rem; color: var(--gray-700); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        th { padding: 0.6rem 0.75rem; text-align: left; font-weight: 600; color: var(--gray-600); border-bottom: 2px solid var(--gray-200); white-space: nowrap; background: var(--gray-50); }
+        td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+        tr:hover td { background: var(--gray-50); }
+        .role-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .role-superadmin { background: #fef3c7; color: #92400e; }
+        .role-scholengroep_ict { background: #ddd6fe; color: #4c1d95; }
+        .role-school_ict { background: #dbeafe; color: #1e40af; }
+        .role-director { background: #d1fae5; color: #065f46; }
+        .role-teacher { background: var(--gray-100); color: var(--gray-600); }
+        .domain-chip { display: inline-block; padding: 0.15rem 0.5rem; background: #eff6ff; color: #1d4ed8; border-radius: 4px; font-size: 0.75rem; margin: 0.1rem; border: 1px solid #bfdbfe; }
+        .empty-row td { text-align: center; color: var(--gray-500); padding: 2rem; font-style: italic; }
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 12px; padding: 1.75rem; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal h2 { font-size: 1.15rem; margin-bottom: 1.25rem; color: var(--gray-800); }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--gray-600); margin-bottom: 0.35rem; }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 0.9rem; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+        .form-hint { font-size: 0.75rem; color: var(--gray-500); margin-top: 0.3rem; }
+        .modal-buttons { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.25rem; }
+        .form-error { color: var(--danger); font-size: 0.82rem; margin-top: 0.75rem; display: none; }
+        .notification { position: fixed; bottom: 1rem; right: 1rem; padding: 0.85rem 1.25rem; border-radius: 8px; color: white; font-weight: 500; transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 2000; font-size: 0.9rem; }
+        .notification.show { transform: translateY(0); opacity: 1; }
+        .notification.success { background: var(--success); }
+        .notification.error { background: var(--danger); }
+    
+@media (prefers-color-scheme: dark) {
+    :root {
+        --gray-50:  #1a1a2e;
+        --gray-100: #16213e;
+        --gray-200: #0f3460;
+        --gray-300: #1a1a3e;
+        --gray-400: #6b7280;
+        --gray-500: #9ca3af;
+        --gray-600: #d1d5db;
+        --gray-700: #e5e7eb;
+        --gray-800: #f3f4f6;
+        --gray-900: #f9fafb;
+    }
+
+    body { background: #0f172a; color: #e2e8f0; }
+
+    /* Kaarten en secties */
+    .card, .section, .stat-card, .school-card,
+    .table-container, .filters-container, .legend-container,
+    .stats-bar .stat-card, .stats-overview, .vak-stats,
+    .import-section, .detail-section, .filters-bar,
+    .header:not([class*="gradient"]) {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+    }
+
+    /* Header kaart in leerkracht.html */
+    .header { background: #1e293b !important; }
+
+    /* Tabellen */
+    thead, th { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
+    td { border-color: #1e293b !important; color: #e2e8f0; }
+    tr:hover td, tr:hover { background: #263548 !important; }
+    tr.status-groen   { background: #064e3b !important; }
+    tr.status-groen:hover  { background: #065f46 !important; }
+    tr.status-oranje  { background: #451a03 !important; }
+    tr.status-oranje:hover { background: #78350f !important; }
+    tr.status-roze    { background: #500724 !important; }
+    tr.status-roze:hover   { background: #701a35 !important; }
+
+    /* Inputs en selects */
+    input, select, textarea {
+        background: #0f172a !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+    }
+    input::placeholder { color: #64748b !important; }
+    input:focus, select:focus, textarea:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99,102,241,0.2) !important;
+    }
+
+    /* Role select inline */
+    .role-select {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+    }
+
+    /* Modals */
+    .modal { background: #1e293b !important; color: #e2e8f0; }
+    .modal h2 { color: #f1f5f9; }
+
+    /* Knoppen */
+    .btn-secondary { background: #334155 !important; color: #e2e8f0 !important; }
+    .btn-secondary:hover { background: #475569 !important; }
+
+    /* Status selector knoppen (leerkracht tabel) */
+    .status-selector.status-none { background: #1e293b !important; border-color: #475569 !important; color: #64748b !important; }
+
+    /* Stat cards */
+    .stat-card { background: #1e293b !important; }
+
+    /* School card header */
+    .school-card-header { background: #162032 !important; border-color: #334155 !important; }
+    .school-card { border-color: #334155 !important; }
+
+    /* Drop zone */
+    .drop-zone { background: #162032 !important; border-color: #334155 !important; }
+    .drop-zone:hover, .drop-zone.over { background: #1a2744 !important; border-color: #6366f1 !important; }
+
+    /* Domain chips */
+    .domain-chip { background: #1e3a5f !important; border-color: #2563eb !important; color: #93c5fd !important; }
+
+    /* Badges */
+    .leeftijd-badge { background: #334155 !important; color: #94a3b8 !important; }
+    .ebg-begrijpen { color: #1f2937 !important; }
+
+    /* MIA container */
+    .mia-container { background: #162032 !important; }
+    .mia-item { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+    .mia-item.niet-aanklikbaar { background: #162032 !important; color: #64748b !important; }
+
+    /* Not configured box */
+    .not-configured { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
+    .not-configured code { background: #0f172a !important; color: #a5b4fc !important; }
+
+    /* Profile section */
+    .profile-section { background: #162032 !important; }
+
+    /* Leeftijd checkboxes */
+    .leeftijd-checkbox { border-color: #334155 !important; color: #e2e8f0; }
+    .leeftijd-checkbox:has(input:checked) { background: var(--primary) !important; }
+
+    /* Vak indicator */
+    .vak-indicator { /* gradient blijft, ziet er goed uit */ }
+
+    /* Progress bars achtergrond */
+    .progress-bar { background: #334155 !important; }
+
+    /* Vak card */
+    .vak-card { background: #162032 !important; }
+
+    /* Upload results */
+    .upload-ok  { background: #064e3b !important; border-color: #065f46 !important; }
+    .upload-err { background: #450a0a !important; border-color: #7f1d1d !important; }
+
+    /* Alert boxes */
+    .alert-error   { background: #450a0a !important; border-color: #7f1d1d !important; color: #fca5a5 !important; }
+    .alert-success { background: #064e3b !important; border-color: #065f46 !important; color: #6ee7b7 !important; }
+    .alert-warning { background: #451a03 !important; border-color: #78350f !important; color: #fcd34d !important; }
+    .alert-info    { background: #1e3a5f !important; border-color: #1d4ed8 !important; color: #93c5fd !important; }
+
+    /* Error text */
+    .form-error, #sa-error, #addUser-error { color: #f87171 !important; }
+    .form-hint { color: #64748b !important; }
+
+    /* Superadmin toggle */
+    .superadmin-toggle { border-color: #334155 !important; }
+    .superadmin-toggle button { color: #475569 !important; }
+    .superadmin-toggle button:hover { color: #94a3b8 !important; }
+
+    /* Superadmin form inputs */
+    .superadmin-form label { color: #94a3b8 !important; }
+
+    /* Footer */
+    .footer { color: #64748b !important; }
+    .status-legend { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
+
+    /* Scrollbar (webkit) */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>⚙️ Platform Beheer <span class="badge">Superadmin</span></h1>
+        <a href="/auth/logout" class="btn btn-light">Uitloggen</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-value" id="st-schools">-</div><div class="stat-label">Scholen</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-sg-ict">-</div><div class="stat-label">Scholengroep ICT</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-school-ict">-</div><div class="stat-label">School ICT</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-directors">-</div><div class="stat-label">Directeurs</div></div>
+        <div class="stat-card"><div class="stat-value" id="st-teachers">-</div><div class="stat-label">Leerkrachten</div></div>
+    </div>
+
+    <!-- Scholengroep ICT -->
+    <div class="section">
+        <div class="section-header">
+            <h2>👥 Scholengroep ICT medewerkers</h2>
+            <button class="btn btn-primary btn-sm" onclick="openModal('addSgIct')">+ Toevoegen</button>
+        </div>
+        <table>
+            <thead><tr><th>Naam</th><th>E-mail</th><th>Laatste login</th><th></th></tr></thead>
+            <tbody id="sgIctTable"><tr class="empty-row"><td colspan="4">Laden...</td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- Scholen -->
+    <div class="section">
+        <div class="section-header">
+            <h2>🏫 Scholen</h2>
+            <button class="btn btn-primary btn-sm" onclick="openModal('addSchool')">+ School toevoegen</button>
+        </div>
+        <table>
+            <thead><tr><th>Naam</th><th>Slug</th><th>E-maildomeinen</th><th>Gebruikers</th><th></th></tr></thead>
+            <tbody id="schoolsTable"><tr class="empty-row"><td colspan="5">Laden...</td></tr></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: scholengroep ICT toevoegen -->
+<div class="modal-overlay" id="modal-addSgIct">
+    <div class="modal">
+        <h2>Scholengroep ICT toevoegen</h2>
+        <p style="color:var(--gray-500);font-size:0.85rem;margin-bottom:1rem;">
+            Deze persoon kan alle scholen beheren en directeurs/school ICT toewijzen.
+            Zij loggen in via hun Microsoft account.
+        </p>
+        <div class="form-group"><label>Voornaam</label><input type="text" id="sgFirstName"></div>
+        <div class="form-group"><label>Achternaam</label><input type="text" id="sgLastName"></div>
+        <div class="form-group">
+            <label>E-mailadres (Microsoft account)</label>
+            <input type="email" id="sgEmail">
+            <div class="form-hint">Het account wordt aangemaakt en geactiveerd bij eerste Entra login.</div>
+        </div>
+        <div class="form-error" id="sg-error"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+            <button class="btn btn-primary" onclick="addSgIct()">Toevoegen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: school toevoegen -->
+<div class="modal-overlay" id="modal-addSchool">
+    <div class="modal">
+        <h2>School toevoegen</h2>
+        <div class="form-group">
+            <label>Naam van de school</label>
+            <input type="text" id="schoolName" placeholder="bv. Basisschool De Krekel">
+        </div>
+        <div class="form-group">
+            <label>Slug (optioneel)</label>
+            <input type="text" id="schoolSlug" placeholder="bv. de-krekel (auto-gegenereerd)">
+            <div class="form-hint">Wordt gebruikt in interne identificatie. Kleine letters, streepjes.</div>
+        </div>
+        <div class="form-group">
+            <label>E-maildomeinen</label>
+            <input type="text" id="schoolDomains" placeholder="bv. dekrekel.be, sintjan.gent.be">
+            <div class="form-hint">Komma-gescheiden. Leerkrachten met dit domein worden automatisch aan deze school gekoppeld.</div>
+        </div>
+        <div class="form-error" id="school-error"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+            <button class="btn btn-primary" onclick="addSchool()">Toevoegen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: school bewerken -->
+<div class="modal-overlay" id="modal-editSchool">
+    <div class="modal">
+        <h2>School bewerken</h2>
+        <input type="hidden" id="editSchoolId">
+        <div class="form-group"><label>Naam</label><input type="text" id="editSchoolName"></div>
+        <div class="form-group">
+            <label>E-maildomeinen</label>
+            <input type="text" id="editSchoolDomains">
+            <div class="form-hint">Komma-gescheiden. Leerkrachten met dit domein worden automatisch aan deze school gekoppeld.</div>
+        </div>
+        <div class="form-error" id="edit-school-error"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+            <button class="btn btn-primary" onclick="saveSchool()">Opslaan</button>
+        </div>
+    </div>
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadStats();
+    await loadSgIct();
+    await loadSchools();
+});
+
+async function loadStats() {
+    const res  = await fetch('/admin/stats');
+    if (!res.ok) return;
+    const data = await res.json();
+    document.getElementById('st-schools').textContent    = data.schools;
+    document.getElementById('st-sg-ict').textContent     = data.scholengroep_ict;
+    document.getElementById('st-school-ict').textContent = data.school_ict;
+    document.getElementById('st-directors').textContent  = data.directors;
+    document.getElementById('st-teachers').textContent   = data.teachers;
+}
+
+async function loadSgIct() {
+    const res  = await fetch('/admin/scholengroep-ict');
+    const data = await res.json();
+    const tbody = document.getElementById('sgIctTable');
+    if (!data.users?.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Geen scholengroep ICT medewerkers</td></tr>';
+        return;
+    }
+    tbody.innerHTML = data.users.map(u => `
+        <tr>
+            <td>${u.full_name}</td>
+            <td>${u.email}</td>
+            <td style="color:var(--gray-500);font-size:0.8rem;">${u.last_login ? new Date(u.last_login).toLocaleDateString('nl-BE') : 'Nog niet ingelogd'}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="removeSgIct(${u.id})">Verwijderen</button></td>
+        </tr>`).join('');
+}
+
+async function loadSchools() {
+    const res   = await fetch('/admin/schools');
+    const data  = await res.json();
+    const tbody = document.getElementById('schoolsTable');
+    if (!data.schools?.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nog geen scholen aangemaakt</td></tr>';
+        return;
+    }
+    tbody.innerHTML = data.schools.map(s => `
+        <tr>
+            <td><strong>${s.name}</strong></td>
+            <td style="color:var(--gray-500);font-family:monospace;font-size:0.8rem;">${s.slug}</td>
+            <td>${(s.email_domains||[]).map(d=>`<span class="domain-chip">${d}</span>`).join('')||'<em style="color:var(--gray-400)">geen</em>'}</td>
+            <td style="color:var(--gray-500);">${s.user_count}</td>
+            <td style="display:flex;gap:0.4rem;">
+                <button class="btn btn-secondary btn-sm" onclick="editSchool(${s.id},'${s.name.replace(/'/g,"\\'")}','${(s.email_domains||[]).join(', ')}')">Bewerken</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSchool(${s.id},'${s.name.replace(/'/g,"\\'")}')">Verwijderen</button>
+            </td>
+        </tr>`).join('');
+}
+
+// ── Scholengroep ICT ──────────────────────────────────────────────────────────
+async function addSgIct() {
+    const err = document.getElementById('sg-error');
+    err.style.display = 'none';
+    const res = await fetch('/admin/scholengroep-ict', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            email:      document.getElementById('sgEmail').value,
+            first_name: document.getElementById('sgFirstName').value,
+            last_name:  document.getElementById('sgLastName').value,
+        })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error; err.style.display = 'block'; return; }
+    closeModal(); notify('Scholengroep ICT toegevoegd', 'success');
+    await loadSgIct(); await loadStats();
+}
+
+async function removeSgIct(userId) {
+    if (!confirm('Scholengroep ICT verwijderen?')) return;
+    await fetch(`/admin/schools/1/users/${userId}`, { method: 'DELETE' }); // TODO: proper endpoint
+    notify('Verwijderd', 'success');
+    await loadSgIct(); await loadStats();
+}
+
+// ── Scholen ───────────────────────────────────────────────────────────────────
+async function addSchool() {
+    const err = document.getElementById('school-error');
+    err.style.display = 'none';
+    const domains = document.getElementById('schoolDomains').value
+        .split(',').map(d=>d.trim()).filter(Boolean);
+    const res = await fetch('/admin/schools', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            name:         document.getElementById('schoolName').value,
+            slug:         document.getElementById('schoolSlug').value,
+            email_domains: domains,
+        })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error; err.style.display = 'block'; return; }
+    closeModal(); notify('School aangemaakt', 'success');
+    await loadSchools(); await loadStats();
+}
+
+function editSchool(id, name, domainsStr) {
+    document.getElementById('editSchoolId').value     = id;
+    document.getElementById('editSchoolName').value   = name;
+    document.getElementById('editSchoolDomains').value = domainsStr;
+    openModal('editSchool');
+}
+
+async function saveSchool() {
+    const err = document.getElementById('edit-school-error');
+    err.style.display = 'none';
+    const id      = document.getElementById('editSchoolId').value;
+    const domains = document.getElementById('editSchoolDomains').value
+        .split(',').map(d=>d.trim()).filter(Boolean);
+    const res = await fetch(`/admin/schools/${id}`, {
+        method: 'PUT', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            name:         document.getElementById('editSchoolName').value,
+            email_domains: domains,
+        })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error; err.style.display = 'block'; return; }
+    closeModal(); notify('School opgeslagen', 'success');
+    await loadSchools();
+}
+
+async function deleteSchool(id, name) {
+    if (!confirm(`School "${name}" permanent verwijderen? Dit verwijdert alle data!`)) return;
+    const res = await fetch(`/admin/schools/${id}`, { method: 'DELETE' });
+    if (!res.ok) { notify('Verwijderen mislukt', 'error'); return; }
+    notify('School verwijderd', 'success');
+    await loadSchools(); await loadStats();
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function openModal(id) {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    document.getElementById(`modal-${id}`).classList.add('active');
+}
+function closeModal() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+});
+
+function notify(msg, type='success') {
+    const el = document.getElementById('notification');
+    el.textContent = msg; el.className = `notification ${type} show`;
+    setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

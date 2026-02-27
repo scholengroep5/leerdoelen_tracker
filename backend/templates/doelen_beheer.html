@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leerdoelen bestanden – {{ org_name }}</title>
+    <style>
+        :root {
+            --primary:#4f46e5;--primary-dark:#4338ca;--success:#10b981;
+            --danger:#ef4444;--warning:#f59e0b;
+            --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+            --gray-300:#d1d5db;--gray-500:#6b7280;--gray-600:#4b5563;
+            --gray-700:#374151;--gray-800:#1f2937;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gray-100);color:var(--gray-800);}
+        .container{max-width:900px;margin:0 auto;padding:1rem;}
+        .header{background:linear-gradient(135deg,#065f46,#047857);color:white;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+        .header h1{font-size:1.3rem;display:flex;align-items:center;gap:.6rem;}
+        .header-sub{opacity:.85;font-size:.85rem;margin-top:.2rem;}
+        .nav-link{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .9rem;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);border-radius:6px;text-decoration:none;font-size:.85rem;font-weight:500;transition:background .2s;}
+        .nav-link:hover{background:rgba(255,255,255,.25);}
+        .section{background:white;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+        .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;}
+        .section-header h2{font-size:1.05rem;color:var(--gray-700);}
+        .section-hint{color:var(--gray-500);font-size:.83rem;margin-bottom:1.25rem;line-height:1.6;}
+        .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1rem;border:none;border-radius:6px;font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;}
+        .btn-danger{background:var(--danger);color:white;} .btn-danger:hover{background:#dc2626;}
+        .btn-sm{padding:.25rem .55rem;font-size:.78rem;}
+        table{width:100%;border-collapse:collapse;font-size:.875rem;}
+        th{padding:.65rem .75rem;text-align:left;font-weight:600;color:var(--gray-600);border-bottom:2px solid var(--gray-200);background:var(--gray-50);white-space:nowrap;}
+        td{padding:.6rem .75rem;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+        tr:hover td{background:var(--gray-50);}
+        .empty-row td{text-align:center;color:var(--gray-500);padding:2.5rem;font-style:italic;}
+        .drop-zone{border:2px dashed var(--gray-300);border-radius:10px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--gray-50);}
+        .drop-zone:hover,.drop-zone.over{border-color:var(--primary);background:rgba(79,70,229,.04);}
+        .drop-icon{font-size:2.5rem;margin-bottom:.75rem;}
+        .drop-zone strong{font-size:1rem;}
+        .drop-zone p{color:var(--gray-500);font-size:.83rem;margin-top:.4rem;}
+        .versie-badge{background:#d1fae5;color:#065f46;padding:.2rem .5rem;border-radius:4px;font-size:.75rem;font-weight:600;}
+        .upload-ok{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:.85rem 1rem;margin-bottom:.5rem;}
+        .upload-ok strong{color:#15803d;}
+        .upload-err{background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:.85rem 1rem;}
+        .upload-err strong{color:#dc2626;}
+        .upload-ok ul,.upload-err ul{margin:.4rem 0 0 1.25rem;font-size:.82rem;}
+        .upload-ok li{color:#166534;}
+        .upload-err li{color:#991b1b;}
+        .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.75rem;margin-bottom:1.5rem;}
+        .stat{background:white;border-radius:10px;padding:.9rem;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+        .stat-value{font-size:1.7rem;font-weight:700;color:#047857;}
+        .stat-label{font-size:.72rem;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-top:.2rem;}
+        .notification{position:fixed;bottom:1rem;right:1rem;padding:.85rem 1.25rem;border-radius:8px;color:white;font-weight:500;transform:translateY(100px);opacity:0;transition:all .3s;z-index:2000;}
+        .notification.show{transform:translateY(0);opacity:1;}
+        .notification.success{background:var(--success);}
+        .notification.error{background:var(--danger);}
+        .notification.warning{background:var(--warning);}
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --gray-50:#1a1a2e;--gray-100:#16213e;--gray-200:#0f3460;
+                --gray-300:#1a1a3e;--gray-500:#9ca3af;--gray-600:#d1d5db;
+                --gray-700:#e5e7eb;--gray-800:#f3f4f6;
+            }
+            body{background:#0f172a;color:#e2e8f0;}
+            .section,.stat{background:#1e293b !important;border-color:#334155;}
+            th{background:#1e293b !important;color:#94a3b8 !important;border-color:#334155 !important;}
+            td{border-color:#1e293b !important;color:#e2e8f0;}
+            tr:hover td{background:#263548 !important;}
+            .drop-zone{background:#162032 !important;border-color:#334155 !important;}
+            .drop-zone:hover,.drop-zone.over{background:#1a2744 !important;border-color:#6366f1 !important;}
+            .upload-ok{background:#064e3b !important;border-color:#065f46 !important;}
+            .upload-err{background:#450a0a !important;border-color:#7f1d1d !important;}
+            .versie-badge{background:#064e3b !important;color:#6ee7b7 !important;}
+            ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-track{background:#0f172a;} ::-webkit-scrollbar-thumb{background:#334155;border-radius:4px;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>📂 Leerdoelen bestanden</h1>
+            <div class="header-sub">{{ org_name }}</div>
+        </div>
+        <a href="/dashboard" class="nav-link">← Terug naar beheer</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row" id="statRow">
+        <div class="stat"><div class="stat-value" id="statVakken">-</div><div class="stat-label">Vakken</div></div>
+        <div class="stat"><div class="stat-value" id="statDoelen">-</div><div class="stat-label">Doelzinnen</div></div>
+        <div class="stat"><div class="stat-value" id="statVersie">-</div><div class="stat-label">Versie</div></div>
+    </div>
+
+    <!-- Upload -->
+    <div class="section">
+        <div class="section-header">
+            <h2>⬆️ Nieuwe bestanden uploaden</h2>
+        </div>
+        <p class="section-hint">
+            Sleep de JSON bestanden van GO! hierheen of klik om te bladeren.
+            Meerdere bestanden tegelijk zijn mogelijk. Bij een update gewoon opnieuw uploaden —
+            bestaande bestanden worden automatisch overschreven en de index wordt bijgewerkt.
+        </p>
+        <div class="drop-zone" id="dropZone"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="event.preventDefault();this.classList.add('over')"
+             ondragleave="this.classList.remove('over')"
+             ondrop="this.classList.remove('over');handleDrop(event)">
+            <div class="drop-icon">📄</div>
+            <strong>Klik of sleep JSON bestanden hier</strong>
+            <p>Meerdere bestanden tegelijk · Enkel .json · Max. 10 MB per bestand</p>
+        </div>
+        <input type="file" id="fileInput" accept=".json" multiple style="display:none"
+               onchange="uploadDoelen(this.files)">
+        <div id="uploadResults" style="margin-top:.85rem;display:none;"></div>
+    </div>
+
+    <!-- Geïnstalleerde vakken -->
+    <div class="section">
+        <div class="section-header">
+            <h2>📚 Geïnstalleerde vakken</h2>
+            <span id="doelenVersie"></span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vak</th>
+                    <th>Bestand ID</th>
+                    <th>Doelzinnen</th>
+                    <th>Versie</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="doelenBody">
+                <tr class="empty-row"><td colspan="5">Laden...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<div class="notification" id="notification"></div>
+<script>
+document.addEventListener('DOMContentLoaded', loadDoelen);
+
+async function loadDoelen() {
+    const res  = await fetch('/admin/doelen');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // Versie badge
+    if (data.versie) {
+        document.getElementById('doelenVersie').innerHTML =
+            `<span class="versie-badge">index versie ${data.versie}</span>`;
+        document.getElementById('statVersie').textContent = data.versie;
+    }
+
+    // Stats
+    const vakken = data.vakken || [];
+    document.getElementById('statVakken').textContent = vakken.length;
+    document.getElementById('statDoelen').textContent =
+        vakken.reduce((s, v) => s + (v.aantalDoelzinnen || 0), 0).toLocaleString('nl-BE');
+
+    // Tabel
+    const tbody = document.getElementById('doelenBody');
+    if (!vakken.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nog geen doelen geüpload</td></tr>';
+        return;
+    }
+    tbody.innerHTML = vakken.map(v => `
+        <tr>
+            <td><strong>${v.naam}</strong></td>
+            <td style="font-family:monospace;font-size:.78rem;color:var(--gray-500);">${v.id}</td>
+            <td>${(v.aantalDoelzinnen||0).toLocaleString('nl-BE')}</td>
+            <td><span class="versie-badge">${v.versie || '?'}</span></td>
+            <td>
+                <button class="btn btn-danger btn-sm"
+                    onclick="deleteDoelen('${v.id}','${v.naam.replace(/'/g,"\\'")}')">
+                    Verwijderen
+                </button>
+            </td>
+        </tr>`).join('');
+}
+
+function handleDrop(e) { e.preventDefault(); uploadDoelen(e.dataTransfer.files); }
+
+async function uploadDoelen(files) {
+    if (!files?.length) return;
+    const el = document.getElementById('uploadResults');
+    el.style.display = 'block';
+    el.innerHTML = `<p style="color:var(--gray-500);font-size:.85rem;">⏳ Uploaden van ${files.length} bestand(en)...</p>`;
+    const fd = new FormData();
+    for (const f of files) fd.append('files', f);
+    const res  = await fetch('/admin/doelen/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    const ok   = data.results.filter(r => r.ok);
+    const err  = data.results.filter(r => !r.ok);
+    let html   = '';
+    if (ok.length)  html += `<div class="upload-ok"><strong>✓ ${ok.length} bestand(en) geüpload</strong><ul>${ok.map(r=>`<li>${r.vak_naam} — ${r.aantalDoelzinnen} doelzinnen (v${r.versie})</li>`).join('')}</ul></div>`;
+    if (err.length) html += `<div class="upload-err"><strong>✗ ${err.length} mislukt</strong><ul>${err.map(r=>`<li>${r.filename}: ${r.error}</li>`).join('')}</ul></div>`;
+    el.innerHTML = html;
+    await loadDoelen();
+    setTimeout(() => { el.style.display='none'; }, 12000);
+}
+
+async function deleteDoelen(vakId, vakNaam) {
+    if (!confirm(`Doelen voor "${vakNaam}" verwijderen?`)) return;
+    const res = await fetch(`/admin/doelen/${vakId}`, { method: 'DELETE' });
+    if (!res.ok) { notify('Verwijderen mislukt', 'error'); return; }
+    notify(`${vakNaam} verwijderd`, 'success');
+    await loadDoelen();
+}
+
+function notify(msg, type='success') {
+    const el = document.getElementById('notification');
+    el.textContent = msg;
+    el.className   = `notification ${type} show`;
+    setTimeout(() => el.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

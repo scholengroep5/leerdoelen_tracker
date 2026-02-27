@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School ICT - Leerdoelen Tracker</title>
+    <style>
+        :root {
+            --primary:#4f46e5;--primary-dark:#4338ca;--success:#10b981;
+            --danger:#ef4444;--warning:#f59e0b;
+            --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+            --gray-300:#d1d5db;--gray-500:#6b7280;--gray-600:#4b5563;
+            --gray-700:#374151;--gray-800:#1f2937;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gray-100);color:var(--gray-800);}
+        .container{max-width:900px;margin:0 auto;padding:1rem;}
+        .header{background:linear-gradient(135deg,#1e40af,#1d4ed8);color:white;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+        .header h1{font-size:1.3rem;}
+        .header .school-name{opacity:.85;font-size:.9rem;margin-top:.2rem;}
+        .section{background:white;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+        .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem;}
+        .section-header h2{font-size:1.05rem;color:var(--gray-700);}
+        .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1rem;border:none;border-radius:6px;font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;}
+        .btn-primary{background:var(--primary);color:white;} .btn-primary:hover{background:var(--primary-dark);}
+        .btn-secondary{background:var(--gray-200);color:var(--gray-700);} .btn-secondary:hover{background:var(--gray-300);}
+        .btn-danger{background:var(--danger);color:white;} .btn-danger:hover{background:#dc2626;}
+        .btn-light{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.25);} .btn-light:hover{background:rgba(255,255,255,.25);}
+        .btn-sm{padding:.25rem .55rem;font-size:.78rem;}
+        table{width:100%;border-collapse:collapse;font-size:.875rem;}
+        th{padding:.65rem .75rem;text-align:left;font-weight:600;color:var(--gray-600);border-bottom:2px solid var(--gray-200);background:var(--gray-50);}
+        td{padding:.6rem .75rem;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+        tr:hover td{background:var(--gray-50);}
+        .empty-row td{text-align:center;color:var(--gray-500);padding:2.5rem;font-style:italic;}
+        .role-select{padding:.25rem .45rem;border:1px solid var(--gray-300);border-radius:4px;font-size:.8rem;cursor:pointer;background:white;}
+        .role-select:focus{outline:none;border-color:var(--primary);}
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
+        .modal-overlay.active{display:flex;}
+        .modal{background:white;border-radius:12px;padding:1.75rem;max-width:440px;width:90%;}
+        .modal h2{font-size:1.1rem;margin-bottom:1.2rem;}
+        .form-group{margin-bottom:1rem;}
+        .form-group label{display:block;font-size:.82rem;font-weight:600;color:var(--gray-600);margin-bottom:.35rem;}
+        .form-group input,.form-group select{width:100%;padding:.6rem .75rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.9rem;}
+        .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.1);}
+        .modal-buttons{display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem;}
+        .form-error{color:var(--danger);font-size:.82rem;margin-top:.5rem;display:none;}
+        .notification{position:fixed;bottom:1rem;right:1rem;padding:.85rem 1.25rem;border-radius:8px;color:white;font-weight:500;transform:translateY(100px);opacity:0;transition:all .3s;z-index:2000;}
+        .notification.show{transform:translateY(0);opacity:1;}
+        .notification.success{background:var(--success);}
+        .notification.error{background:var(--danger);}
+        .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.75rem;margin-bottom:1.5rem;}
+        .stat{background:var(--gray-50);border-radius:8px;padding:.85rem;text-align:center;}
+        .stat-value{font-size:1.75rem;font-weight:700;color:var(--primary);}
+        .stat-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);margin-top:.2rem;}
+    
+@media (prefers-color-scheme: dark) {
+    :root {
+        --gray-50:  #1a1a2e;
+        --gray-100: #16213e;
+        --gray-200: #0f3460;
+        --gray-300: #1a1a3e;
+        --gray-400: #6b7280;
+        --gray-500: #9ca3af;
+        --gray-600: #d1d5db;
+        --gray-700: #e5e7eb;
+        --gray-800: #f3f4f6;
+        --gray-900: #f9fafb;
+    }
+
+    body { background: #0f172a; color: #e2e8f0; }
+
+    /* Kaarten en secties */
+    .card, .section, .stat-card, .school-card,
+    .table-container, .filters-container, .legend-container,
+    .stats-bar .stat-card, .stats-overview, .vak-stats,
+    .import-section, .detail-section, .filters-bar,
+    .header:not([class*="gradient"]) {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+    }
+
+    /* Header kaart in leerkracht.html */
+    .header { background: #1e293b !important; }
+
+    /* Tabellen */
+    thead, th { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
+    td { border-color: #1e293b !important; color: #e2e8f0; }
+    tr:hover td, tr:hover { background: #263548 !important; }
+    tr.status-groen   { background: #064e3b !important; }
+    tr.status-groen:hover  { background: #065f46 !important; }
+    tr.status-oranje  { background: #451a03 !important; }
+    tr.status-oranje:hover { background: #78350f !important; }
+    tr.status-roze    { background: #500724 !important; }
+    tr.status-roze:hover   { background: #701a35 !important; }
+
+    /* Inputs en selects */
+    input, select, textarea {
+        background: #0f172a !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+    }
+    input::placeholder { color: #64748b !important; }
+    input:focus, select:focus, textarea:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99,102,241,0.2) !important;
+    }
+
+    /* Role select inline */
+    .role-select {
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
+    }
+
+    /* Modals */
+    .modal { background: #1e293b !important; color: #e2e8f0; }
+    .modal h2 { color: #f1f5f9; }
+
+    /* Knoppen */
+    .btn-secondary { background: #334155 !important; color: #e2e8f0 !important; }
+    .btn-secondary:hover { background: #475569 !important; }
+
+    /* Status selector knoppen (leerkracht tabel) */
+    .status-selector.status-none { background: #1e293b !important; border-color: #475569 !important; color: #64748b !important; }
+
+    /* Stat cards */
+    .stat-card { background: #1e293b !important; }
+
+    /* School card header */
+    .school-card-header { background: #162032 !important; border-color: #334155 !important; }
+    .school-card { border-color: #334155 !important; }
+
+    /* Drop zone */
+    .drop-zone { background: #162032 !important; border-color: #334155 !important; }
+    .drop-zone:hover, .drop-zone.over { background: #1a2744 !important; border-color: #6366f1 !important; }
+
+    /* Domain chips */
+    .domain-chip { background: #1e3a5f !important; border-color: #2563eb !important; color: #93c5fd !important; }
+
+    /* Badges */
+    .leeftijd-badge { background: #334155 !important; color: #94a3b8 !important; }
+    .ebg-begrijpen { color: #1f2937 !important; }
+
+    /* MIA container */
+    .mia-container { background: #162032 !important; }
+    .mia-item { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+    .mia-item.niet-aanklikbaar { background: #162032 !important; color: #64748b !important; }
+
+    /* Not configured box */
+    .not-configured { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
+    .not-configured code { background: #0f172a !important; color: #a5b4fc !important; }
+
+    /* Profile section */
+    .profile-section { background: #162032 !important; }
+
+    /* Leeftijd checkboxes */
+    .leeftijd-checkbox { border-color: #334155 !important; color: #e2e8f0; }
+    .leeftijd-checkbox:has(input:checked) { background: var(--primary) !important; }
+
+    /* Vak indicator */
+    .vak-indicator { /* gradient blijft, ziet er goed uit */ }
+
+    /* Progress bars achtergrond */
+    .progress-bar { background: #334155 !important; }
+
+    /* Vak card */
+    .vak-card { background: #162032 !important; }
+
+    /* Upload results */
+    .upload-ok  { background: #064e3b !important; border-color: #065f46 !important; }
+    .upload-err { background: #450a0a !important; border-color: #7f1d1d !important; }
+
+    /* Alert boxes */
+    .alert-error   { background: #450a0a !important; border-color: #7f1d1d !important; color: #fca5a5 !important; }
+    .alert-success { background: #064e3b !important; border-color: #065f46 !important; color: #6ee7b7 !important; }
+    .alert-warning { background: #451a03 !important; border-color: #78350f !important; color: #fcd34d !important; }
+    .alert-info    { background: #1e3a5f !important; border-color: #1d4ed8 !important; color: #93c5fd !important; }
+
+    /* Error text */
+    .form-error, #sa-error, #addUser-error { color: #f87171 !important; }
+    .form-hint { color: #64748b !important; }
+
+    /* Superadmin toggle */
+    .superadmin-toggle { border-color: #334155 !important; }
+    .superadmin-toggle button { color: #475569 !important; }
+    .superadmin-toggle button:hover { color: #94a3b8 !important; }
+
+    /* Superadmin form inputs */
+    .superadmin-form label { color: #94a3b8 !important; }
+
+    /* Footer */
+    .footer { color: #64748b !important; }
+    .status-legend { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
+
+    /* Scrollbar (webkit) */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>🏫 School ICT Beheer</h1>
+            <div class="school-name" id="schoolName">Laden...</div>
+        </div>
+        <a href="/auth/logout" class="btn btn-light">Uitloggen</a>
+    </div>
+
+    <!-- Statistieken -->
+    <div class="stat-grid" id="statGrid">
+        <div class="stat"><div class="stat-value" id="statTotal">-</div><div class="stat-label">Gebruikers</div></div>
+        <div class="stat"><div class="stat-value" id="statICT">-</div><div class="stat-label">School ICT</div></div>
+        <div class="stat"><div class="stat-value" id="statDir">-</div><div class="stat-label">Directeurs</div></div>
+        <div class="stat"><div class="stat-value" id="statTeach">-</div><div class="stat-label">Leerkrachten</div></div>
+    </div>
+
+    <!-- Gebruikersbeheer -->
+    <div class="section">
+        <div class="section-header">
+            <h2>👥 Gebruikers</h2>
+            <button class="btn btn-primary btn-sm" onclick="openModal()">+ Gebruiker toevoegen</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Naam</th>
+                    <th>E-mail</th>
+                    <th>Rol</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="usersBody">
+                <tr class="empty-row"><td colspan="4">Laden...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: gebruiker toevoegen -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <h2>Gebruiker toevoegen</h2>
+        <p style="color:var(--gray-500);font-size:.85rem;margin-bottom:1rem;">
+            Het account wordt aangemaakt en geactiveerd bij de eerste Microsoft login.
+            Als het e-mailadres al bestaat wordt het account heractiveerd.
+        </p>
+        <div class="form-group"><label>Voornaam</label><input type="text" id="addFirst"></div>
+        <div class="form-group"><label>Achternaam</label><input type="text" id="addLast"></div>
+        <div class="form-group">
+            <label>E-mailadres (Microsoft account)</label>
+            <input type="email" id="addEmail">
+        </div>
+        <div class="form-group">
+            <label>Rol</label>
+            <select id="addRole">
+                <option value="teacher">Leerkracht — vult leerdoelen in</option>
+                <option value="director">Directeur — leest schooloverzicht</option>
+                <option value="school_ict">School ICT — beheert gebruikers</option>
+            </select>
+        </div>
+        <div class="form-error" id="addError"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+            <button class="btn btn-primary" onclick="addUser()">Toevoegen</button>
+        </div>
+    </div>
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+let mySchoolId = null;
+
+const ROLLEN = [
+    { value: 'teacher',    label: 'Leerkracht' },
+    { value: 'director',   label: 'Directeur'  },
+    { value: 'school_ict', label: 'School ICT' },
+];
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const me = await fetch('/api/me').then(r => r.json());
+    mySchoolId = me.user?.school_id;
+    document.getElementById('schoolName').textContent = me.user?.school_name || '';
+    await loadUsers();
+    await loadKlassen();
+    await loadAuditLog();
+});
+
+async function loadUsers() {
+    if (!mySchoolId) return;
+    const res   = await fetch(`/admin/schools/${mySchoolId}/users`);
+    const data  = await res.json();
+    const users = data.users || [];
+
+    // Stats
+    document.getElementById('statTotal').textContent = users.length;
+    document.getElementById('statICT').textContent   = users.filter(u => u.role === 'school_ict').length;
+    document.getElementById('statDir').textContent   = users.filter(u => u.role === 'director').length;
+    document.getElementById('statTeach').textContent = users.filter(u => u.role === 'teacher').length;
+
+    const tbody = document.getElementById('usersBody');
+    if (!users.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Nog geen gebruikers</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = users.map(u => `
+        <tr>
+            <td><strong>${u.full_name}</strong></td>
+            <td style="color:var(--gray-500);font-size:.82rem;">${u.email}</td>
+            <td>
+                <select class="role-select"
+                    onchange="changeRole(${u.id}, this.value, '${u.full_name.replace(/'/g,"\\'")}', this)">
+                    ${ROLLEN.map(r =>
+                        `<option value="${r.value}" ${r.value === u.role ? 'selected' : ''}>${r.label}</option>`
+                    ).join('')}
+                </select>
+            </td>
+            <td>
+                <button class="btn btn-danger btn-sm"
+                    onclick="removeUser(${u.id}, '${u.full_name.replace(/'/g,"\\'")}')">
+                    Verwijderen
+                </button>
+            </td>
+        </tr>`).join('');
+}
+
+async function changeRole(userId, newRole, naam, selectEl) {
+    const res = await fetch(`/admin/schools/${mySchoolId}/users/${userId}/role`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ role: newRole }),
+    });
+    if (!res.ok) {
+        const data = await res.json();
+        notify(data.error || 'Wijzigen mislukt', 'error');
+        await loadUsers(); // reset
+        return;
+    }
+    notify(`${naam} is nu ${ROLLEN.find(r => r.value === newRole)?.label}`, 'success');
+    await loadUsers();
+}
+
+async function addUser() {
+    const errEl = document.getElementById('addError');
+    errEl.style.display = 'none';
+    const res = await fetch(`/admin/schools/${mySchoolId}/users`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email:      document.getElementById('addEmail').value,
+            first_name: document.getElementById('addFirst').value,
+            last_name:  document.getElementById('addLast').value,
+            role:       document.getElementById('addRole').value,
+        }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
+    closeModal();
+    notify(data.linked ? 'Account heractiveerd en bijgewerkt' : 'Gebruiker toegevoegd', 'success');
+    await loadUsers();
+}
+
+async function removeUser(userId, naam) {
+    if (!confirm(`${naam} verwijderen?`)) return;
+    const res = await fetch(`/admin/schools/${mySchoolId}/users/${userId}`, { method: 'DELETE' });
+    if (!res.ok) { notify('Verwijderen mislukt', 'error'); return; }
+    notify(`${naam} verwijderd`, 'success');
+    await loadUsers();
+}
+
+function openModal() {
+    document.getElementById('addModal').classList.add('active');
+}
+function closeModal() {
+    document.getElementById('addModal').classList.remove('active');
+    document.getElementById('addError').style.display = 'none';
+}
+document.getElementById('addModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('addModal')) closeModal();
+});
+
+function notify(msg, type = 'success') {
+    const el = document.getElementById('notification');
+    el.textContent = msg;
+    el.className   = `notification ${type} show`;
+    setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ── Klassen ───────────────────────────────────────────────────────────────────
+let allKlassen = [];
+
+async function loadKlassen() {
+    if (!mySchoolId) return;
+    const res  = await fetch(`/admin/schools/${mySchoolId}/classes`);
+    const data = await res.json();
+    allKlassen = data.classes || [];
+
+    const container = document.getElementById('klassenList');
+    if (!allKlassen.length) {
+        container.innerHTML = '<p style="color:var(--gray-400);font-style:italic;">Nog geen klassen aangemaakt.</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <table>
+            <thead><tr><th>Klas</th><th>Leerkrachten</th><th></th></tr></thead>
+            <tbody>
+                ${allKlassen.map(c => `
+                    <tr>
+                        <td><strong>${c.name}</strong></td>
+                        <td style="font-size:.85rem;color:var(--gray-500);">
+                            ${c.teachers?.length
+                                ? c.teachers.map(t => t.full_name).join(', ')
+                                : '<em>Geen leerkracht gekoppeld</em>'}
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <button class="btn btn-secondary btn-sm" onclick="openAssignTeachers(${c.id}, '${c.name.replace(/'/g,"\'")}', ${JSON.stringify(c.teachers?.map(t=>t.id)||[])})">
+                                Leerkrachten
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteKlas(${c.id}, '${c.name.replace(/'/g,"\'")}')">
+                                ×
+                            </button>
+                        </td>
+                    </tr>`).join('')}
+            </tbody>
+        </table>`;
+}
+
+async function openAddKlas() {
+    const name = prompt('Naam van de nieuwe klas (bv. 3A):');
+    if (!name?.trim()) return;
+    const res = await fetch(`/admin/schools/${mySchoolId}/classes`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name: name.trim() })
+    });
+    const data = await res.json();
+    if (!res.ok) { notify(data.error || 'Aanmaken mislukt', 'error'); return; }
+    notify(`Klas ${name} aangemaakt`, 'success');
+    await loadKlassen();
+}
+
+async function deleteKlas(classId, name) {
+    if (!confirm(`Klas "${name}" verwijderen? Leerkrachtkoppelingen worden ook verwijderd.`)) return;
+    const res = await fetch(`/admin/schools/${mySchoolId}/classes/${classId}`, { method: 'DELETE' });
+    if (!res.ok) { notify('Verwijderen mislukt', 'error'); return; }
+    notify(`Klas ${name} verwijderd`, 'success');
+    await loadKlassen();
+}
+
+// Assign modal voor leerkrachten aan klas
+let assignClassId = null;
+async function openAssignTeachers(classId, className, currentTeacherIds) {
+    assignClassId = classId;
+    const teachers = await fetch(`/admin/schools/${mySchoolId}/users`)
+        .then(r => r.json()).then(d => d.users?.filter(u => u.role === 'teacher') || []);
+
+    const html = `
+        <div style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;" id="assignModal">
+            <div style="background:white;border-radius:12px;padding:1.5rem;max-width:400px;width:90%;">
+                <h3 style="margin-bottom:1rem;">Leerkrachten voor klas ${className}</h3>
+                <div style="max-height:250px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;">
+                    ${teachers.length
+                        ? teachers.map(t => `
+                            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+                                <input type="checkbox" value="${t.id}" ${currentTeacherIds.includes(t.id) ? 'checked' : ''}>
+                                ${t.full_name} <span style="font-size:.75rem;color:gray;">(${t.email})</span>
+                            </label>`).join('')
+                        : '<em style="color:gray;">Geen leerkrachten beschikbaar</em>'}
+                </div>
+                <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+                    <button onclick="document.getElementById('assignModal').remove()" class="btn btn-secondary">Annuleren</button>
+                    <button onclick="saveAssignTeachers()" class="btn btn-primary">Opslaan</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+async function saveAssignTeachers() {
+    const ids = [...document.querySelectorAll('#assignModal input:checked')].map(i => parseInt(i.value));
+    const res = await fetch(`/admin/schools/${mySchoolId}/classes/${assignClassId}/teachers`, {
+        method: 'PUT', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ user_ids: ids })
+    });
+    document.getElementById('assignModal')?.remove();
+    if (!res.ok) { notify('Opslaan mislukt', 'error'); return; }
+    notify('Leerkrachten bijgewerkt', 'success');
+    await loadKlassen();
+}
+
+// ── Auditlog ──────────────────────────────────────────────────────────────────
+let auditPage = 1;
+
+async function loadAuditLog(page = 1) {
+    auditPage = page;
+    const category = document.getElementById('auditCategory').value;
+    const search   = document.getElementById('auditSearch').value;
+    const params   = new URLSearchParams({ page, per_page: 25 });
+    if (category) params.set('category', category);
+    if (search)   params.set('search', search);
+
+    const res  = await fetch(`/api/audit-log?${params}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const tbody = document.getElementById('auditTable');
+    if (!data.entries.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);">Geen entries gevonden</td></tr>';
+    } else {
+        tbody.innerHTML = data.entries.map(e => {
+            const ts   = new Date(e.timestamp).toLocaleString('nl-BE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+            const detail = e.detail ? (() => { try { return Object.entries(JSON.parse(e.detail)).map(([k,v]) => `<span style="font-size:.75rem;background:var(--gray-100);padding:.1rem .3rem;border-radius:3px;">${k}: ${v}</span>`).join(' '); } catch { return e.detail; } })() : '';
+            return `<tr>
+                <td style="white-space:nowrap;font-size:.8rem;">${ts}</td>
+                <td style="font-size:.82rem;">${e.user_name || '—'}</td>
+                <td><code style="font-size:.78rem;background:var(--gray-100);padding:.15rem .35rem;border-radius:3px;">${e.action}</code></td>
+                <td style="font-size:.8rem;">${detail}</td>
+                <td style="font-size:.75rem;color:var(--gray-400);">${e.ip_address || ''}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    // Paginering
+    const pager = document.getElementById('auditPager');
+    if (data.pages <= 1) { pager.innerHTML = ''; return; }
+    pager.innerHTML = Array.from({length: data.pages}, (_, i) => `
+        <button onclick="loadAuditLog(${i+1})"
+            style="padding:.3rem .6rem;border:1px solid var(--gray-300);border-radius:4px;cursor:pointer;
+                   ${i+1 === data.page ? 'background:var(--primary);color:white;border-color:var(--primary);' : ''}">
+            ${i+1}
+        </button>`).join('');
+}
+</script>
+</body>
+</html>
