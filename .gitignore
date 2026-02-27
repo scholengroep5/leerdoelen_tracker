@@ -1,0 +1,44 @@
+# ── Omgevingsbestanden (NOOIT committen!) ────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# ── Leerdoelen JSON bestanden ─────────────────────────────────────────────────
+# Deze zijn groot (22 MB) en worden beheerd via de upload UI, niet via git.
+# Bewaar enkel de lege mapstructuur.
+doelen/*.json
+!doelen/.gitkeep
+
+# ── Database ──────────────────────────────────────────────────────────────────
+*.sqlite3
+*.db
+postgres_data/
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ── Editor / OS ───────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
