@@ -26,7 +26,7 @@ def _make_limiter(redis_url: str) -> Limiter:
         key_func=get_remote_address,
         default_limits=[],
         storage_uri=redis_url,
-        strategy='fixed-window-elastic-expiry',
+        strategy='moving-window',
     )
 
 
