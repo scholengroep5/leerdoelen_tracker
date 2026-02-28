@@ -301,6 +301,20 @@
                 <label>Zoeken</label>
                 <input type="text" id="filterSearch" placeholder="Code of beschrijving..." oninput="applyFilters()">
             </div>
+            <div class="filter-group" style="min-width:unset;">
+                <label>Leeftijd</label>
+                <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="3-4"   onchange="applyFilters()"><span>3-4</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="4-5"   onchange="applyFilters()"><span>4-5</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="5-6"   onchange="applyFilters()"><span>5-6</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="6-7"   onchange="applyFilters()"><span>6-7</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="7-8"   onchange="applyFilters()"><span>7-8</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="8-9"   onchange="applyFilters()"><span>8-9</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="9-10"  onchange="applyFilters()"><span>9-10</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="10-11" onchange="applyFilters()"><span>10-11</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="11-12" onchange="applyFilters()"><span>11-12</span></label>
+                </div>
+            </div>
         </div>
 
         <div class="table-scroll">
@@ -513,8 +527,9 @@ function applyFilters() {
     if (!overviewData) return;
     const vakFilter     = document.getElementById('filterVak').value;
     const teacherFilter = document.getElementById('filterTeacher').value;
-    const statusFilter  = document.getElementById('filterStatus').value;
-    const search        = document.getElementById('filterSearch').value.toLowerCase();
+    const statusFilter    = document.getElementById('filterStatus').value;
+    const search          = document.getElementById('filterSearch').value.toLowerCase();
+    const leeftijdFilter  = [...document.querySelectorAll('.leeftijd-checkbox input:checked')].map(cb => cb.value);
 
     const shownTeachers = teacherFilter === 'all'
         ? overviewData.teachers
@@ -535,6 +550,7 @@ function applyFilters() {
     shownVakken.forEach(vakId => {
         (allGoals[vakId] || []).forEach(goal => {
             if (search && !`${goal.goNr} ${goal.inhoud}`.toLowerCase().includes(search)) return;
+            if (leeftijdFilter.length > 0 && !leeftijdFilter.some(l => (goal.leeftijden||[]).includes(l))) return;
 
             const statussen = shownTeachers.map(t => {
                 return overviewData.assessments_by_teacher[t.id]?.[vakId]?.[goal.id] || '';
