@@ -192,6 +192,51 @@
         <div class="schools-grid" id="schoolsGrid">Laden...</div>
     </div>
 
+    <!-- Auditlog -->
+    <div class="section">
+        <div class="section-header">
+            <h2>📋 Auditlog</h2>
+            <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+                <select id="auditCategory" onchange="loadAuditLog()"
+                    style="padding:.35rem .5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;">
+                    <option value="">Alle categorieën</option>
+                    <option value="auth">Aanmeldingen</option>
+                    <option value="user">Gebruikers</option>
+                    <option value="school">Scholen</option>
+                    <option value="class">Klassen</option>
+                    <option value="assessment">Beoordelingen</option>
+                    <option value="system">Systeem</option>
+                    <option value="doelen">Leerdoelen</option>
+                </select>
+                <select id="auditSchoolFilter" onchange="loadAuditLog()"
+                    style="padding:.35rem .5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;">
+                    <option value="">Alle scholen</option>
+                </select>
+                <input id="auditSearch" type="text" placeholder="Zoeken..."
+                    oninput="loadAuditLog()"
+                    style="padding:.35rem .5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;width:150px;">
+            </div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tijdstip</th>
+                        <th>Gebruiker</th>
+                        <th>School</th>
+                        <th>Actie</th>
+                        <th>Detail</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody id="auditTable">
+                    <tr><td colspan="6" style="text-align:center;color:var(--gray-400);">Laden...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="auditPager" style="display:flex;gap:.5rem;justify-content:center;padding:1rem;flex-wrap:wrap;"></div>
+    </div>
+
 </div>
 
 <!-- Modals -->
