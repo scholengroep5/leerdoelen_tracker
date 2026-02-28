@@ -417,6 +417,97 @@ def delete_doelen(vak_id):
     return jsonify({'deleted': True, 'vak_id': vak_id})
 
 
+
+@admin_bp.route('/doelen/upload-xlsx', methods=['POST'])
+@login_required
+@scholengroep_ict_required
+def upload_doelen_xlsx():
+    """
+    Upload één of meerdere xlsx doelenset bestanden (veld: 'files').
+    Converteert automatisch naar JSON en slaat op — geen tussentijdse stap nodig.
+
+    Verwacht: multipart/form-data met veld 'files' (meerdere bestanden toegestaan).
+    Bestandsnaamconventie: Doelenset_BaO_<vak>.xlsx (GO! standaard)
+    """
+    from services.doelen import validate_vak_json, save_vak, is_valid_vak_id
+    from services.xlsx_converter import converteer_xlsx_naar_json, valideer_xlsx_bestand
+
+    if 'files' not in request.files:
+        return jsonify({'error': 'Geen bestanden ontvangen (verwacht veld "files")'}), 400
+
+    results = []
+
+    for file in request.files.getlist('files'):
+        if not file.filename:
+            continue
+
+        result = {'filename': file.filename, 'ok': False}
+
+        # Bestandsnaam validatie
+        naam_fouten = valideer_xlsx_bestand(file.filename)
+        if naam_fouten:
+            result['error'] = '; '.join(naam_fouten)
+            results.append(result)
+            continue
+
+        # Lees bytes — pandas verwerkt vanuit memory, geen temp bestand
+        try:
+            inhoud = file.read()
+        except Exception as e:
+            result['error'] = f'Kon bestand niet lezen: {e}'
+            results.append(result)
+            continue
+
+        # Converteer xlsx → JSON
+        try:
+            data = converteer_xlsx_naar_json(file.filename, inhoud)
+        except (ValueError, ImportError) as e:
+            result['error'] = str(e)
+            results.append(result)
+            continue
+        except Exception as e:
+            result['error'] = f'Onverwachte fout bij conversie: {e}'
+            results.append(result)
+            continue
+
+        vak_id = data['vak']
+
+        # Extra structuurvalidatie via bestaande validator
+        fouten = validate_vak_json(data)
+        if fouten:
+            result['error'] = '; '.join(fouten)
+            results.append(result)
+            continue
+
+        save_vak(vak_id, data)
+        audit_log(
+            'doelen.upload_xlsx', 'doelen',
+            target_type='vak', target_id=vak_id,
+            detail={
+                'bronBestand':      file.filename,
+                'aantalDoelzinnen': data['aantalDoelzinnen'],
+                'aantalRijen':      data['aantalRijen'],
+            }
+        )
+
+        result.update({
+            'ok':               True,
+            'vak_id':           vak_id,
+            'aantalDoelzinnen': data['aantalDoelzinnen'],
+            'aantalRijen':      data['aantalRijen'],
+            'versie':           data.get('versie', '?'),
+        })
+        results.append(result)
+
+    ok_count  = sum(1 for r in results if r['ok'])
+    err_count = len(results) - ok_count
+
+    return jsonify({
+        'ok':      ok_count,
+        'errors':  err_count,
+        'results': results,
+    }), (200 if ok_count > 0 else 400)
+
 # ── Globale statistieken (superadmin) ─────────────────────────────────────────
 
 @admin_bp.route('/stats')

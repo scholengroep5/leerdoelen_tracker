@@ -180,6 +180,8 @@ def rebuild_index():
                 'naam':             vak_naam(vak_id),
                 'aantalDoelzinnen': len(doelzinnen),
                 'versie':           data.get('versie', '?'),
+                'bronDatum':        data.get('bronDatum'),   # 'gewijzigd' uit Excel metadata
+                'bronBestand':      data.get('bronBestand'), # originele bestandsnaam
             })
         except Exception:
             pass

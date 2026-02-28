@@ -17,6 +17,19 @@ migrate       = Migrate()
 limiter       = Limiter(key_func=get_remote_address, default_limits=[])
 
 
+def _make_limiter(redis_url: str) -> Limiter:
+    """
+    Maak een nieuwe Limiter instantie met de correcte storage_uri.
+    In flask-limiter 3.x hoort storage_uri in __init__, NIET in init_app().
+    """
+    return Limiter(
+        key_func=get_remote_address,
+        default_limits=[],
+        storage_uri=redis_url,
+        strategy='fixed-window-elastic-expiry',
+    )
+
+
 def create_app():
     app = Flask(__name__, template_folder='templates', static_folder='static')
 
@@ -57,6 +70,10 @@ def create_app():
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     # ── Rate limiter ──────────────────────────────────────────────────────────
+    # In flask-limiter 3.x hoort storage_uri in de constructor, niet in init_app().
+    # We vervangen de module-level limiter instantie zodat @limiter.limit decorators
+    # ook de juiste storage gebruiken.
+    global limiter
     redis_url = os.environ.get('REDIS_URL', '')
     if not redis_url:
         logger.warning(
@@ -65,12 +82,8 @@ def create_app():
             "Stel REDIS_URL in voor productie."
         )
         redis_url = 'memory://'
-    limiter.init_app(
-        app,
-        storage_uri=redis_url,
-        strategy='fixed-window-elastic-expiry',  # robuuster dan fixed-window
-        on_breach=_rate_limit_handler,
-    )
+    limiter = _make_limiter(redis_url)
+    limiter.init_app(app)
 
     # ── Security headers via Talisman ─────────────────────────────────────────
     # CSP: strikte whitelist — geen inline scripts, geen externe resources buiten cdnjs

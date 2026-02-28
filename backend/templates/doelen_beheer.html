@@ -98,22 +98,72 @@
         <div class="section-header">
             <h2>⬆️ Nieuwe bestanden uploaden</h2>
         </div>
-        <p class="section-hint">
-            Sleep de JSON bestanden van GO! hierheen of klik om te bladeren.
-            Meerdere bestanden tegelijk zijn mogelijk. Bij een update gewoon opnieuw uploaden —
-            bestaande bestanden worden automatisch overschreven en de index wordt bijgewerkt.
-        </p>
-        <div class="drop-zone" id="dropZone"
-             onclick="document.getElementById('fileInput').click()"
-             ondragover="event.preventDefault();this.classList.add('over')"
-             ondragleave="this.classList.remove('over')"
-             ondrop="this.classList.remove('over');handleDrop(event)">
-            <div class="drop-icon">📄</div>
-            <strong>Klik of sleep JSON bestanden hier</strong>
-            <p>Meerdere bestanden tegelijk · Enkel .json · Max. 10 MB per bestand</p>
+
+        <!-- Format tabs -->
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+            <button class="btn btn-primary" id="tabXlsx" onclick="switchUploadTab('xlsx')"
+                style="font-size:.85rem;">
+                📊 Excel (.xlsx) — aanbevolen
+            </button>
+            <button class="btn btn-secondary" id="tabJson" onclick="switchUploadTab('json')"
+                style="font-size:.85rem;">
+                📄 JSON
+            </button>
         </div>
-        <input type="file" id="fileInput" accept=".json" multiple style="display:none"
-               onchange="uploadDoelen(this.files)">
+
+        <!-- XLSX upload -->
+        <div id="panelXlsx">
+            <p class="section-hint">
+                Upload de originele Excel bestanden van GO!
+                (<code>Doelenset_BaO_*.xlsx</code>). De conversie naar JSON
+                gebeurt automatisch op de server — geen tussentijdse stap nodig.
+                Bij een update gewoon opnieuw uploaden.
+            </p>
+            <div class="info-box" style="background:var(--gray-50);border:1px solid var(--gray-200);
+                border-left:4px solid var(--primary);border-radius:6px;padding:.85rem 1rem;
+                margin-bottom:1rem;font-size:.83rem;color:var(--gray-600);">
+                💡 <strong>Nieuwe versie van GO!?</strong>
+                De GO! publiceert updates van de doelensets op
+                <a href="https://pro.g-o.be/themas/leerplannen/basisonderwijs/nieuw-leerplan-basisonderwijs/" target="_blank"
+                   rel="noopener noreferrer" style="color:var(--primary);">
+                    pro.g-o.be → Leerplannen → BaO
+                </a>.
+                Er is geen automatische synchronisatie — download de nieuwe xlsx bestanden
+                manueel en upload ze hier.
+            </div>
+            <div class="drop-zone" id="dropZoneXlsx"
+                 onclick="document.getElementById('fileInputXlsx').click()"
+                 ondragover="event.preventDefault();this.classList.add('over')"
+                 ondragleave="this.classList.remove('over')"
+                 ondrop="this.classList.remove('over');handleDropXlsx(event)">
+                <div class="drop-icon">📊</div>
+                <strong>Klik of sleep Excel bestanden hier</strong>
+                <p>Meerdere bestanden tegelijk · Enkel .xlsx · Max. 10 MB per bestand</p>
+            </div>
+            <input type="file" id="fileInputXlsx" accept=".xlsx" multiple style="display:none"
+                   onchange="uploadXlsx(this.files)">
+        </div>
+
+        <!-- JSON upload -->
+        <div id="panelJson" style="display:none;">
+            <p class="section-hint">
+                Upload reeds geconverteerde JSON bestanden. Gebruik dit enkel als je
+                de Excel bestanden niet beschikbaar hebt of als je handmatig aangepaste
+                JSON wil laden.
+            </p>
+            <div class="drop-zone" id="dropZoneJson"
+                 onclick="document.getElementById('fileInputJson').click()"
+                 ondragover="event.preventDefault();this.classList.add('over')"
+                 ondragleave="this.classList.remove('over')"
+                 ondrop="this.classList.remove('over');handleDropJson(event)">
+                <div class="drop-icon">📄</div>
+                <strong>Klik of sleep JSON bestanden hier</strong>
+                <p>Meerdere bestanden tegelijk · Enkel .json · Max. 10 MB per bestand</p>
+            </div>
+            <input type="file" id="fileInputJson" accept=".json" multiple style="display:none"
+                   onchange="uploadJson(this.files)">
+        </div>
+
         <div id="uploadResults" style="margin-top:.85rem;display:none;"></div>
     </div>
 
@@ -130,6 +180,7 @@
                     <th>Bestand ID</th>
                     <th>Doelzinnen</th>
                     <th>Versie</th>
+                    <th>Gewijzigd door GO!</th>
                     <th></th>
                 </tr>
             </thead>
@@ -142,70 +193,105 @@
 </div>
 <div class="notification" id="notification"></div>
 <script>
-document.addEventListener('DOMContentLoaded', loadDoelen);
+document.addEventListener('DOMContentLoaded', () => {
+    loadDoelen();
+    switchUploadTab('xlsx');
+});
 
+// ── Tab wisselen ──────────────────────────────────────────────────────────────
+function switchUploadTab(tab) {
+    document.getElementById('panelXlsx').style.display = tab === 'xlsx' ? '' : 'none';
+    document.getElementById('panelJson').style.display = tab === 'json' ? '' : 'none';
+    document.getElementById('tabXlsx').className = 'btn ' + (tab === 'xlsx' ? 'btn-primary' : 'btn-secondary');
+    document.getElementById('tabJson').className  = 'btn ' + (tab === 'json'  ? 'btn-primary' : 'btn-secondary');
+    document.getElementById('tabXlsx').style.fontSize = '.85rem';
+    document.getElementById('tabJson').style.fontSize  = '.85rem';
+}
+
+// ── Doelen overzicht laden ────────────────────────────────────────────────────
 async function loadDoelen() {
     const res  = await fetch('/admin/doelen');
     if (!res.ok) return;
     const data = await res.json();
-
-    // Versie badge
     if (data.versie) {
         document.getElementById('doelenVersie').innerHTML =
             `<span class="versie-badge">index versie ${data.versie}</span>`;
         document.getElementById('statVersie').textContent = data.versie;
     }
-
-    // Stats
     const vakken = data.vakken || [];
     document.getElementById('statVakken').textContent = vakken.length;
     document.getElementById('statDoelen').textContent =
         vakken.reduce((s, v) => s + (v.aantalDoelzinnen || 0), 0).toLocaleString('nl-BE');
-
-    // Tabel
     const tbody = document.getElementById('doelenBody');
     if (!vakken.length) {
-        tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nog geen doelen geüpload</td></tr>';
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nog geen doelen geüpload</td></tr>';
         return;
     }
-    tbody.innerHTML = vakken.map(v => `
-        <tr>
+    tbody.innerHTML = vakken.map(v => {
+        const vn = v.naam.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const datum = v.bronDatum
+            ? `<span title="'Gewijzigd op' datum uit Excel metadata van GO!">${v.bronDatum}</span>`
+            : `<span style="color:var(--gray-400)">onbekend</span>`;
+        return `<tr>
             <td><strong>${v.naam}</strong></td>
             <td style="font-family:monospace;font-size:.78rem;color:var(--gray-500);">${v.id}</td>
             <td>${(v.aantalDoelzinnen||0).toLocaleString('nl-BE')}</td>
             <td><span class="versie-badge">${v.versie || '?'}</span></td>
-            <td>
-                <button class="btn btn-danger btn-sm"
-                    onclick="deleteDoelen('${v.id}','${v.naam.replace(/'/g,"\\'")}')">
-                    Verwijderen
-                </button>
-            </td>
-        </tr>`).join('');
+            <td style="font-size:.83rem;">${datum}</td>
+            <td><button class="btn btn-danger btn-sm"
+                onclick="deleteDoelen('${v.id}','${vn}')">Verwijderen</button></td>
+        </tr>`;
+    }).join('');
 }
 
-function handleDrop(e) { e.preventDefault(); uploadDoelen(e.dataTransfer.files); }
+// ── Upload helpers ────────────────────────────────────────────────────────────
+function toonResultaten(data) {
+    const el  = document.getElementById('uploadResults');
+    const ok  = data.results.filter(r => r.ok);
+    const err = data.results.filter(r => !r.ok);
+    let html  = '';
+    if (ok.length)
+        html += `<div class="upload-ok"><strong>✓ ${ok.length} bestand(en) verwerkt</strong><ul>`
+            + ok.map(r => `<li><strong>${r.vak_id}</strong> — ${r.aantalDoelzinnen} doelzinnen (v${r.versie})</li>`).join('')
+            + `</ul></div>`;
+    if (err.length)
+        html += `<div class="upload-err"><strong>✗ ${err.length} mislukt</strong><ul>`
+            + err.map(r => `<li><strong>${r.filename}</strong>: ${r.error}</li>`).join('')
+            + `</ul></div>`;
+    el.innerHTML     = html;
+    el.style.display = 'block';
+    loadDoelen();
+    setTimeout(() => { el.style.display = 'none'; }, 15000);
+}
 
-async function uploadDoelen(files) {
+async function doUpload(endpoint, files) {
     if (!files?.length) return;
     const el = document.getElementById('uploadResults');
     el.style.display = 'block';
-    el.innerHTML = `<p style="color:var(--gray-500);font-size:.85rem;">⏳ Uploaden van ${files.length} bestand(en)...</p>`;
+    el.innerHTML = `<p style="color:var(--gray-500);font-size:.85rem;">⏳ Verwerken van ${files.length} bestand(en)…`
+        + (endpoint.includes('xlsx') ? ' (Excel conversie kan even duren)' : '') + `</p>`;
     const fd = new FormData();
     for (const f of files) fd.append('files', f);
-    const res  = await fetch('/admin/doelen/upload', { method: 'POST', body: fd });
-    const data = await res.json();
-    const ok   = data.results.filter(r => r.ok);
-    const err  = data.results.filter(r => !r.ok);
-    let html   = '';
-    if (ok.length)  html += `<div class="upload-ok"><strong>✓ ${ok.length} bestand(en) geüpload</strong><ul>${ok.map(r=>`<li>${r.vak_naam} — ${r.aantalDoelzinnen} doelzinnen (v${r.versie})</li>`).join('')}</ul></div>`;
-    if (err.length) html += `<div class="upload-err"><strong>✗ ${err.length} mislukt</strong><ul>${err.map(r=>`<li>${r.filename}: ${r.error}</li>`).join('')}</ul></div>`;
-    el.innerHTML = html;
-    await loadDoelen();
-    setTimeout(() => { el.style.display='none'; }, 12000);
+    try {
+        const res  = await fetch(endpoint, { method: 'POST', body: fd });
+        const data = await res.json();
+        toonResultaten(data);
+    } catch (e) {
+        el.innerHTML = `<div class="upload-err"><strong>✗ Netwerkfout:</strong> ${e.message}</div>`;
+    }
 }
 
+// ── XLSX upload ───────────────────────────────────────────────────────────────
+function handleDropXlsx(e) { e.preventDefault(); uploadXlsx(e.dataTransfer.files); }
+function uploadXlsx(files)  { doUpload('/admin/doelen/upload-xlsx', files); }
+
+// ── JSON upload ───────────────────────────────────────────────────────────────
+function handleDropJson(e) { e.preventDefault(); uploadJson(e.dataTransfer.files); }
+function uploadJson(files)  { doUpload('/admin/doelen/upload', files); }
+
+// ── Verwijderen ───────────────────────────────────────────────────────────────
 async function deleteDoelen(vakId, vakNaam) {
-    if (!confirm(`Doelen voor "${vakNaam}" verwijderen?`)) return;
+    if (!confirm(`Doelen voor "${vakNaam}" verwijderen? Bestaande beoordelingen blijven bewaard.`)) return;
     const res = await fetch(`/admin/doelen/${vakId}`, { method: 'DELETE' });
     if (!res.ok) { notify('Verwijderen mislukt', 'error'); return; }
     notify(`${vakNaam} verwijderd`, 'success');

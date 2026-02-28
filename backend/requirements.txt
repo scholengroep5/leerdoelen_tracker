@@ -12,3 +12,5 @@ sqlalchemy==2.0.41
 authlib==1.4.1
 requests==2.32.3
 redis==5.2.1                # backend voor flask-limiter in productie
+pandas==2.2.3               # Excel verwerking (xlsx upload → JSON conversie)
+openpyxl==3.1.5             # pandas Excel engine
