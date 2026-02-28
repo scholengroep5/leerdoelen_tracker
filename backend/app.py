@@ -105,20 +105,23 @@ def create_app():
         app,
         force_https=is_https,
         strict_transport_security=is_https,
-        strict_transport_security_max_age=31536000,          # 1 jaar HSTS
+        strict_transport_security_max_age=31536000,
         strict_transport_security_include_subdomains=True,
-        strict_transport_security_preload=False,             # alleen aanvragen als je zeker bent
         content_security_policy=csp,
-        content_security_policy_nonce_in=['script-src'],     # nonce auto toegevoegd aan script tags
-        x_content_type_options=True,
-        x_frame_options='DENY',
-        referrer_policy='strict-origin-when-cross-origin',
-        feature_policy={                                     # moderne vervanger van Permissions-Policy
-            'geolocation': "\'none\'",
-            'microphone':  "\'none\'",
-            'camera':      "\'none\'",
-        }
+        content_security_policy_nonce_in=['script-src'],
     )
+
+    # Extra security headers die niet via Talisman beschikbaar zijn in deze versie
+    @app.after_request
+    def add_security_headers(response):
+        response.headers.setdefault('X-Frame-Options', 'DENY')
+        response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+        response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+        response.headers.setdefault(
+            'Permissions-Policy',
+            'geolocation=(), microphone=(), camera=()'
+        )
+        return response
 
     # ── Extensions ────────────────────────────────────────────────────────────
     db.init_app(app)
