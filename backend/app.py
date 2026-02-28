@@ -101,9 +101,9 @@ def create_app():
         x_frame_options='DENY',
         referrer_policy='strict-origin-when-cross-origin',
         feature_policy={                                     # moderne vervanger van Permissions-Policy
-            'geolocation': ''none'',
-            'microphone':  ''none'',
-            'camera':      ''none'',
+            'geolocation': "\'none\'",
+            'microphone':  "\'none\'",
+            'camera':      "\'none\'",
         }
     )
 
