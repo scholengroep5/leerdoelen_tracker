@@ -91,7 +91,7 @@ def create_app():
     # unsafe-inline is uitgeschakeld voor scripts — gebruik {{ csp_nonce() }} in <script> tags
     csp = {
         'default-src':  ["'self'"],
-        'script-src':   ["'self'", 'cdnjs.cloudflare.com'],   # nonce wordt auto toegevoegd
+        'script-src':   ["'self'", 'cdnjs.cloudflare.com', "'unsafe-inline'"],  # unsafe-inline wordt genegeerd door browsers die nonce ondersteunen
         'style-src':    ["'self'", "'unsafe-inline'"],         # inline styles in templates (aanvaardbaar)
         'img-src':      ["'self'", 'data:'],
         'font-src':     ["'self'"],
