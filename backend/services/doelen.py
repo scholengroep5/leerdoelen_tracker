@@ -6,6 +6,13 @@ Eén bron van waarheid. Geen andere plek in de app definieert vaknamen.
 import os
 import json
 import re
+import threading
+
+# In-memory cache: { vak_id: {'data': {...}, 'mtime': float} }
+# Geïnvalideerd bij upload/delete — voorkomt schijf-I/O bij elke request
+_cache: dict = {}
+_cache_lock  = threading.Lock()
+_INDEX_KEY   = "__index__"
 
 DOELEN_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'doelen')
 
@@ -49,7 +56,45 @@ def list_installed_vakken():
     ])
 
 
+def _cache_get(key):
+    path = os.path.join(DOELEN_DIR, 'index.json' if key == _INDEX_KEY else f'{key}.json')
+    if not os.path.exists(path):
+        return None
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        return None
+    with _cache_lock:
+        entry = _cache.get(key)
+        if entry and entry['mtime'] == mtime:
+            return entry['data']
+    return None
+
+
+def _cache_set(key, data):
+    path = os.path.join(DOELEN_DIR, 'index.json' if key == _INDEX_KEY else f'{key}.json')
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        return
+    with _cache_lock:
+        _cache[key] = {'data': data, 'mtime': mtime}
+
+
+def cache_invalidate(vak_id=None):
+    """Verwijder één of alle entries uit de cache (aanroepen na upload/delete)."""
+    with _cache_lock:
+        if vak_id:
+            _cache.pop(vak_id, None)
+            _cache.pop(_INDEX_KEY, None)
+        else:
+            _cache.clear()
+
+
 def load_index():
+    cached = _cache_get(_INDEX_KEY)
+    if cached:
+        return cached
     path = os.path.join(DOELEN_DIR, 'index.json')
     if not os.path.exists(path):
         rebuild_index()
@@ -58,18 +103,23 @@ def load_index():
     for vak in data.get('vakken', []):
         vak['naam'] = vak_naam(vak['id'])
     data['vakken'].sort(key=lambda v: v['naam'])
+    _cache_set(_INDEX_KEY, data)
     return data
 
 
 def load_vak(vak_id):
     if not is_valid_vak_id(vak_id):
         return None
+    cached = _cache_get(vak_id)
+    if cached:
+        return cached
     path = get_doelen_path(vak_id)
     if not os.path.exists(path):
         return None
     with open(path, encoding='utf-8') as f:
         data = json.load(f)
     data['vakNaam'] = vak_naam(vak_id)
+    _cache_set(vak_id, data)
     return data
 
 
@@ -102,6 +152,7 @@ def save_vak(vak_id, data):
     path = get_doelen_path(vak_id)
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+    cache_invalidate(vak_id)
     rebuild_index()
 
 
@@ -110,6 +161,7 @@ def delete_vak(vak_id):
     if not os.path.exists(path):
         return False
     os.remove(path)
+    cache_invalidate(vak_id)
     rebuild_index()
     return True
 

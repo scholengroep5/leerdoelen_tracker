@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   db:
     image: postgres:16-alpine
@@ -52,6 +50,11 @@ services:
       BASE_URL: ${BASE_URL:-http://localhost}
       ORG_NAME: ${ORG_NAME:-GO! Scholengroep}
       REDIS_URL: redis://:${REDIS_PASSWORD:-changeme_redis}@redis:6379/0
+      # Gunicorn tuning — standaard: (2 × CPU) + 1 workers, 2 threads per worker
+      # Pas aan op basis van je server: 2 vCPU → 5 workers, 4 vCPU → 9 workers
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-5}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-2}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:
       - ./doelen:/app/doelen:ro   # JSON doelen bestanden (read-only)
     ports:
