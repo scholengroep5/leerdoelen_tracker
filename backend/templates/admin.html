@@ -322,7 +322,7 @@
 
 <div class="notification" id="notification"></div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', async () => {
     await loadStats();
     await loadSgIct();

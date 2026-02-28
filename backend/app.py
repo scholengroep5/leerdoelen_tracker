@@ -103,7 +103,9 @@ def create_app():
     }
     Talisman(
         app,
-        force_https=is_https,
+        # HTTPS redirect hoort in nginx, NIET hier.
+        # Talisman zou anders redirecten naar het interne Docker adres (127.0.0.1:5000).
+        force_https=False,
         strict_transport_security=is_https,
         strict_transport_security_max_age=31536000,
         strict_transport_security_include_subdomains=True,

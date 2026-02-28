@@ -332,7 +332,7 @@
 
 <div class="notification" id="notification"></div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 const IS_SUPERADMIN = {{ 'true' if is_superadmin else 'false' }};
 let schools = [];
 
