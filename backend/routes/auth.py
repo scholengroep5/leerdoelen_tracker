@@ -15,18 +15,32 @@ import os
 import secrets
 import logging
 from datetime import datetime
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import requests
 from services.audit import audit_log
+from app import db, limiter
 from flask import (Blueprint, render_template, request, redirect,
                    url_for, flash, jsonify, session, current_app)
 from flask_login import login_user, logout_user, login_required, current_user
 from models import User, School
-from app import db
 
 logger   = logging.getLogger(__name__)
 auth_bp  = Blueprint('auth', __name__)
+
+
+def _safe_next_url(next_url: str | None) -> str:
+    """Valideer dat de next-redirect intern blijft — voorkomt open redirect aanvallen."""
+    if not next_url:
+        return url_for('pages.dashboard')
+    parsed = urlparse(next_url)
+    # Weiger externe URLs (heeft netloc) of protocol-relative URLs
+    if parsed.netloc or parsed.scheme:
+        return url_for('pages.dashboard')
+    # Zorg dat het pad begint met /
+    if not next_url.startswith('/'):
+        return url_for('pages.dashboard')
+    return next_url
 
 ENTRA_AUTHORITY    = "https://login.microsoftonline.com/common"
 ENTRA_AUTH_URL     = f"{ENTRA_AUTHORITY}/oauth2/v2.0/authorize"
@@ -117,6 +131,7 @@ def logout():
 
 
 @auth_bp.route('/microsoft')
+@limiter.limit('20 per minute')
 def microsoft_login():
     if not _entra_client_id():
         flash('Microsoft login is niet geconfigureerd.', 'error')
@@ -138,6 +153,7 @@ def microsoft_login():
 
 
 @auth_bp.route('/callback')
+@limiter.limit('20 per minute')
 def microsoft_callback():
     error = request.args.get('error')
     if error:
@@ -220,10 +236,11 @@ def microsoft_callback():
     db.session.commit()
 
     logger.info(f"Entra login: {email} (nieuw: {is_new}, school_id: {user.school_id})")
-    return redirect(request.args.get('next') or url_for('pages.dashboard'))
+    return redirect(_safe_next_url(request.args.get('next')))
 
 
 @auth_bp.route('/setup', methods=['GET', 'POST'])
+@limiter.limit('5 per minute')
 def setup():
     admin = User.query.filter_by(role='superadmin').first()
     if admin and admin.password_hash:
@@ -252,7 +269,7 @@ def setup():
                          first_name='Super', last_name='Admin')
             db.session.add(admin)
 
-        admin.set_password(password)
+        admin.set_password(password)  # pbkdf2:sha256 — zie models.py voor hash methode
         db.session.commit()
 
         if request.is_json:
@@ -264,6 +281,7 @@ def setup():
 
 
 @auth_bp.route('/superadmin-login', methods=['POST'])
+@limiter.limit('10 per minute; 30 per hour')
 def superadmin_login():
     """Fallback login ENKEL voor de superadmin — niet voor gewone gebruikers."""
     if current_user.is_authenticated:

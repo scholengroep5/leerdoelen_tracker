@@ -2,10 +2,10 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from models import User, SchoolYear, Assessment, School, Class, AuditLog
-from app import db
 from services.doelen import load_index, load_vak, is_valid_vak_id
 from services.audit import audit_log
 from functools import wraps
+from app import db, limiter
 
 api_bp = Blueprint('api', __name__)
 
@@ -71,6 +71,7 @@ def get_assessments():
 
 @api_bp.route('/assessments', methods=['POST'])
 @login_required
+@limiter.limit('120 per minute')  # max 2 per seconde per gebruiker
 def save_assessment():
     data    = request.get_json() or {}
     vak_id  = (data.get('vak_id') or '').strip()
@@ -81,6 +82,9 @@ def save_assessment():
         return jsonify({'error': 'vak_id en goal_id zijn verplicht'}), 400
     if status not in ('groen', 'oranje', 'roze', ''):
         return jsonify({'error': 'Ongeldige status — gebruik groen, oranje, roze of leeg'}), 400
+    # Sanitiseer input — voorkomt oversized data in DB
+    if len(vak_id) > 100 or len(goal_id) > 50:
+        return jsonify({'error': 'Ongeldige invoer'}), 400
     if not current_user.school_id:
         return jsonify({'error': 'Account is nog niet gekoppeld aan een school'}), 400
 
@@ -283,8 +287,8 @@ def get_audit_log():
     if not current_user.is_school_ict:
         return jsonify({'error': 'Geen toegang'}), 403
 
-    page      = int(request.args.get('page', 1))
-    per_page  = int(request.args.get('per_page', 50))
+    page      = max(1, int(request.args.get('page', 1)))
+    per_page  = min(100, max(1, int(request.args.get('per_page', 50))))  # max 100 per pagina
     category  = request.args.get('category')
     search    = request.args.get('search', '').strip()
 

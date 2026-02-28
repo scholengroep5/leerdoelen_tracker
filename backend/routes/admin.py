@@ -303,8 +303,7 @@ def add_scholengroep_ict():
     db.session.add(user)
     db.session.flush()
     audit_log('user.create', 'user', target_type='user', target_id=str(user.id),
-              detail={'email': email, 'role': user.role, 'school_id': school_id},
-              school_id=school_id)
+              detail={'email': email, 'role': user.role})
     db.session.commit()
     return jsonify({'user': user.to_dict()}), 201
 

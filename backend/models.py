@@ -106,7 +106,8 @@ class User(UserMixin, db.Model):
     def is_teacher(self):         return self.role == 'teacher'
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        # scrypt is het sterkste algoritme in werkzeug — veel meer weerstand tegen brute force
+        self.password_hash = generate_password_hash(password, method='scrypt')
 
     def check_password(self, password):
         if not self.password_hash:

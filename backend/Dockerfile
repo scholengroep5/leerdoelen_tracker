@@ -1,4 +1,7 @@
-FROM python:3.12-slim
+# Pin op een specifieke patch versie voor reproduceerbare builds.
+# Controleer regelmatig op https://hub.docker.com/_/python voor updates.
+# Bij elke Python security patch: versienummer hier bijwerken + opnieuw builden.
+FROM python:3.12.9-slim
 
 WORKDIR /app
 
@@ -8,9 +11,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Python dependencies
+# Python dependencies — upgrade pip zelf ook voor security fixes
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # App code + entrypoint (chmod als root, vóór USER switch)
 COPY . .
