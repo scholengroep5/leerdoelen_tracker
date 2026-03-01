@@ -238,7 +238,7 @@
             <label>Wachtwoord</label>
             <input type="password" id="password" autocomplete="current-password">
         </div>
-        <button class="btn" onclick="doLogin()">Inloggen</button>
+        <button class="btn" id="btnLogin">Inloggen</button>
 
         <a href="/auth/login" class="back-link">← Terug naar normale loginpagina</a>
     </div>
@@ -269,6 +269,10 @@
                 errorEl.style.display = 'block';
             }
         }
-    </script>
+    
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btnLogin').addEventListener('click', () => { doLogin() });
+});
+</script>
 </body>
 </html>

@@ -231,12 +231,12 @@
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
             <div style="display:flex;flex-direction:column;gap:0.2rem;">
                 <label style="font-size:0.7rem;opacity:0.75;text-transform:uppercase;letter-spacing:0.05em;">Schooljaar</label>
-                <select id="jaarSelector" onchange="switchJaar()"
+                <select id="jaarSelector"
                     style="padding:0.35rem 0.6rem;border:1px solid rgba(255,255,255,0.3);border-radius:6px;background:rgba(255,255,255,0.15);color:white;font-size:0.85rem;cursor:pointer;">
                     <option value="">Laden...</option>
                 </select>
             </div>
-            <button class="btn btn-light" onclick="loadOverview()">↻ Vernieuwen</button>
+            <button id="btnVernieuw" class="btn btn-light">↻ Vernieuwen</button>
             <a href="/auth/logout" class="btn btn-light">Uitloggen</a>
         </div>
     </div>
@@ -255,16 +255,16 @@
     <div class="section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
             <h2>👩‍🏫 Leerkrachten</h2>
-            <button class="btn btn-primary" onclick="openAddTeacher()">+ Leerkracht toevoegen</button>
+            <button id="btnAddTeacher" class="btn btn-primary">+ Leerkracht toevoegen</button>
         </div>
         <div class="teacher-list" id="teacherList">Laden...</div>
     </div>
 
     <!-- Tab navigatie -->
     <div style="display:flex;gap:.25rem;margin-bottom:.5rem;">
-        <button class="tab-btn active" onclick="switchTab('doelen')" id="tab-doelen">📋 Doelen</button>
-        <button class="tab-btn" onclick="switchTab('klassen')" id="tab-klassen">🏫 Klasoverzicht</button>
-        <button class="tab-btn" onclick="switchTab('vergelijk')" id="tab-vergelijk">⚖️ Klasvergelijking</button>
+        <button class="tab-btn active" id="tab-doelen">📋 Doelen</button>
+        <button class="tab-btn" id="tab-klassen">🏫 Klasoverzicht</button>
+        <button class="tab-btn" id="tab-vergelijk">⚖️ Klasvergelijking</button>
     </div>
 
     <!-- Tab: Doelen (bestaande view) -->
@@ -272,25 +272,25 @@
         <div class="filters-bar">
             <div class="filter-group">
                 <label>Vak</label>
-                <select id="filterVak" onchange="applyFilters()">
+                <select id="filterVak">
                     <option value="all">Alle vakken</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>Leerkracht</label>
-                <select id="filterTeacher" onchange="applyFilters()">
+                <select id="filterTeacher">
                     <option value="all">Alle leerkrachten</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>Klas</label>
-                <select id="filterKlas" onchange="applyFilters()">
+                <select id="filterKlas">
                     <option value="all">Alle klassen</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>Status</label>
-                <select id="filterStatus" onchange="applyFilters()">
+                <select id="filterStatus">
                     <option value="all">Alle statussen</option>
                     <option value="consensus">✓ Iedereen groen</option>
                     <option value="verschil">⚠ Verschillen</option>
@@ -299,20 +299,20 @@
             </div>
             <div class="filter-group">
                 <label>Zoeken</label>
-                <input type="text" id="filterSearch" placeholder="Code of beschrijving..." oninput="applyFilters()">
+                <input type="text" id="filterSearch" placeholder="Code of beschrijving...">
             </div>
             <div class="filter-group" style="min-width:unset;">
                 <label>Leeftijd</label>
                 <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="2,5-4"   onchange="applyFilters()"><span>2,5-4</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="4-5"   onchange="applyFilters()"><span>4-5</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="5-6"   onchange="applyFilters()"><span>5-6</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="6-7"   onchange="applyFilters()"><span>6-7</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="7-8"   onchange="applyFilters()"><span>7-8</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="8-9"   onchange="applyFilters()"><span>8-9</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="9-10"  onchange="applyFilters()"><span>9-10</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="10-11" onchange="applyFilters()"><span>10-11</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="11-12" onchange="applyFilters()"><span>11-12</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="2,5-4"><span>2,5-4</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="4-5"><span>4-5</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="5-6"><span>5-6</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="6-7"><span>6-7</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="7-8"><span>7-8</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="8-9"><span>8-9</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="9-10"><span>9-10</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="10-11"><span>10-11</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="11-12"><span>11-12</span></label>
                 </div>
             </div>
         </div>
@@ -340,8 +340,8 @@
         <div class="form-group"><label>Tijdelijk wachtwoord</label><input type="password" id="newPassword"></div>
         <div id="addTeacherError" style="color:var(--danger);font-size:0.85rem;display:none;"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="addTeacher()">Toevoegen</button>
+            <button id="btnCancelTeacher" class="btn btn-secondary">Annuleren</button>
+            <button id="btnConfirmTeacher" class="btn btn-primary">Toevoegen</button>
         </div>
     </div>
 </div>
@@ -356,6 +356,20 @@ let overviewData = null;
 let activeYearId = null;   // null = huidig actief jaar
 
 document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('jaarSelector').addEventListener('change', switchJaar);
+    document.getElementById('btnVernieuw').addEventListener('click', loadOverview);
+    document.getElementById('btnAddTeacher').addEventListener('click', openAddTeacher);
+    document.getElementById('tab-doelen').addEventListener('click', () => switchTab('doelen'));
+    document.getElementById('tab-klassen').addEventListener('click', () => switchTab('klassen'));
+    document.getElementById('tab-vergelijk') && document.getElementById('tab-vergelijk').addEventListener('click', () => switchTab('vergelijk'));
+    document.getElementById('btnCancelTeacher').addEventListener('click', closeModal);
+    document.getElementById('btnConfirmTeacher').addEventListener('click', addTeacher);
+    document.getElementById('filterVak').addEventListener('change', applyFilters);
+    document.getElementById('filterTeacher').addEventListener('change', applyFilters);
+    document.getElementById('filterKlas') && document.getElementById('filterKlas').addEventListener('change', applyFilters);
+    document.getElementById('filterStatus').addEventListener('change', applyFilters);
+    document.getElementById('filterSearch').addEventListener('input', applyFilters);
+    document.querySelectorAll('.leeftijd-checkbox input').forEach(cb => cb.addEventListener('change', applyFilters));
     await loadUser();
     await loadJaren();
     await loadTeachers();

@@ -133,7 +133,7 @@
     <div class="section">
         <div class="section-header">
             <h2>👥 Scholengroep ICT medewerkers</h2>
-            <button class="btn btn-primary btn-sm" onclick="openModal('addSgIct')">+ Toevoegen</button>
+            <button class="btn btn-primary btn-sm">+ Toevoegen</button>
         </div>
         <p class="section-hint">
             Scholengroep ICT medewerkers kunnen alle scholen en gebruikers beheren,
@@ -151,7 +151,7 @@
     <div class="section">
         <div class="section-header">
             <h2>📅 Schooljaren</h2>
-            <button class="btn btn-primary btn-sm" onclick="openModal('addJaar')">+ Nieuw schooljaar</button>
+            <button class="btn btn-primary btn-sm">+ Nieuw schooljaar</button>
         </div>
         <p class="section-hint">
             Het actieve schooljaar geldt voor alle scholen tegelijk.
@@ -168,7 +168,8 @@
     <div class="section">
         <div class="section-header">
             <h2>🏫 Scholen</h2>
-            <button class="btn btn-primary btn-sm" onclick="openModal('addSchool')">+ School toevoegen</button>
+            <button id="btnAddSchool" class="btn btn-primary btn-sm">+ School
+toevoegen</button>
         </div>
         <table>
             <thead>
@@ -187,7 +188,7 @@
     <div class="section">
         <div class="section-header">
             <h2>👥 Gebruikers per school</h2>
-            <button class="btn btn-primary btn-sm" onclick="openModal('addUser')">+ Gebruiker toevoegen</button>
+            <button id="btnAddUser" class="btn btn-primary btn-sm">+ Gebruiker toevoegen</button>
         </div>
         <div class="schools-grid" id="schoolsGrid">Laden...</div>
     </div>
@@ -197,7 +198,7 @@
         <div class="section-header">
             <h2>📋 Auditlog</h2>
             <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-                <select id="auditCategory" onchange="loadAuditLog()"
+                <select id="auditCategory"
                     style="padding:.35rem .5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;">
                     <option value="">Alle categorieën</option>
                     <option value="auth">Aanmeldingen</option>
@@ -208,12 +209,11 @@
                     <option value="system">Systeem</option>
                     <option value="doelen">Leerdoelen</option>
                 </select>
-                <select id="auditSchoolFilter" onchange="loadAuditLog()"
+                <select id="auditSchoolFilter"
                     style="padding:.35rem .5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;">
                     <option value="">Alle scholen</option>
                 </select>
                 <input id="auditSearch" type="text" placeholder="Zoeken..."
-                    oninput="loadAuditLog()"
                     style="padding:.35rem .5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;width:150px;">
             </div>
         </div>
@@ -249,8 +249,8 @@
         <div class="form-group"><label>E-maildomeinen</label><input type="text" id="schoolDomains" placeholder="dekrekel.be, sintjan.gent.be"><div class="form-hint">Komma-gescheiden. Gebruikers met dit domein worden automatisch gekoppeld.</div></div>
         <div class="form-error" id="school-error"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="addSchool()">Toevoegen</button>
+            <button class="btn btn-secondary" id="btnCancelSchool">Annuleren</button>
+        <button class="btn btn-primary" id="btnSaveSchool">Toevoegen</button>
         </div>
     </div>
 </div>
@@ -263,8 +263,8 @@
         <div class="form-group"><label>E-maildomeinen</label><input type="text" id="editSchoolDomains"><div class="form-hint">Komma-gescheiden.</div></div>
         <div class="form-error" id="edit-school-error"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="saveSchool()">Opslaan</button>
+            <button class="btn btn-secondary" id="btnCancelEditSch">Annuleren</button>
+        <button class="btn btn-primary" id="btnSaveEditSch">Opslaan</button>
         </div>
     </div>
 </div>
@@ -279,8 +279,8 @@
         <div class="form-group"><label>E-mailadres</label><input type="email" id="sgEmail"></div>
         <div class="form-error" id="sg-error"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="addSgIct()">Toevoegen</button>
+            <button class="btn btn-secondary" id="btnCancelSgIct">Annuleren</button>
+        <button class="btn btn-primary" id="btnSaveSgIct">Toevoegen</button>
         </div>
     </div>
 </div>
@@ -300,8 +300,8 @@
         </div>
         <div class="form-error" id="jaar-error"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="addJaar()">Aanmaken</button>
+            <button class="btn btn-secondary" id="btnCancelJaar">Annuleren</button>
+        <button class="btn btn-primary" id="btnSaveJaar">Aanmaken</button>
         </div>
     </div>
 </div>
@@ -324,8 +324,8 @@
         </div>
         <div class="form-error" id="addUser-error"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="addUser()">Toevoegen</button>
+            <button class="btn btn-secondary" id="btnCancelUser">Annuleren</button>
+        <button class="btn btn-primary" id="btnSaveUser">Toevoegen</button>
         </div>
     </div>
 </div>
@@ -343,6 +343,21 @@ const SCHOOL_ROLLEN = [
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('btnAddSgIct') && document.getElementById('btnAddSgIct').addEventListener('click', () => openModal('addSgIct'));
+    document.getElementById('btnAddJaar') && document.getElementById('btnAddJaar').addEventListener('click', () => openModal('addJaar'));
+    document.getElementById('btnAddSchool') && document.getElementById('btnAddSchool').addEventListener('click', () => openModal('addSchool'));
+    document.getElementById('btnAddUser') && document.getElementById('btnAddUser').addEventListener('click', () => openModal('addUser'));
+    document.getElementById('auditCategory').addEventListener('change', loadAuditLog);
+    document.getElementById('auditSchoolFilter') && document.getElementById('auditSchoolFilter').addEventListener('change', loadAuditLog);
+    document.getElementById('auditSearch').addEventListener('input', loadAuditLog);
+    document.getElementById('btnCancelSchool') && document.getElementById('btnCancelSchool').addEventListener('click', closeModal);
+    document.getElementById('btnSaveSchool') && document.getElementById('btnSaveSchool').addEventListener('click', addSchool);
+    document.getElementById('btnCancelSgIct') && document.getElementById('btnCancelSgIct').addEventListener('click', closeModal);
+    document.getElementById('btnSaveSgIct') && document.getElementById('btnSaveSgIct').addEventListener('click', addSgIct);
+    document.getElementById('btnCancelJaar') && document.getElementById('btnCancelJaar').addEventListener('click', closeModal);
+    document.getElementById('btnSaveJaar') && document.getElementById('btnSaveJaar').addEventListener('click', addJaar);
+    document.getElementById('btnCancelUser') && document.getElementById('btnCancelUser').addEventListener('click', closeModal);
+    document.getElementById('btnSaveUser') && document.getElementById('btnSaveUser').addEventListener('click', addUser);
     const tasks = [loadStats(), loadSchoolsTable(), loadSchoolsGrid()];
     if (IS_SUPERADMIN) tasks.push(loadSgIct());
     await Promise.all(tasks);

@@ -222,7 +222,7 @@
     <div class="section">
         <div class="section-header">
             <h2>👥 Gebruikers</h2>
-            <button class="btn btn-primary btn-sm" onclick="openModal()">+ Gebruiker toevoegen</button>
+            <button id="btnAddUser" class="btn btn-primary btn-sm">+ Gebruiker toevoegen</button>
         </div>
         <table>
             <thead>
@@ -243,7 +243,7 @@
     <div class="section">
         <div class="section-header">
             <h2>🏫 Klassen</h2>
-            <button class="btn btn-primary btn-sm" onclick="openAddKlas()">+ Klas toevoegen</button>
+            <button id="btnAddKlas" class="btn btn-primary btn-sm">+ Klas toevoegen</button>
         </div>
         <div id="klassenList">Laden...</div>
     </div>
@@ -253,7 +253,7 @@
         <div class="section-header">
             <h2>📋 Auditlog</h2>
             <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-                <select id="auditCategory" onchange="loadAuditLog()"
+                <select id="auditCategory"
                     style="padding:.35rem .5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;">
                     <option value="">Alle categorieën</option>
                     <option value="auth">Aanmeldingen</option>
@@ -262,7 +262,6 @@
                     <option value="assessment">Beoordelingen</option>
                 </select>
                 <input id="auditSearch" type="text" placeholder="Zoeken..."
-                    oninput="loadAuditLog()"
                     style="padding:.35rem .5rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;width:150px;">
             </div>
         </div>
@@ -311,8 +310,8 @@
         </div>
         <div class="form-error" id="addError"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="addUser()">Toevoegen</button>
+            <button class="btn btn-secondary" id="btnCancelUser">Annuleren</button>
+            <button id="btnConfirmUser" class="btn btn-primary">Toevoegen</button>
         </div>
     </div>
 </div>
@@ -329,6 +328,12 @@ const ROLLEN = [
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('btnAddUser') && document.getElementById('btnAddUser').addEventListener('click', openModal);
+    document.getElementById('btnAddKlas') && document.getElementById('btnAddKlas').addEventListener('click', openAddKlas);
+    document.getElementById('btnCancelUser') && document.getElementById('btnCancelUser').addEventListener('click', closeModal);
+    document.getElementById('btnConfirmUser') && document.getElementById('btnConfirmUser').addEventListener('click', addUser);
+    document.getElementById('auditCategory') && document.getElementById('auditCategory').addEventListener('change', loadAuditLog);
+    document.getElementById('auditSearch') && document.getElementById('auditSearch').addEventListener('input', loadAuditLog);
     const me = await fetch('/api/me').then(r => r.json());
     mySchoolId = me.user?.school_id;
     document.getElementById('schoolName').textContent = me.user?.school_name || '';

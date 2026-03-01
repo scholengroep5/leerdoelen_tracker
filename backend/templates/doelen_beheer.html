@@ -25,6 +25,8 @@
         .section-header h2{font-size:1.05rem;color:var(--gray-700);}
         .section-hint{color:var(--gray-500);font-size:.83rem;margin-bottom:1.25rem;line-height:1.6;}
         .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1rem;border:none;border-radius:6px;font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;}
+        .btn-primary{background:var(--primary);color:white;} .btn-primary:hover{background:var(--primary-dark);}
+        .btn-secondary{background:var(--gray-200);color:var(--gray-700);} .btn-secondary:hover{background:var(--gray-300);}
         .btn-danger{background:var(--danger);color:white;} .btn-danger:hover{background:#dc2626;}
         .btn-sm{padding:.25rem .55rem;font-size:.78rem;}
         table{width:100%;border-collapse:collapse;font-size:.875rem;}
@@ -54,7 +56,8 @@
         .notification.success{background:var(--success);}
         .notification.error{background:var(--danger);}
         .notification.warning{background:var(--warning);}
-
+        .info-box{background:var(--gray-50);border:1px solid var(--gray-200);border-left:4px solid var(--primary);border-radius:6px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.83rem;color:var(--gray-600);}
+        .info-box a{color:var(--primary);}
         @media (prefers-color-scheme: dark) {
             :root {
                 --gray-50:#1a1a2e;--gray-100:#16213e;--gray-200:#0f3460;
@@ -71,7 +74,6 @@
             .upload-ok{background:#064e3b !important;border-color:#065f46 !important;}
             .upload-err{background:#450a0a !important;border-color:#7f1d1d !important;}
             .versie-badge{background:#064e3b !important;color:#6ee7b7 !important;}
-            ::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-track{background:#0f172a;} ::-webkit-scrollbar-thumb{background:#334155;border-radius:4px;}
         }
     </style>
 </head>
@@ -101,12 +103,10 @@
 
         <!-- Format tabs -->
         <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
-            <button class="btn btn-primary" id="tabXlsx" onclick="switchUploadTab('xlsx')"
-                style="font-size:.85rem;">
+            <button class="btn btn-primary" id="tabXlsx" style="font-size:.85rem;">
                 📊 Excel (.xlsx) — aanbevolen
             </button>
-            <button class="btn btn-secondary" id="tabJson" onclick="switchUploadTab('json')"
-                style="font-size:.85rem;">
+            <button class="btn btn-secondary" id="tabJson" style="font-size:.85rem;">
                 📄 JSON
             </button>
         </div>
@@ -119,29 +119,22 @@
                 gebeurt automatisch op de server — geen tussentijdse stap nodig.
                 Bij een update gewoon opnieuw uploaden.
             </p>
-            <div class="info-box" style="background:var(--gray-50);border:1px solid var(--gray-200);
-                border-left:4px solid var(--primary);border-radius:6px;padding:.85rem 1rem;
-                margin-bottom:1rem;font-size:.83rem;color:var(--gray-600);">
+            <div class="info-box">
                 💡 <strong>Nieuwe versie van GO!?</strong>
                 De GO! publiceert updates van de doelensets op
-                <a href="https://pro.g-o.be/themas/leerplannen/basisonderwijs/nieuw-leerplan-basisonderwijs/" target="_blank"
-                   rel="noopener noreferrer" style="color:var(--primary);">
+                <a href="https://pro.g-o.be/themas/leerplannen/basisonderwijs/nieuw-leerplan-basisonderwijs/"
+                   target="_blank" rel="noopener noreferrer">
                     pro.g-o.be → Leerplannen → BaO
                 </a>.
                 Er is geen automatische synchronisatie — download de nieuwe xlsx bestanden
                 manueel en upload ze hier.
             </div>
-            <div class="drop-zone" id="dropZoneXlsx"
-                 onclick="document.getElementById('fileInputXlsx').click()"
-                 ondragover="event.preventDefault();this.classList.add('over')"
-                 ondragleave="this.classList.remove('over')"
-                 ondrop="this.classList.remove('over');handleDropXlsx(event)">
+            <div class="drop-zone" id="dropZoneXlsx">
                 <div class="drop-icon">📊</div>
                 <strong>Klik of sleep Excel bestanden hier</strong>
                 <p>Meerdere bestanden tegelijk · Enkel .xlsx · Max. 10 MB per bestand</p>
             </div>
-            <input type="file" id="fileInputXlsx" accept=".xlsx" multiple style="display:none"
-                   onchange="uploadXlsx(this.files)">
+            <input type="file" id="fileInputXlsx" accept=".xlsx" multiple style="display:none">
         </div>
 
         <!-- JSON upload -->
@@ -151,17 +144,12 @@
                 de Excel bestanden niet beschikbaar hebt of als je handmatig aangepaste
                 JSON wil laden.
             </p>
-            <div class="drop-zone" id="dropZoneJson"
-                 onclick="document.getElementById('fileInputJson').click()"
-                 ondragover="event.preventDefault();this.classList.add('over')"
-                 ondragleave="this.classList.remove('over')"
-                 ondrop="this.classList.remove('over');handleDropJson(event)">
+            <div class="drop-zone" id="dropZoneJson">
                 <div class="drop-icon">📄</div>
                 <strong>Klik of sleep JSON bestanden hier</strong>
                 <p>Meerdere bestanden tegelijk · Enkel .json · Max. 10 MB per bestand</p>
             </div>
-            <input type="file" id="fileInputJson" accept=".json" multiple style="display:none"
-                   onchange="uploadJson(this.files)">
+            <input type="file" id="fileInputJson" accept=".json" multiple style="display:none">
         </div>
 
         <div id="uploadResults" style="margin-top:.85rem;display:none;"></div>
@@ -185,7 +173,7 @@
                 </tr>
             </thead>
             <tbody id="doelenBody">
-                <tr class="empty-row"><td colspan="5">Laden...</td></tr>
+                <tr class="empty-row"><td colspan="6">Laden...</td></tr>
             </tbody>
         </table>
     </div>
@@ -194,9 +182,31 @@
 <div class="notification" id="notification"></div>
 <script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', () => {
+    // ── Tab knoppen ──────────────────────────────────────────────────────────
+    document.getElementById('tabXlsx').addEventListener('click', () => switchUploadTab('xlsx'));
+    document.getElementById('tabJson').addEventListener('click', () => switchUploadTab('json'));
+
+    // ── Drop zones ───────────────────────────────────────────────────────────
+    setupDropZone('dropZoneXlsx', 'fileInputXlsx', uploadXlsx);
+    setupDropZone('dropZoneJson', 'fileInputJson', uploadJson);
+
+    // ── File inputs ──────────────────────────────────────────────────────────
+    document.getElementById('fileInputXlsx').addEventListener('change', function() { uploadXlsx(this.files); });
+    document.getElementById('fileInputJson').addEventListener('change', function() { uploadJson(this.files); });
+
+    // ── Init ─────────────────────────────────────────────────────────────────
     loadDoelen();
     switchUploadTab('xlsx');
 });
+
+function setupDropZone(zoneId, inputId, uploadFn) {
+    const zone  = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+    zone.addEventListener('click',      () => input.click());
+    zone.addEventListener('dragover',   (e) => { e.preventDefault(); zone.classList.add('over'); });
+    zone.addEventListener('dragleave',  ()  => zone.classList.remove('over'));
+    zone.addEventListener('drop',       (e) => { e.preventDefault(); zone.classList.remove('over'); uploadFn(e.dataTransfer.files); });
+}
 
 // ── Tab wisselen ──────────────────────────────────────────────────────────────
 function switchUploadTab(tab) {
@@ -228,7 +238,6 @@ async function loadDoelen() {
         return;
     }
     tbody.innerHTML = vakken.map(v => {
-        const vn = v.naam.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         const datum = v.bronDatum
             ? `<span title="'Gewijzigd op' datum uit Excel metadata van GO!">${v.bronDatum}</span>`
             : `<span style="color:var(--gray-400)">onbekend</span>`;
@@ -238,10 +247,14 @@ async function loadDoelen() {
             <td>${(v.aantalDoelzinnen||0).toLocaleString('nl-BE')}</td>
             <td><span class="versie-badge">${v.versie || '?'}</span></td>
             <td style="font-size:.83rem;">${datum}</td>
-            <td><button class="btn btn-danger btn-sm"
-                onclick="deleteDoelen('${v.id}','${vn}')">Verwijderen</button></td>
+            <td><button class="btn btn-danger btn-sm" data-vak-id="${v.id}" data-vak-naam="${v.naam}">Verwijderen</button></td>
         </tr>`;
     }).join('');
+
+    // Event listeners op verwijder knoppen — na renderen
+    tbody.querySelectorAll('.btn-danger').forEach(btn => {
+        btn.addEventListener('click', () => deleteDoelen(btn.dataset.vakId, btn.dataset.vakNaam));
+    });
 }
 
 // ── Upload helpers ────────────────────────────────────────────────────────────
@@ -281,13 +294,8 @@ async function doUpload(endpoint, files) {
     }
 }
 
-// ── XLSX upload ───────────────────────────────────────────────────────────────
-function handleDropXlsx(e) { e.preventDefault(); uploadXlsx(e.dataTransfer.files); }
-function uploadXlsx(files)  { doUpload('/admin/doelen/upload-xlsx', files); }
-
-// ── JSON upload ───────────────────────────────────────────────────────────────
-function handleDropJson(e) { e.preventDefault(); uploadJson(e.dataTransfer.files); }
-function uploadJson(files)  { doUpload('/admin/doelen/upload', files); }
+function uploadXlsx(files) { doUpload('/admin/doelen/upload-xlsx', files); }
+function uploadJson(files)  { doUpload('/admin/doelen/upload',      files); }
 
 // ── Verwijderen ───────────────────────────────────────────────────────────────
 async function deleteDoelen(vakId, vakNaam) {

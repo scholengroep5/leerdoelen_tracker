@@ -231,7 +231,8 @@
     <div class="section">
         <div class="section-header">
             <h2>👥 Scholengroep ICT medewerkers</h2>
-            <button class="btn btn-primary btn-sm" onclick="openModal('addSgIct')">+ Toevoegen</button>
+            <button class="btn btn-primary btn-sm" id="btnAddSgIct">
+                + Toevoegen</button>
         </div>
         <table>
             <thead><tr><th>Naam</th><th>E-mail</th><th>Laatste login</th><th></th></tr></thead>
@@ -243,7 +244,8 @@
     <div class="section">
         <div class="section-header">
             <h2>🏫 Scholen</h2>
-            <button class="btn btn-primary btn-sm" onclick="openModal('addSchool')">+ School toevoegen</button>
+            <button class="btn btn-primary btn-sm" id="btnAddSchool">
+                + School toevoegen</button>
         </div>
         <table>
             <thead><tr><th>Naam</th><th>Slug</th><th>E-maildomeinen</th><th>Gebruikers</th><th></th></tr></thead>
@@ -269,8 +271,8 @@
         </div>
         <div class="form-error" id="sg-error"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="addSgIct()">Toevoegen</button>
+        <button class="btn btn-secondary" id="btnCancelSg">Annuleren</button>
+        <button class="btn btn-primary" id="addSgIct()">Toevoegen</button>
         </div>
     </div>
 </div>
@@ -295,8 +297,8 @@
         </div>
         <div class="form-error" id="school-error"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="addSchool()">Toevoegen</button>
+        <button class="btn btn-secondary" id="btnCancelSchool">Annuleren</button>
+        <button class="btn btn-primary" id="addSchool()">Toevoegen</button>
         </div>
     </div>
 </div>
@@ -314,8 +316,8 @@
         </div>
         <div class="form-error" id="edit-school-error"></div>
         <div class="modal-buttons">
-            <button class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-            <button class="btn btn-primary" onclick="saveSchool()">Opslaan</button>
+        <button class="btn btn-secondary" id="btnCancelEdit">Annuleren</button>
+        <button class="btn btn-primary" id="saveSchool()">Opslaan</button>
         </div>
     </div>
 </div>
@@ -324,6 +326,14 @@
 
 <script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('btnCancelSg').addEventListener('click', () => { closeModal() });
+    document.getElementById('btnConfirmSg').addEventListener('click', () => { addSgIct() });
+    document.getElementById('btnCancelSchool').addEventListener('click', () => { closeModal() });
+    document.getElementById('btnConfirmSchool').addEventListener('click', () => { addSchool() });
+    document.getElementById('btnCancelEdit').addEventListener('click', () => { closeModal() });
+    document.getElementById('btnConfirmEdit').addEventListener('click', () => { saveSchool() });
+    document.getElementById('btnAddSgIct').addEventListener('click', () => { openModal('addSgIct') });
+    document.getElementById('btnAddSchool').addEventListener('click', () => { openModal('addSchool') });
     await loadStats();
     await loadSgIct();
     await loadSchools();

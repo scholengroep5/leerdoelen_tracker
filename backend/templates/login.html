@@ -291,7 +291,7 @@
 
         <!-- Superadmin fallback — zichtbaar maar discreet -->
         <div class="superadmin-toggle">
-            <button onclick="toggleSuperadmin()">Platformbeheerder</button>
+            <button id="btnToggleSuperadmin">Platformbeheerder</button>
         </div>
 
         <div class="superadmin-form" id="superadminForm">
@@ -306,7 +306,7 @@
                 <label>Wachtwoord</label>
                 <input type="password" id="saPassword" autocomplete="current-password">
             </div>
-            <button class="btn-superadmin" onclick="superadminLogin()">Inloggen</button>
+            <button class="btn-superadmin" id="btnSuperadminLogin">Inloggen</button>
             <div id="sa-error"></div>
         </div>
     </div>
@@ -345,6 +345,11 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && saVisible) superadminLogin();
         });
-    </script>
+    
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btnToggleSuperadmin').addEventListener('click', () => { toggleSuperadmin() });
+    document.getElementById('btnSuperadminLogin').addEventListener('click', () => { superadminLogin() });
+});
+</script>
 </body>
 </html>

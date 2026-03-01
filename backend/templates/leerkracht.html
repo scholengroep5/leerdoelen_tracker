@@ -246,8 +246,7 @@
             <div id="klasSelector" style="display:none;align-items:center;gap:.4rem;">
                 <label style="font-size:.75rem;color:var(--gray-400);white-space:nowrap;">Mijn klassen:</label>
                 <div id="klasChips" style="display:flex;gap:.3rem;flex-wrap:wrap;"></div>
-                <button onclick="openKlasModal()"
-                    style="background:none;border:1px dashed var(--gray-500);border-radius:4px;color:var(--gray-400);font-size:.75rem;padding:.2rem .5rem;cursor:pointer;">
+                <button id="btnOpenKlas" style="background:none;border:1px dashed var(--gray-500);border-radius:6px;padding:.4rem .8rem;font-size:.8rem;color:var(--gray-600);cursor:pointer;">
                     ✎ Wijzigen
                 </button>
             </div>
@@ -257,7 +256,7 @@
 
     <div class="vak-selector">
         <label>Vak:</label>
-        <select id="vakSelector" onchange="switchVak()">
+        <select id="vakSelector">
             <option value="">-- Kies een vak --</option>
         </select>
         <span id="vakProgress" style="color: var(--gray-500); font-size: 0.85rem;"></span>
@@ -275,11 +274,11 @@
         <div class="filters-grid">
             <div class="filter-group">
                 <label>Zoeken</label>
-                <input type="text" id="searchInput" placeholder="Zoek in beschrijving of code..." oninput="applyFilters()">
+                <input type="text" id="searchInput" placeholder="Zoek in beschrijving of code...">
             </div>
             <div class="filter-group">
                 <label>Status</label>
-                <select id="statusFilter" onchange="applyFilters()">
+                <select id="statusFilter">
                     <option value="all">Alle statussen</option>
                     <option value="groen">✓ Groen</option>
                     <option value="oranje">~ Oranje</option>
@@ -289,7 +288,7 @@
             </div>
             <div class="filter-group">
                 <label>E/B/G</label>
-                <select id="ebgFilter" onchange="applyFilters()">
+                <select id="ebgFilter">
                     <option value="all">Alle types</option>
                     <option value="engageren">Engageren</option>
                     <option value="begrijpen">Begrijpen</option>
@@ -298,7 +297,7 @@
             </div>
             <div class="filter-group">
                 <label>Sectie</label>
-                <select id="sectieFilter" onchange="applyFilters()">
+                <select id="sectieFilter">
                     <option value="all">Alle secties</option>
                 </select>
             </div>
@@ -306,7 +305,7 @@
                 <label>Leeftijd</label>
                 <div class="leeftijd-checkboxes">
                     {% for age in ['2,5-4','4-5','5-6','6-7','7-8','8-9','9-10','10-11','11-12'] %}
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="{{ age }}" onchange="applyFilters()"><span>{{ age }}</span></label>
+                    <label class="leeftijd-checkbox"><input type="checkbox" value="{{ age }}"><span>{{ age }}</span></label>
                     {% endfor %}
                 </div>
             </div>
@@ -343,8 +342,8 @@
         </p>
         <div id="klasCheckboxes" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;max-height:250px;overflow-y:auto;"></div>
         <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-            <button onclick="closeKlasModal()" class="btn btn-secondary">Annuleren</button>
-            <button onclick="saveKlassen()" class="btn btn-primary">Opslaan</button>
+            <button class="btn btn-secondary">Annuleren</button>
+            <button id="btnSlaKlas" class="btn btn-primary">Opslaan</button>
         </div>
     </div>
 </div>
@@ -363,6 +362,15 @@ let saveTimeout   = null;
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('btnOpenKlas').addEventListener('click', openKlasModal);
+    document.getElementById('btnSluitKlas').addEventListener('click', closeKlasModal);
+    document.getElementById('btnSlaKlas').addEventListener('click', saveKlassen);
+    document.getElementById('vakSelector').addEventListener('change', switchVak);
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    document.getElementById('ebgFilter').addEventListener('change', applyFilters);
+    document.getElementById('sectieFilter').addEventListener('change', applyFilters);
+    document.querySelectorAll('.leeftijd-checkboxes input').forEach(cb => cb.addEventListener('change', applyFilters));
     await loadUser();
     await loadVakken();
 });
