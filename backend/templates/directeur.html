@@ -33,13 +33,20 @@
 
         .status-selector { width: 22px; height: 22px; border-radius: 5px; border: 2px solid var(--gray-300); display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: bold; flex-shrink: 0; }
         .status-selector.status-groen  { background: var(--status-groen);  border-color: var(--status-groen);  color: white; }
-        .status-selector.status-groen::after  { content: '\u2713'; }
+        .status-selector.status-groen::after  { content: '✓'; }
         .status-selector.status-oranje { background: var(--status-oranje); border-color: var(--status-oranje); color: white; }
         .status-selector.status-oranje::after { content: '~'; }
         .status-selector.status-roze   { background: var(--status-roze);   border-color: var(--status-roze);   color: white; }
         .status-selector.status-roze::after   { content: '!'; }
         .status-selector.status-none   { background: white; border-color: var(--gray-300); color: var(--gray-400); }
-        .status-selector.status-none::after   { content: '\u25cb'; }
+        .status-selector.status-none::after   { content: '○'; }
+        .legend-container { background: white; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+        .legend-title { font-weight: 600; color: var(--gray-700); margin-bottom: .75rem; font-size: .9rem; }
+        .legend-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+        .legend-section { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+        .legend-item { display: flex; align-items: center; gap: .4rem; font-size: .85rem; white-space: nowrap; }
+        .legend-color { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
+        .legend-divider { width: 1px; height: 28px; background: var(--gray-300); margin: 0 .5rem; }
         .filters-bar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1rem; }
         .filter-group { display: flex; flex-direction: column; gap: 0.25rem; }
         .filter-group label { font-size: 0.75rem; font-weight: 500; color: var(--gray-500); }
