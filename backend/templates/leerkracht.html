@@ -250,6 +250,10 @@
                     ✎ Wijzigen
                 </button>
             </div>
+            <button id="btnImportJson" class="btn btn-secondary" title="Importeer beoordelingen uit vorige versie (JSON)">
+            📥 Importeer JSON
+            </button>
+            <input type="file" id="importJsonFile" accept=".json" style="display:none">
             <a href="/auth/logout" class="btn btn-secondary">Uitloggen</a>
         </div>
     </div>
@@ -342,7 +346,7 @@
         </p>
         <div id="klasCheckboxes" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;max-height:250px;overflow-y:auto;"></div>
         <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-            <button class="btn btn-secondary">Annuleren</button>
+            <button id="btnSluitKlas" class="btn btn-secondary">Annuleren</button>
             <button id="btnSlaKlas" class="btn btn-primary">Opslaan</button>
         </div>
     </div>
@@ -672,6 +676,42 @@ function showNotification(msg, type='success') {
     el.className   = `notification ${type} show`;
     setTimeout(() => el.classList.remove('show'), 3000);
 }
+
+// ── Legacy JSON import (uit vorige standalone versie) ────────────────────────
+async function importLegacyJson(file) {
+    if (!file) return;
+    let data;
+    try {
+        data = JSON.parse(await file.text());
+    } catch(e) {
+        showNotification('Ongeldig JSON bestand', 'error'); return;
+    }
+
+    if (!data.vakken) { showNotification('Geen vakken gevonden in dit bestand', 'error'); return; }
+
+    showNotification('Bezig met importeren...', 'info');
+
+    try {
+        const res = await fetch('/api/assessments/bulk-import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vakken: data.vakken })
+        });
+        const result = await res.json();
+        if (!res.ok) { showNotification(result.error || 'Import mislukt', 'error'); return; }
+
+        showNotification(
+            `Import klaar: ${result.totaal} beoordelingen geïmporteerd` +
+            (result.fouten > 0 ? `, ${result.fouten} fouten` : ''),
+            result.fouten > 0 ? 'warning' : 'success'
+        );
+        if (currentVakId) await loadAssessments(currentVakId);
+        updateStats();
+    } catch(e) {
+        showNotification('Netwerkfout tijdens import', 'error');
+    }
+}
+
 </script>
 </body>
 </html>
