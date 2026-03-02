@@ -211,7 +211,12 @@
 
     /* Footer */
     .footer { color: #64748b !important; }
-    .status-legend { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
+    /* Legend container */
+    .legend-container { background: #1e293b !important; }
+    .legend-title { color: #94a3b8 !important; }
+    .legend-divider { background: #334155 !important; }
+    .status-selector.status-none { background: #1e293b !important; border-color: #475569 !important; color: #64748b !important; }
+        .status-legend { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
 
     /* Scrollbar (webkit) */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -269,6 +274,38 @@
 
     <!-- Tab: Doelen (bestaande view) -->
     <div id="panel-doelen" class="section">
+
+    <!-- Legenda -->
+    <div class="legend-container">
+        <div class="legend-title">Legenda</div>
+        <div class="legend-grid">
+            <div class="legend-section">
+                <div class="legend-item">
+                    <div class="status-selector status-groen" style="pointer-events:none;flex-shrink:0;"></div>
+                    <span>Doen we al</span>
+                </div>
+                <div class="legend-item">
+                    <div class="status-selector status-oranje" style="pointer-events:none;flex-shrink:0;"></div>
+                    <span>Doen we ongeveer</span>
+                </div>
+                <div class="legend-item">
+                    <div class="status-selector status-roze" style="pointer-events:none;flex-shrink:0;"></div>
+                    <span>Nieuw (doen we nog niet)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="status-selector status-none" style="pointer-events:none;flex-shrink:0;"></div>
+                    <span>Niet beoordeeld</span>
+                </div>
+            </div>
+            <div class="legend-divider"></div>
+            <div class="legend-section">
+                <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--status-groen);flex-shrink:0;"></div><span>Groen = consensus</span></div>
+                <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--status-oranje);flex-shrink:0;"></div><span>Oranje = gedeeltelijk</span></div>
+                <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--status-roze);flex-shrink:0;"></div><span>Roze = nog te doen</span></div>
+            </div>
+        </div>
+    </div>
+
         <div class="filters-bar">
             <div class="filter-group">
                 <label>Vak</label>

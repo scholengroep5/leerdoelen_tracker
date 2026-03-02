@@ -28,9 +28,9 @@
         .btn-secondary { background: var(--gray-100); color: var(--gray-700); }
         .btn-secondary:hover { background: var(--gray-200); }
         .btn-danger { background: var(--danger); color: white; }
-        .vak-selector { background: white; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .vak-selector { background: white; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; transition: background 0.2s; }
         .vak-selector label { font-weight: 600; color: var(--gray-700); font-size: 0.9rem; }
-        .vak-selector select { padding: 0.5rem 0.75rem; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 0.95rem; min-width: 250px; cursor: pointer; }
+        .vak-selector select { padding: 0.5rem 0.75rem; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 0.95rem; min-width: 250px; cursor: pointer; background: white; color: var(--gray-800); }
         .vak-selector select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
         .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
         .stat-card { background: white; border-radius: 8px; padding: 0.75rem 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -71,6 +71,13 @@
         .ebg-engageren { background: var(--kleur-engageren); color: white; }
         .ebg-begrijpen { background: var(--kleur-begrijpen); color: var(--gray-800); }
         .ebg-gebruiken { background: var(--kleur-gebruiken); color: white; }
+        .legend-container { background: white; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+        .legend-title { font-weight: 600; color: var(--gray-700); margin-bottom: .75rem; font-size: .9rem; }
+        .legend-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+        .legend-section { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+        .legend-item { display: flex; align-items: center; gap: .4rem; font-size: .85rem; }
+        .legend-color { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
+        .legend-divider { width: 1px; height: 24px; background: var(--gray-300); }
         .leeftijden { display: flex; flex-wrap: wrap; gap: 0.25rem; }
         .leeftijd-badge { font-size: 0.7rem; padding: 0.15rem 0.35rem; background: var(--gray-200); border-radius: 3px; color: var(--gray-600); }
         .beschrijving-cell { max-width: 400px; }
@@ -194,6 +201,16 @@
     /* Vak indicator */
     /* .vak-indicator — stijl via inline op het element */
 
+    /* Legend container */
+    .legend-container { background: #1e293b !important; border-color: #334155 !important; }
+    .legend-title { color: #94a3b8 !important; }
+    .legend-divider { background: #334155 !important; }
+
+    /* Vak selector balk */
+    .vak-selector { background: #1e293b !important; }
+    .vak-selector label { color: #94a3b8 !important; }
+    .vak-selector select { background: #0f172a !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+
     /* Progress bars achtergrond */
     .progress-bar { background: #334155 !important; }
 
@@ -274,6 +291,47 @@
         <div class="stat-card" style="border-left: 3px solid var(--status-oranje);"><div class="stat-value" id="statOranje">-</div><div class="stat-label">Oranje</div></div>
         <div class="stat-card" style="border-left: 3px solid var(--status-roze);"><div class="stat-value" id="statRoze">-</div><div class="stat-label">Roze</div></div>
         <div class="stat-card highlight"><div class="stat-value" id="statBeoordeeld">-</div><div class="stat-label">Beoordeeld</div></div>
+    </div>
+
+
+    <!-- Legenda -->
+    <div class="legend-container">
+        <div class="legend-title">Legenda</div>
+        <div class="legend-grid">
+            <div class="legend-section">
+                <div class="legend-item">
+                    <div class="status-selector status-groen" style="width:22px;height:22px;font-size:.85rem;pointer-events:none;flex-shrink:0;"></div>
+                    <span>Doen we al</span>
+                </div>
+                <div class="legend-item">
+                    <div class="status-selector status-oranje" style="width:22px;height:22px;font-size:.85rem;pointer-events:none;flex-shrink:0;"></div>
+                    <span>Doen we ongeveer</span>
+                </div>
+                <div class="legend-item">
+                    <div class="status-selector status-roze" style="width:22px;height:22px;font-size:.85rem;pointer-events:none;flex-shrink:0;"></div>
+                    <span>Nieuw (doen we nog niet)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="status-selector status-none" style="width:22px;height:22px;font-size:.85rem;pointer-events:none;flex-shrink:0;"></div>
+                    <span>Nog geen status</span>
+                </div>
+            </div>
+            <div class="legend-divider"></div>
+            <div class="legend-section">
+                <div class="legend-item">
+                    <div class="legend-color" style="background:var(--kleur-engageren);"></div>
+                    <span><strong>Engageren</strong></span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background:var(--kleur-begrijpen);"></div>
+                    <span><strong>Begrijpen</strong></span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background:var(--kleur-gebruiken);"></div>
+                    <span><strong>Gebruiken</strong></span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="filters-container">
