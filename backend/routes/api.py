@@ -126,6 +126,80 @@ def save_assessment():
               detail={'status': status})
     return jsonify({'assessment': assessment.to_dict()})
 
+@api_bp.route('/assessments/bulk-import', methods=['POST'])
+@login_required
+@limiter.limit('5 per minute')
+def bulk_import_assessments():
+    """
+    Importeer beoordelingen vanuit de legacy standalone JSON export.
+    Body: { "vakken": { "vak_id": { "goal_id": "status", ... }, ... } }
+    of v4 formaat: { "vakken": { "vak_id": { "statussen": { "goal_id": "status" } } } }
+    """
+    if not current_user.school_id:
+        return jsonify({'error': 'Account niet gekoppeld aan een school'}), 400
+
+    school_year = get_active_year(current_user.school_id)
+    if not school_year:
+        return jsonify({'error': 'Geen actief schooljaar'}), 400
+
+    data   = request.get_json() or {}
+    vakken = data.get('vakken', {})
+    if not vakken:
+        return jsonify({'error': 'Geen vakken gevonden in payload'}), 400
+
+    totaal = 0
+    fouten = 0
+
+    for vak_id, vak_data in vakken.items():
+        if not isinstance(vak_id, str) or len(vak_id) > 100:
+            fouten += 1
+            continue
+
+        # Ondersteun zowel { statussen: {...} } als { goal_id: status }
+        if isinstance(vak_data, dict) and 'statussen' in vak_data:
+            statussen = vak_data['statussen']
+        else:
+            statussen = vak_data
+
+        if not isinstance(statussen, dict):
+            continue
+
+        for goal_id, status in statussen.items():
+            if not isinstance(goal_id, str) or len(goal_id) > 50:
+                fouten += 1
+                continue
+            if status not in ('groen', 'oranje', 'roze'):
+                continue
+
+            try:
+                assessment = Assessment.query.filter_by(
+                    user_id=current_user.id,
+                    school_year_id=school_year.id,
+                    vak_id=vak_id,
+                    goal_id=goal_id,
+                ).first()
+
+                if assessment:
+                    assessment.status     = status
+                    assessment.updated_at = datetime.utcnow()
+                else:
+                    db.session.add(Assessment(
+                        user_id=current_user.id,
+                        school_id=current_user.school_id,
+                        school_year_id=school_year.id,
+                        vak_id=vak_id,
+                        goal_id=goal_id,
+                        status=status,
+                    ))
+                totaal += 1
+            except Exception:
+                db.session.rollback()
+                fouten += 1
+
+    db.session.commit()
+    audit_log('assessment.bulk_import', 'assessment',
+              detail={'totaal': totaal, 'fouten': fouten})
+    return jsonify({'totaal': totaal, 'fouten': fouten})
 
 # ── Directeur schooloverzicht ──────────────────────────────────────────────────
 
