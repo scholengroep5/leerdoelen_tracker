@@ -181,18 +181,23 @@
 </div>
 <div class="notification" id="notification"></div>
 <script nonce="{{ csp_nonce() }}">
+function bind(id, ev, fn) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // ── Tab knoppen ──────────────────────────────────────────────────────────
-    document.getElementById('tabXlsx').addEventListener('click', () => switchUploadTab('xlsx'));
-    document.getElementById('tabJson').addEventListener('click', () => switchUploadTab('json'));
+    bind('tabXlsx', 'click', () => switchUploadTab('xlsx'));
+    bind('tabJson', 'click', () => switchUploadTab('json'));
 
     // ── Drop zones ───────────────────────────────────────────────────────────
     setupDropZone('dropZoneXlsx', 'fileInputXlsx', uploadXlsx);
     setupDropZone('dropZoneJson', 'fileInputJson', uploadJson);
 
     // ── File inputs ──────────────────────────────────────────────────────────
-    document.getElementById('fileInputXlsx').addEventListener('change', function() { uploadXlsx(this.files); });
-    document.getElementById('fileInputJson').addEventListener('change', function() { uploadJson(this.files); });
+    bind('fileInputXlsx', 'change', function() { uploadXlsx(this.files); });
+    bind('fileInputJson', 'change', function() { uploadJson(this.files); });
 
     // ── Init ─────────────────────────────────────────────────────────────────
     loadDoelen();

@@ -312,6 +312,11 @@
     </div>
 
     <script nonce="{{ csp_nonce() }}">
+function bind(id, ev, fn) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+}
+
         let saVisible = false;
 
         function toggleSuperadmin() {
@@ -347,8 +352,8 @@
         });
     
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('btnToggleSuperadmin').addEventListener('click', () => { toggleSuperadmin() });
-    document.getElementById('btnSuperadminLogin').addEventListener('click', () => { superadminLogin() });
+    bind('btnToggleSuperadmin', 'click', () => { toggleSuperadmin() });
+    bind('btnSuperadminLogin', 'click', () => { superadminLogin() });
 });
 </script>
 </body>

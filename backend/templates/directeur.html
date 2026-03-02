@@ -349,6 +349,11 @@
 <div class="notification" id="notification"></div>
 
 <script nonce="{{ csp_nonce() }}">
+function bind(id, ev, fn) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+}
+
 let teachers     = [];
 let allGoals     = {};
 let vakData      = {};
@@ -356,19 +361,19 @@ let overviewData = null;
 let activeYearId = null;   // null = huidig actief jaar
 
 document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('jaarSelector').addEventListener('change', switchJaar);
-    document.getElementById('btnVernieuw').addEventListener('click', loadOverview);
-    document.getElementById('btnAddTeacher').addEventListener('click', openAddTeacher);
-    document.getElementById('tab-doelen').addEventListener('click', () => switchTab('doelen'));
-    document.getElementById('tab-klassen').addEventListener('click', () => switchTab('klassen'));
-    document.getElementById('tab-vergelijk') && document.getElementById('tab-vergelijk').addEventListener('click', () => switchTab('vergelijk'));
-    document.getElementById('btnCancelTeacher').addEventListener('click', closeModal);
-    document.getElementById('btnConfirmTeacher').addEventListener('click', addTeacher);
-    document.getElementById('filterVak').addEventListener('change', applyFilters);
-    document.getElementById('filterTeacher').addEventListener('change', applyFilters);
-    document.getElementById('filterKlas') && document.getElementById('filterKlas').addEventListener('change', applyFilters);
-    document.getElementById('filterStatus').addEventListener('change', applyFilters);
-    document.getElementById('filterSearch').addEventListener('input', applyFilters);
+    bind('jaarSelector', 'change', switchJaar);
+    bind('btnVernieuw', 'click', loadOverview);
+    bind('btnAddTeacher', 'click', openAddTeacher);
+    bind('tab-doelen', 'click', () => switchTab('doelen'));
+    bind('tab-klassen', 'click', () => switchTab('klassen'));
+    document.getElementById('tab-vergelijk') && bind('tab-vergelijk', 'click', () => switchTab('vergelijk'));
+    bind('btnCancelTeacher', 'click', closeModal);
+    bind('btnConfirmTeacher', 'click', addTeacher);
+    bind('filterVak', 'change', applyFilters);
+    bind('filterTeacher', 'change', applyFilters);
+    document.getElementById('filterKlas') && bind('filterKlas', 'change', applyFilters);
+    bind('filterStatus', 'change', applyFilters);
+    bind('filterSearch', 'input', applyFilters);
     document.querySelectorAll('.leeftijd-checkbox input').forEach(cb => cb.addEventListener('change', applyFilters));
     await loadUser();
     await loadJaren();
@@ -432,7 +437,7 @@ function renderTeacherList() {
     el.innerHTML = teachers.map(t => `
         <div class="teacher-chip">
             <span>${t.full_name}</span>
-            <button onclick="removeTeacher(${t.id})"
+            <button data-action="removeTeacher" data-id="${t.id}"
                 style="width:18px;height:18px;border-radius:50%;border:none;background:var(--gray-300);cursor:pointer;font-size:0.7rem;"
                 title="Verwijderen">×</button>
         </div>`).join('');
@@ -944,6 +949,14 @@ function renderVergelijking() {
         </div>`;
 }
 
+
+// ── Event delegation voor dynamisch gegenereerde elementen ────────────────────
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === 'removeTeacher') { removeTeacher(btn.dataset.id); }
+});
 </script>
 </body>
 </html>

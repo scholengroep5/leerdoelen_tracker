@@ -244,9 +244,12 @@
     </div>
 
     <script nonce="{{ csp_nonce() }}">
-        document.getElementById('password').addEventListener('keydown', e => {
-            if (e.key === 'Enter') doLogin();
-        });
+function bind(id, ev, fn) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+}
+
+        const pwEl = document.getElementById('password'); if (pwEl) pwEl.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
         async function doLogin() {
             const errorEl = document.getElementById('errorMsg');
@@ -271,7 +274,7 @@
         }
     
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('btnLogin').addEventListener('click', () => { doLogin() });
+    bind('btnLogin', 'click', () => { doLogin() });
 });
 </script>
 </body>

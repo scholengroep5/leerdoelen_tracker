@@ -333,6 +333,11 @@ toevoegen</button>
 <div class="notification" id="notification"></div>
 
 <script nonce="{{ csp_nonce() }}">
+function bind(id, ev, fn) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+}
+
 const IS_SUPERADMIN = {{ 'true' if is_superadmin else 'false' }};
 let schools = [];
 
@@ -343,21 +348,21 @@ const SCHOOL_ROLLEN = [
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('btnAddSgIct') && document.getElementById('btnAddSgIct').addEventListener('click', () => openModal('addSgIct'));
-    document.getElementById('btnAddJaar') && document.getElementById('btnAddJaar').addEventListener('click', () => openModal('addJaar'));
-    document.getElementById('btnAddSchool') && document.getElementById('btnAddSchool').addEventListener('click', () => openModal('addSchool'));
-    document.getElementById('btnAddUser') && document.getElementById('btnAddUser').addEventListener('click', () => openModal('addUser'));
-    document.getElementById('auditCategory').addEventListener('change', loadAuditLog);
-    document.getElementById('auditSchoolFilter') && document.getElementById('auditSchoolFilter').addEventListener('change', loadAuditLog);
-    document.getElementById('auditSearch').addEventListener('input', loadAuditLog);
-    document.getElementById('btnCancelSchool') && document.getElementById('btnCancelSchool').addEventListener('click', closeModal);
-    document.getElementById('btnSaveSchool') && document.getElementById('btnSaveSchool').addEventListener('click', addSchool);
-    document.getElementById('btnCancelSgIct') && document.getElementById('btnCancelSgIct').addEventListener('click', closeModal);
-    document.getElementById('btnSaveSgIct') && document.getElementById('btnSaveSgIct').addEventListener('click', addSgIct);
-    document.getElementById('btnCancelJaar') && document.getElementById('btnCancelJaar').addEventListener('click', closeModal);
-    document.getElementById('btnSaveJaar') && document.getElementById('btnSaveJaar').addEventListener('click', addJaar);
-    document.getElementById('btnCancelUser') && document.getElementById('btnCancelUser').addEventListener('click', closeModal);
-    document.getElementById('btnSaveUser') && document.getElementById('btnSaveUser').addEventListener('click', addUser);
+    document.getElementById('btnAddSgIct') && bind('btnAddSgIct', 'click', () => openModal('addSgIct'));
+    document.getElementById('btnAddJaar') && bind('btnAddJaar', 'click', () => openModal('addJaar'));
+    document.getElementById('btnAddSchool') && bind('btnAddSchool', 'click', () => openModal('addSchool'));
+    document.getElementById('btnAddUser') && bind('btnAddUser', 'click', () => openModal('addUser'));
+    bind('auditCategory', 'change', loadAuditLog);
+    document.getElementById('auditSchoolFilter') && bind('auditSchoolFilter', 'change', loadAuditLog);
+    bind('auditSearch', 'input', loadAuditLog);
+    document.getElementById('btnCancelSchool') && bind('btnCancelSchool', 'click', closeModal);
+    document.getElementById('btnSaveSchool') && bind('btnSaveSchool', 'click', addSchool);
+    document.getElementById('btnCancelSgIct') && bind('btnCancelSgIct', 'click', closeModal);
+    document.getElementById('btnSaveSgIct') && bind('btnSaveSgIct', 'click', addSgIct);
+    document.getElementById('btnCancelJaar') && bind('btnCancelJaar', 'click', closeModal);
+    document.getElementById('btnSaveJaar') && bind('btnSaveJaar', 'click', addJaar);
+    document.getElementById('btnCancelUser') && bind('btnCancelUser', 'click', closeModal);
+    document.getElementById('btnSaveUser') && bind('btnSaveUser', 'click', addUser);
     const tasks = [loadStats(), loadSchoolsTable(), loadSchoolsGrid()];
     if (IS_SUPERADMIN) tasks.push(loadSgIct());
     await Promise.all(tasks);
@@ -391,7 +396,7 @@ async function loadSgIct() {
             <td>${u.full_name}</td>
             <td style="color:var(--gray-500);font-size:.82rem;">${u.email}</td>
             <td style="color:var(--gray-500);font-size:.8rem;">${u.last_login ? new Date(u.last_login).toLocaleDateString('nl-BE') : 'Nog niet ingelogd'}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="removeSgIct(${u.id},'${u.full_name.replace(/'/g,"\\'")}')">Verwijderen</button></td>
+            <td><button class="btn btn-danger btn-sm" data-action="removeSgIct" data-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">Verwijderen</button></td>
         </tr>`).join('');
 }
 
@@ -432,8 +437,8 @@ async function loadSchoolsTable() {
             <td>${(s.email_domains||[]).map(d=>`<span class="domain-chip">${d}</span>`).join('') || '<em style="color:var(--gray-400)">geen</em>'}</td>
             <td style="color:var(--gray-500);">${s.user_count}</td>
             <td style="display:flex;gap:.35rem;">
-                <button class="btn btn-secondary btn-sm" onclick="editSchool(${s.id},'${s.name.replace(/'/g,"\\'")}','${(s.email_domains||[]).join(', ')}')">Bewerken</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteSchool(${s.id},'${s.name.replace(/'/g,"\\'")}')">Verwijderen</button>
+                <button class="btn btn-secondary btn-sm" data-action="editSchool" data-id="${s.id}" data-name="${s.name.replace(/'/g,'&#39;')}" data-domains="${(s.email_domains||[]).join(', ')}">Bewerken</button>
+                <button class="btn btn-danger btn-sm" data-action="deleteSchool" data-id="${s.id}" data-name="${s.name.replace(/'/g,'&#39;')}">Verwijderen</button>
             </td>
         </tr>`).join('');
 
@@ -544,10 +549,10 @@ function renderUserGroup(schoolId, label, users, maxShow=99) {
                     </div>
                 </div>
                 <div class="user-actions">
-                    <select class="role-select" onchange="changeRole(${schoolId},${u.id},this.value,'${u.full_name.replace(/'/g,"\\'")}',this)">
+                    <select class="role-select" data-action="changeRole" data-school-id="${schoolId}" data-user-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">
                         ${SCHOOL_ROLLEN.map(r=>`<option value="${r.value}" ${r.value===u.role?'selected':''}>${r.label}</option>`).join('')}
                     </select>
-                    <button class="btn btn-danger btn-sm" onclick="removeUser(${schoolId},${u.id},'${u.full_name.replace(/'/g,"\\'")}')">×</button>
+                    <button class="btn btn-danger btn-sm" data-action="removeUser" data-school-id="${schoolId}" data-user-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">×</button>
                 </div>
             </div>`).join('')}
         ${hidden > 0 ? `<div style="color:var(--gray-500);font-size:.8rem;padding:.3rem 0 0;">+ ${hidden} meer...</div>` : ''}`;
@@ -610,7 +615,7 @@ async function loadJaren() {
                     : '<span style="color:var(--gray-400);font-size:.82rem;">Inactief</span>'}
                 </td>
                 <td>${!y.is_active
-                    ? `<button class="btn btn-secondary btn-sm" onclick="activeerJaar(${y.id},'${y.label}')">Activeren</button>`
+                    ? `<button class="btn btn-secondary btn-sm" data-action="activeerJaar" data-id="${y.id}" data-label="${y.label}">Activeren</button>`
                     : ''}
                 </td>
             </tr>`).join('');
@@ -696,7 +701,7 @@ async function loadAuditLog(page = 1) {
     const pager = document.getElementById('auditPager');
     if (data.pages <= 1) { pager.innerHTML = ''; return; }
     pager.innerHTML = Array.from({length: data.pages}, (_, i) => `
-        <button onclick="loadAuditLog(${i+1})"
+        <button data-action="auditPage" data-page="${i+1}"
             style="padding:.3rem .6rem;border:1px solid var(--gray-300);border-radius:4px;cursor:pointer;min-width:36px;
                    ${i+1 === data.page ? 'background:var(--primary);color:white;border-color:var(--primary);' : ''}">
             ${i+1}
@@ -715,6 +720,23 @@ function notify(msg, type='success') {
     el.textContent = msg; el.className = `notification ${type} show`;
     setTimeout(() => el.classList.remove('show'), 3500);
 }
+
+// ── Event delegation voor dynamisch gegenereerde elementen ────────────────────
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === 'removeSgIct')  { removeSgIct(btn.dataset.id, btn.dataset.name); }
+    if (action === 'editSchool')   { editSchool(btn.dataset.id, btn.dataset.name, btn.dataset.domains); }
+    if (action === 'deleteSchool') { deleteSchool(btn.dataset.id, btn.dataset.name); }
+    if (action === 'removeUser')   { removeUser(btn.dataset.schoolId, btn.dataset.userId, btn.dataset.name); }
+    if (action === 'activeerJaar') { activeerJaar(btn.dataset.id, btn.dataset.label); }
+    if (action === 'auditPage')    { loadAuditLog(parseInt(btn.dataset.page)); }
+});
+document.addEventListener('change', function(e) {
+    const sel = e.target.closest('[data-action="changeRole"]');
+    if (sel) { changeRole(sel.dataset.schoolId, sel.dataset.userId, sel.value, sel.dataset.name, sel); }
+});
 </script>
 </body>
 </html>

@@ -192,7 +192,7 @@
     .leeftijd-checkbox:has(input:checked) { background: var(--primary) !important; }
 
     /* Vak indicator */
-    .vak-indicator { /* gradient blijft, ziet er goed uit */ }
+    /* .vak-indicator — stijl via inline op het element */
 
     /* Progress bars achtergrond */
     .progress-bar { background: #334155 !important; }
@@ -232,7 +232,9 @@
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
 }
-</style>
+        .btn-import { background: var(--warning); color: white; }
+        .btn-import:hover { background: #d97706; }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -250,8 +252,8 @@
                     ✎ Wijzigen
                 </button>
             </div>
-            <button id="btnImportJson" class="btn btn-secondary" title="Importeer beoordelingen uit vorige versie (JSON)">
-            📥 Importeer JSON
+            <button id="btnImportJson" class="btn btn-import" title="Importeer beoordelingen uit de vorige standalone versie van de app (JSON bestand)">
+                📥 Vorige beoordelingen importeren
             </button>
             <input type="file" id="importJsonFile" accept=".json" style="display:none">
             <a href="/auth/logout" class="btn btn-secondary">Uitloggen</a>
@@ -365,27 +367,42 @@ let filteredData  = [];
 let saveTimeout   = null;
 
 // ── Init ─────────────────────────────────────────────────────────────────────
+function bind(id, ev, fn) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+    else console.warn('Element niet gevonden:', id);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('btnOpenKlas').addEventListener('click', openKlasModal);
-    document.getElementById('btnSluitKlas').addEventListener('click', closeKlasModal);
-    document.getElementById('btnSlaKlas').addEventListener('click', saveKlassen);
-    document.getElementById('vakSelector').addEventListener('change', switchVak);
-    document.getElementById('searchInput').addEventListener('input', applyFilters);
-    document.getElementById('statusFilter').addEventListener('change', applyFilters);
-    document.getElementById('ebgFilter').addEventListener('change', applyFilters);
-    document.getElementById('sectieFilter').addEventListener('change', applyFilters);
+    bind('btnImportJson',  'click',  function() { document.getElementById('importJsonFile').click(); });
+    bind('importJsonFile', 'change', function() { importLegacyJson(this.files[0]); this.value=''; });
+    bind('btnOpenKlas',    'click',  openKlasModal);
+    bind('btnSluitKlas',   'click',  closeKlasModal);
+    bind('btnSlaKlas',     'click',  saveKlassen);
+    bind('vakSelector',    'change', switchVak);
+    bind('searchInput',    'input',  applyFilters);
+    bind('statusFilter',   'change', applyFilters);
+    bind('ebgFilter',      'change', applyFilters);
+    bind('sectieFilter',   'change', applyFilters);
     document.querySelectorAll('.leeftijd-checkboxes input').forEach(cb => cb.addEventListener('change', applyFilters));
-    await loadUser();
-    await loadVakken();
+    try { await loadUser(); } catch(e) { console.error('loadUser fout:', e); }
+    try { await loadVakken(); } catch(e) { console.error('loadVakken fout:', e); }
 });
 
 async function loadUser() {
-    const res  = await fetch('/api/me');
-    const data = await res.json();
-    currentUser = data.user;
-    document.getElementById('userInfo').textContent =
-        `${currentUser.full_name} — ${currentUser.school?.name || ''}`;
-    await loadKlassen();
+    try {
+        const res  = await fetch('/api/me');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        currentUser = data.user;
+        if (!currentUser) throw new Error('Geen gebruikersdata');
+        document.getElementById('userInfo').textContent =
+            `${currentUser.full_name} — ${currentUser.school?.name || ''}`;
+        await loadKlassen();
+    } catch(e) {
+        console.error('loadUser fout:', e);
+        document.getElementById('userInfo').textContent = 'Fout bij laden gebruiker';
+    }
 }
 
 // ── Klassen ───────────────────────────────────────────────────────────────────
@@ -445,21 +462,45 @@ async function saveKlassen() {
 }
 
 async function loadVakken() {
-    const res  = await fetch('/api/doelen/index');
-    if (!res.ok) { showNotification('Kon vakken niet laden', 'error'); return; }
-    const data = await res.json();
+    const sel = document.getElementById('vakSelector');
+    try {
+        const res  = await fetch('/api/doelen/index');
+        if (!res.ok) {
+            showNotification('Fout bij laden vakken (HTTP ' + res.status + ')', 'error');
+            return;
+        }
+        const data = await res.json();
 
-    const sel    = document.getElementById('vakSelector');
-    // Sorteer op naam — API levert ze al gesorteerd, maar voor de zekerheid
-    const sorted = [...data.vakken].sort((a,b) => (a.naam||a.id).localeCompare(b.naam||b.id, 'nl'));
+        if (!data.vakken?.length) {
+            // Geen doelen geüpload — toon duidelijke boodschap in selector
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = '⚠️ Geen vakken beschikbaar — beheerder moet doelen uploaden';
+            opt.disabled = true;
+            sel.appendChild(opt);
+            document.getElementById('tableBody').innerHTML =
+                `<tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--gray-500);">
+                    <strong>Geen leerdoelen beschikbaar.</strong><br><br>
+                    Vraag je beheerder om de doelensets te uploaden via het beheerderspaneel
+                    (<em>Beheer → Leerdoelen bestanden</em>).<br><br>
+                    <span style="font-size:.85rem;">Heb je al beoordelingen uit de vorige versie?
+                    Gebruik de <strong>📥 Vorige beoordelingen importeren</strong> knop hierboven
+                    om ze te migreren zodra de vakken beschikbaar zijn.</span>
+                </td></tr>`;
+            return;
+        }
 
-    sorted.forEach(v => {
-        const opt       = document.createElement('option');
-        opt.value       = v.id;
-        // Gebruik naam uit API, fallback op lokale functie
-        opt.textContent = `${v.naam || vakNaam(v.id)} (${v.aantalDoelzinnen} doelen)`;
-        sel.appendChild(opt);
-    });
+        const sorted = [...data.vakken].sort((a,b) => (a.naam||a.id).localeCompare(b.naam||b.id, 'nl'));
+        sorted.forEach(v => {
+            const opt       = document.createElement('option');
+            opt.value       = v.id;
+            opt.textContent = `${v.naam || vakNaam(v.id)} (${v.aantalDoelzinnen} doelen)`;
+            sel.appendChild(opt);
+        });
+    } catch(e) {
+        console.error('loadVakken fout:', e);
+        showNotification('Netwerk­fout bij laden vakken', 'error');
+    }
 }
 
 // ── Vak wisselen ─────────────────────────────────────────────────────────────
@@ -568,7 +609,7 @@ function renderTable() {
         const ebg = (d.kennisverwerking||'').toLowerCase();
         return `
         <tr class="${s ? 'status-'+s : ''}">
-            <td><button class="status-selector status-${s||'none'}" onclick="cycleStatus('${d.id}')"></button></td>
+            <td><button class="status-selector status-${s||'none'}" data-action="cycleStatus" data-id="${d.id}"></button></td>
             <td><strong>${d.goNr}</strong></td>
             <td>${ebg ? `<span class="ebg-badge ebg-${ebg}">${ebg.charAt(0).toUpperCase()+ebg.slice(1)}</span>` : '-'}</td>
             <td><div class="leeftijden">${d.leeftijden.map(l=>`<span class="leeftijd-badge">${l}</span>`).join('')}</div></td>
@@ -677,12 +718,26 @@ function showNotification(msg, type='success') {
     setTimeout(() => el.classList.remove('show'), 3000);
 }
 
+// ── Event delegation voor dynamisch gegenereerde elementen ────────────────────
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === 'cycleStatus') { cycleStatus(btn.dataset.id); }
+});
+
 // ── Legacy JSON import (uit vorige standalone versie) ────────────────────────
 async function importLegacyJson(file) {
     if (!file) return;
     let data;
     try {
-        data = JSON.parse(await file.text());
+        const text = await file.text();
+        data = JSON.parse(text);
+        // Valideer dat het een herkenbaar formaat is
+        if (!data.vakken) {
+            showNotification('Ongeldig bestand — geen vakken gevonden. Verwacht een export uit de Leerdoelen Tracker.', 'error');
+            return;
+        }
     } catch(e) {
         showNotification('Ongeldig JSON bestand', 'error'); return;
     }

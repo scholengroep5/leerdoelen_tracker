@@ -30,10 +30,7 @@ def get_active_year(school_id=None):
 @login_required
 def doelen_index():
     data = load_index()
-    if not data['vakken']:
-        return jsonify({
-            'error': 'Geen doelen gevonden. Upload eerst de JSON bestanden via het beheerderspaneel.'
-        }), 404
+    # Altijd een geldig object teruggeven — lege vakkenlijst is geen fout
     return jsonify(data)
 
 
@@ -126,6 +123,7 @@ def save_assessment():
               detail={'status': status})
     return jsonify({'assessment': assessment.to_dict()})
 
+
 @api_bp.route('/assessments/bulk-import', methods=['POST'])
 @login_required
 @limiter.limit('5 per minute')
@@ -151,6 +149,7 @@ def bulk_import_assessments():
     fouten = 0
 
     for vak_id, vak_data in vakken.items():
+        # Sanitiseer vak_id
         if not isinstance(vak_id, str) or len(vak_id) > 100:
             fouten += 1
             continue
@@ -200,6 +199,7 @@ def bulk_import_assessments():
     audit_log('assessment.bulk_import', 'assessment',
               detail={'totaal': totaal, 'fouten': fouten})
     return jsonify({'totaal': totaal, 'fouten': fouten})
+
 
 # ── Directeur schooloverzicht ──────────────────────────────────────────────────
 

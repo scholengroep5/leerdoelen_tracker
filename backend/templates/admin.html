@@ -325,15 +325,20 @@
 <div class="notification" id="notification"></div>
 
 <script nonce="{{ csp_nonce() }}">
+function bind(id, ev, fn) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('btnCancelSg').addEventListener('click', () => { closeModal() });
-    document.getElementById('btnConfirmSg').addEventListener('click', () => { addSgIct() });
-    document.getElementById('btnCancelSchool').addEventListener('click', () => { closeModal() });
-    document.getElementById('btnConfirmSchool').addEventListener('click', () => { addSchool() });
-    document.getElementById('btnCancelEdit').addEventListener('click', () => { closeModal() });
-    document.getElementById('btnConfirmEdit').addEventListener('click', () => { saveSchool() });
-    document.getElementById('btnAddSgIct').addEventListener('click', () => { openModal('addSgIct') });
-    document.getElementById('btnAddSchool').addEventListener('click', () => { openModal('addSchool') });
+    bind('btnCancelSg', 'click', () => { closeModal() });
+    bind('btnConfirmSg', 'click', () => { addSgIct() });
+    bind('btnCancelSchool', 'click', () => { closeModal() });
+    bind('btnConfirmSchool', 'click', () => { addSchool() });
+    bind('btnCancelEdit', 'click', () => { closeModal() });
+    bind('btnConfirmEdit', 'click', () => { saveSchool() });
+    bind('btnAddSgIct', 'click', () => { openModal('addSgIct') });
+    bind('btnAddSchool', 'click', () => { openModal('addSchool') });
     await loadStats();
     await loadSgIct();
     await loadSchools();
@@ -363,7 +368,7 @@ async function loadSgIct() {
             <td>${u.full_name}</td>
             <td>${u.email}</td>
             <td style="color:var(--gray-500);font-size:0.8rem;">${u.last_login ? new Date(u.last_login).toLocaleDateString('nl-BE') : 'Nog niet ingelogd'}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="removeSgIct(${u.id})">Verwijderen</button></td>
+            <td><button class="btn btn-danger btn-sm" data-action="removeSgIct" data-id="${u.id}">Verwijderen</button></td>
         </tr>`).join('');
 }
 
@@ -382,8 +387,8 @@ async function loadSchools() {
             <td>${(s.email_domains||[]).map(d=>`<span class="domain-chip">${d}</span>`).join('')||'<em style="color:var(--gray-400)">geen</em>'}</td>
             <td style="color:var(--gray-500);">${s.user_count}</td>
             <td style="display:flex;gap:0.4rem;">
-                <button class="btn btn-secondary btn-sm" onclick="editSchool(${s.id},'${s.name.replace(/'/g,"\\'")}','${(s.email_domains||[]).join(', ')}')">Bewerken</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteSchool(${s.id},'${s.name.replace(/'/g,"\\'")}')">Verwijderen</button>
+                <button class="btn btn-secondary btn-sm" data-action="editSchool" data-id="${s.id}" data-name="${s.name.replace(/'/g,'&#39;')}" data-domains="${(s.email_domains||[]).join(', ')}">Bewerken</button>
+                <button class="btn btn-danger btn-sm" data-action="deleteSchool" data-id="${s.id}" data-name="${s.name.replace(/'/g,'&#39;')}">Verwijderen</button>
             </td>
         </tr>`).join('');
 }
@@ -484,6 +489,16 @@ function notify(msg, type='success') {
     el.textContent = msg; el.className = `notification ${type} show`;
     setTimeout(() => el.classList.remove('show'), 3000);
 }
+
+// ── Event delegation voor dynamisch gegenereerde elementen ────────────────────
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === 'removeSgIct')  { removeSgIct(btn.dataset.id); }
+    if (action === 'editSchool')   { editSchool(btn.dataset.id, btn.dataset.name, btn.dataset.domains); }
+    if (action === 'deleteSchool') { deleteSchool(btn.dataset.id, btn.dataset.name); }
+});
 </script>
 </body>
 </html>

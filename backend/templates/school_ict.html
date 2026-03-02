@@ -319,6 +319,11 @@
 <div class="notification" id="notification"></div>
 
 <script nonce="{{ csp_nonce() }}">
+function bind(id, ev, fn) {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+}
+
 let mySchoolId = null;
 
 const ROLLEN = [
@@ -328,12 +333,13 @@ const ROLLEN = [
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('btnAddUser') && document.getElementById('btnAddUser').addEventListener('click', openModal);
-    document.getElementById('btnAddKlas') && document.getElementById('btnAddKlas').addEventListener('click', openAddKlas);
-    document.getElementById('btnCancelUser') && document.getElementById('btnCancelUser').addEventListener('click', closeModal);
-    document.getElementById('btnConfirmUser') && document.getElementById('btnConfirmUser').addEventListener('click', addUser);
-    document.getElementById('auditCategory') && document.getElementById('auditCategory').addEventListener('change', loadAuditLog);
-    document.getElementById('auditSearch') && document.getElementById('auditSearch').addEventListener('input', loadAuditLog);
+    const addModalEl = document.getElementById('addModal'); if (addModalEl) addModalEl.addEventListener('click', e => { if (e.target === addModalEl) closeModal(); });
+    document.getElementById('btnAddUser') && bind('btnAddUser', 'click', openModal);
+    document.getElementById('btnAddKlas') && bind('btnAddKlas', 'click', openAddKlas);
+    document.getElementById('btnCancelUser') && bind('btnCancelUser', 'click', closeModal);
+    document.getElementById('btnConfirmUser') && bind('btnConfirmUser', 'click', addUser);
+    document.getElementById('auditCategory') && bind('auditCategory', 'change', loadAuditLog);
+    document.getElementById('auditSearch') && bind('auditSearch', 'input', loadAuditLog);
     const me = await fetch('/api/me').then(r => r.json());
     mySchoolId = me.user?.school_id;
     document.getElementById('schoolName').textContent = me.user?.school_name || '';
@@ -366,7 +372,7 @@ async function loadUsers() {
             <td style="color:var(--gray-500);font-size:.82rem;">${u.email}</td>
             <td>
                 <select class="role-select"
-                    onchange="changeRole(${u.id}, this.value, '${u.full_name.replace(/'/g,"\\'")}', this)">
+                    data-action="changeRole" data-user-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">
                     ${ROLLEN.map(r =>
                         `<option value="${r.value}" ${r.value === u.role ? 'selected' : ''}>${r.label}</option>`
                     ).join('')}
@@ -374,7 +380,7 @@ async function loadUsers() {
             </td>
             <td>
                 <button class="btn btn-danger btn-sm"
-                    onclick="removeUser(${u.id}, '${u.full_name.replace(/'/g,"\\'")}')">
+                    data-action="removeUser" data-user-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">
                     Verwijderen
                 </button>
             </td>
@@ -432,9 +438,7 @@ function closeModal() {
     document.getElementById('addModal').classList.remove('active');
     document.getElementById('addError').style.display = 'none';
 }
-document.getElementById('addModal').addEventListener('click', e => {
-    if (e.target === document.getElementById('addModal')) closeModal();
-});
+
 
 function notify(msg, type = 'success') {
     const el = document.getElementById('notification');
@@ -471,10 +475,10 @@ async function loadKlassen() {
                                 : '<em>Geen leerkracht gekoppeld</em>'}
                         </td>
                         <td style="white-space:nowrap;">
-                            <button class="btn btn-secondary btn-sm" onclick="openAssignTeachers(${c.id}, '${c.name.replace(/'/g,"\'")}', ${JSON.stringify(c.teachers?.map(t=>t.id)||[])})">
+                            <button class="btn btn-secondary btn-sm" data-action="assignTeachers" data-id="${c.id}" data-name="${c.name.replace(/'/g,'&#39;')}" data-teachers="${JSON.stringify(c.teachers?.map(t=>t.id)||[]).replace(/"/g,'&quot;')}">
                                 Leerkrachten
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteKlas(${c.id}, '${c.name.replace(/'/g,"\'")}')">
+                            <button class="btn btn-danger btn-sm" data-action="deleteKlas" data-id="${c.id}" data-name="${c.name.replace(/'/g,'&#39;')}">
                                 ×
                             </button>
                         </td>
@@ -525,8 +529,8 @@ async function openAssignTeachers(classId, className, currentTeacherIds) {
                         : '<em style="color:gray;">Geen leerkrachten beschikbaar</em>'}
                 </div>
                 <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-                    <button onclick="document.getElementById('assignModal').remove()" class="btn btn-secondary">Annuleren</button>
-                    <button onclick="saveAssignTeachers()" class="btn btn-primary">Opslaan</button>
+                    <button data-action="closeAssignModal" class="btn btn-secondary">Annuleren</button>
+                    <button data-action="saveAssignTeachers" class="btn btn-primary">Opslaan</button>
                 </div>
             </div>
         </div>`;
@@ -581,12 +585,29 @@ async function loadAuditLog(page = 1) {
     const pager = document.getElementById('auditPager');
     if (data.pages <= 1) { pager.innerHTML = ''; return; }
     pager.innerHTML = Array.from({length: data.pages}, (_, i) => `
-        <button onclick="loadAuditLog(${i+1})"
+        <button data-action="auditPage" data-page="${i+1}"
             style="padding:.3rem .6rem;border:1px solid var(--gray-300);border-radius:4px;cursor:pointer;
                    ${i+1 === data.page ? 'background:var(--primary);color:white;border-color:var(--primary);' : ''}">
             ${i+1}
         </button>`).join('');
 }
+
+// ── Event delegation voor dynamisch gegenereerde elementen ────────────────────
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === 'removeUser')        { removeUser(btn.dataset.userId, btn.dataset.name); }
+    if (action === 'assignTeachers')    { openAssignTeachers(btn.dataset.id, btn.dataset.name, JSON.parse(btn.dataset.teachers.replace(/&quot;/g,'"'))); }
+    if (action === 'deleteKlas')        { deleteKlas(btn.dataset.id, btn.dataset.name); }
+    if (action === 'closeAssignModal')  { document.getElementById('assignModal')?.remove(); }
+    if (action === 'saveAssignTeachers'){ saveAssignTeachers(); }
+    if (action === 'auditPage')         { loadAuditLog(parseInt(btn.dataset.page)); }
+});
+document.addEventListener('change', function(e) {
+    const sel = e.target.closest('[data-action="changeRole"]');
+    if (sel) { changeRole(sel.dataset.userId, sel.value, sel.dataset.name, sel); }
+});
 </script>
 </body>
 </html>
