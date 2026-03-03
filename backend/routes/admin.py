@@ -265,11 +265,11 @@ def remove_user_from_school(school_id, user_id):
     return jsonify({'deleted': True})
 
 
-# ── Scholengroep ICT beheer (superadmin) ──────────────────────────────────────
+# ── Scholengroep ICT beheer ───────────────────────────────────────────────────
 
 @admin_bp.route('/scholengroep-ict', methods=['GET'])
 @login_required
-@superadmin_required
+@scholengroep_ict_required   # scholengroep_ict mag de lijst lezen; superadmin ook
 def list_scholengroep_ict():
     users = User.query.filter_by(role='scholengroep_ict', is_active=True)\
                       .order_by(User.last_name).all()

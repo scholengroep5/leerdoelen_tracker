@@ -128,12 +128,13 @@
         <div class="stat-card"><div class="stat-value" id="st-teachers">-</div><div class="stat-label">Leerkrachten</div></div>
     </div>
 
-    <!-- Scholengroep ICT accounts — alleen superadmin -->
-    {% if is_superadmin %}
+    <!-- Scholengroep ICT accounts — iedereen ziet lijst, enkel superadmin kan beheren -->
     <div class="section">
         <div class="section-header">
             <h2>👥 Scholengroep ICT medewerkers</h2>
-            <button class="btn btn-primary btn-sm">+ Toevoegen</button>
+            {% if is_superadmin %}
+            <button class="btn btn-primary btn-sm" id="btnAddSgIct">+ Toevoegen</button>
+            {% endif %}
         </div>
         <p class="section-hint">
             Scholengroep ICT medewerkers kunnen alle scholen en gebruikers beheren,
@@ -144,7 +145,6 @@
             <tbody id="sgIctTable"><tr class="empty-row"><td colspan="4">Laden...</td></tr></tbody>
         </table>
     </div>
-    {% endif %}
 
 
     <!-- Schooljaren — globaal -->
@@ -363,8 +363,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnSaveJaar') && bind('btnSaveJaar', 'click', addJaar);
     document.getElementById('btnCancelUser') && bind('btnCancelUser', 'click', closeModal);
     document.getElementById('btnSaveUser') && bind('btnSaveUser', 'click', addUser);
-    const tasks = [loadStats(), loadSchoolsTable(), loadSchoolsGrid()];
-    if (IS_SUPERADMIN) tasks.push(loadSgIct());
+    const tasks = [loadStats(), loadSchoolsTable(), loadSchoolsGrid(), loadSgIct()];
     await Promise.all(tasks);
     await loadJaren();
     await loadAuditLog();
@@ -396,7 +395,7 @@ async function loadSgIct() {
             <td>${u.full_name}</td>
             <td style="color:var(--gray-500);font-size:.82rem;">${u.email}</td>
             <td style="color:var(--gray-500);font-size:.8rem;">${u.last_login ? new Date(u.last_login).toLocaleDateString('nl-BE') : 'Nog niet ingelogd'}</td>
-            <td><button class="btn btn-danger btn-sm" data-action="removeSgIct" data-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">Verwijderen</button></td>
+            <td>${IS_SUPERADMIN ? `<button class="btn btn-danger btn-sm" data-action="removeSgIct" data-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">Verwijderen</button>` : ''}</td>
         </tr>`).join('');
 }
 
