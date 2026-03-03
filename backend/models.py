@@ -151,6 +151,7 @@ class Assessment(db.Model):
     vak_id         = db.Column(db.String(50), nullable=False)
     goal_id        = db.Column(db.String(50), nullable=False)
     status         = db.Column(db.String(10), nullable=False)
+    opmerking      = db.Column(db.String(500), nullable=True)
     updated_at     = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user        = db.relationship('User')
@@ -167,6 +168,7 @@ class Assessment(db.Model):
             'vak_id':     self.vak_id,
             'goal_id':    self.goal_id,
             'status':     self.status,
+            'opmerking':  self.opmerking,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
 

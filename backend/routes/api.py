@@ -70,10 +70,11 @@ def get_assessments():
 @login_required
 @limiter.limit('120 per minute')  # max 2 per seconde per gebruiker
 def save_assessment():
-    data    = request.get_json() or {}
-    vak_id  = (data.get('vak_id') or '').strip()
-    goal_id = (data.get('goal_id') or '').strip()
-    status  = (data.get('status') or '').strip()
+    data      = request.get_json() or {}
+    vak_id    = (data.get('vak_id') or '').strip()
+    goal_id   = (data.get('goal_id') or '').strip()
+    status    = (data.get('status') or '').strip()
+    opmerking = (data.get('opmerking') or '').strip()[:500]
 
     if not vak_id or not goal_id:
         return jsonify({'error': 'vak_id en goal_id zijn verplicht'}), 400
@@ -104,6 +105,7 @@ def save_assessment():
 
     if assessment:
         assessment.status     = status
+        assessment.opmerking  = opmerking or None
         assessment.updated_at = datetime.utcnow()
     else:
         assessment = Assessment(
@@ -113,6 +115,7 @@ def save_assessment():
             vak_id=vak_id,
             goal_id=goal_id,
             status=status,
+            opmerking=opmerking or None,
         )
         db.session.add(assessment)
 
@@ -123,6 +126,55 @@ def save_assessment():
               detail={'status': status})
     return jsonify({'assessment': assessment.to_dict()})
 
+
+
+
+@api_bp.route('/assessments/opmerking', methods=['POST'])
+@login_required
+@limiter.limit('120 per minute')
+def save_opmerking():
+    """Sla enkel een opmerking op bij een bestaand of nieuw assessment record."""
+    data      = request.get_json() or {}
+    vak_id    = (data.get('vak_id') or '').strip()
+    goal_id   = (data.get('goal_id') or '').strip()
+    opmerking = (data.get('opmerking') or '').strip()[:500]
+
+    if not vak_id or not goal_id:
+        return jsonify({'error': 'vak_id en goal_id zijn verplicht'}), 400
+    if len(vak_id) > 100 or len(goal_id) > 50:
+        return jsonify({'error': 'Ongeldige invoer'}), 400
+    if not current_user.school_id:
+        return jsonify({'error': 'Account niet gekoppeld aan een school'}), 400
+
+    school_year = get_active_year(current_user.school_id)
+    if not school_year:
+        return jsonify({'error': 'Geen actief schooljaar'}), 400
+
+    assessment = Assessment.query.filter_by(
+        user_id=current_user.id,
+        school_year_id=school_year.id,
+        vak_id=vak_id,
+        goal_id=goal_id,
+    ).first()
+
+    if assessment:
+        assessment.opmerking  = opmerking or None
+        assessment.updated_at = datetime.utcnow()
+    else:
+        # Maak een record aan zonder status voor de opmerking
+        assessment = Assessment(
+            user_id=current_user.id,
+            school_id=current_user.school_id,
+            school_year_id=school_year.id,
+            vak_id=vak_id,
+            goal_id=goal_id,
+            status='',
+            opmerking=opmerking or None,
+        )
+        db.session.add(assessment)
+
+    db.session.commit()
+    return jsonify({'ok': True})
 
 @api_bp.route('/assessments/bulk-import', methods=['POST'])
 @login_required

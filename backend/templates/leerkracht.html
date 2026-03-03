@@ -81,6 +81,21 @@
         .leeftijden { display: flex; flex-wrap: wrap; gap: 0.25rem; }
         .leeftijd-badge { font-size: 0.7rem; padding: 0.15rem 0.35rem; background: var(--gray-200); border-radius: 3px; color: var(--gray-600); }
         .beschrijving-cell { max-width: 400px; }
+        /* Opmerkingen kolom */
+        .opm-col  { width: 200px; min-width: 150px; }
+        .opm-cell { padding: 0.4rem 0.5rem; vertical-align: middle; }
+        .opm-input {
+            width: 100%; padding: 0.3rem 0.4rem;
+            border: 1px solid var(--gray-300); border-radius: 4px;
+            font-size: 0.8rem; background: transparent; color: var(--gray-700);
+            transition: border-color 0.15s;
+        }
+        .opm-input:focus {
+            outline: none; border-color: var(--primary); background: white;
+            box-shadow: 0 0 0 2px rgba(79,70,229,0.1);
+        }
+        .opm-input::placeholder { color: var(--gray-400); }
+
         .mia-container { background: var(--gray-50); border-radius: 6px; padding: 0.5rem; font-size: 0.8rem; margin-top: 0.5rem; }
         .mia-items { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem; }
         .mia-item { background: white; padding: 0.2rem 0.4rem; border-radius: 3px; border: 1px solid var(--gray-200); }
@@ -182,7 +197,12 @@
     .leeftijd-badge { background: #334155 !important; color: #94a3b8 !important; }
     .ebg-begrijpen { color: #1f2937 !important; }
 
-    /* MIA container */
+    /* Opmerkingen input */
+    .opm-input { background: transparent !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+    .opm-input:focus { background: #0f172a !important; border-color: #6366f1 !important; }
+    .opm-input::placeholder { color: #475569 !important; }
+
+        /* MIA container */
     .mia-container { background: #162032 !important; }
     .mia-item { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
     .mia-item.niet-aanklikbaar { background: #162032 !important; color: #64748b !important; }
@@ -387,10 +407,11 @@
                         <th>Leeftijden</th>
                         <th>Sectie</th>
                         <th>Beschrijving</th>
+                        <th class="opm-col">Opm.</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr><td colspan="6" class="empty-state">Selecteer een vak om te beginnen</td></tr>
+                    <tr><td colspan="7" class="empty-state">Selecteer een vak om te beginnen</td></tr>
                 </tbody>
             </table>
         </div>
@@ -419,7 +440,8 @@
 let currentUser   = null;
 let currentVakId  = null;
 let vakData       = {};      // cache van geladen vak JSON
-let assessments   = {};      // { goal_id: status } voor huidig vak
+let assessments   = {};
+let opmerkingen   = {};  // { goal_id: 'tekst' }      // { goal_id: status } voor huidig vak
 let doelzinnen    = [];
 let filteredData  = [];
 let saveTimeout   = null;
@@ -581,7 +603,11 @@ async function switchVak() {
     const res2 = await fetch(`/api/assessments?vak_id=${vakId}`);
     const data2 = await res2.json();
     assessments = {};
-    data2.assessments.forEach(a => { assessments[a.goal_id] = a.status; });
+    opmerkingen = {};
+    data2.assessments.forEach(a => {
+        assessments[a.goal_id] = a.status;
+        if (a.opmerking) opmerkingen[a.goal_id] = a.opmerking;
+    });
 
     processVakData(vakId);
     populateSectieFilter();
@@ -659,7 +685,7 @@ function populateSectieFilter() {
 function renderTable() {
     const tbody = document.getElementById('tableBody');
     if (!filteredData.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${currentVakId ? 'Geen doelen gevonden' : 'Selecteer een vak'}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">${currentVakId ? 'Geen doelen gevonden' : 'Selecteer een vak'}</td></tr>`;
         return;
     }
     tbody.innerHTML = filteredData.map(d => {
@@ -675,6 +701,13 @@ function renderTable() {
             <td class="beschrijving-cell">
                 ${d.inhoud}
                 ${renderMIA(d.mia)}
+            </td>
+            <td class="opm-cell">
+                <input type="text" class="opm-input" maxlength="150"
+                       value="${escapeHtml(opmerkingen[d.id] || '')}"
+                       data-action="saveOpmerking" data-id="${d.id}"
+                       placeholder="..."
+                       title="${escapeHtml(opmerkingen[d.id] || '')}">
             </td>
         </tr>`;
     }).join('');
@@ -696,15 +729,21 @@ function renderMIA(items) {
 
 function showLoading() {
     document.getElementById('tableBody').innerHTML =
-        `<tr><td colspan="6" class="loading"><div class="spinner"></div>Laden...</td></tr>`;
+        `<tr><td colspan="7" class="loading"><div class="spinner"></div>Laden...</td></tr>`;
 }
 
 function renderEmptyState() {
     document.getElementById('tableBody').innerHTML =
-        `<tr><td colspan="6" class="empty-state">Selecteer een vak om te beginnen</td></tr>`;
+        `<tr><td colspan="7" class="empty-state">Selecteer een vak om te beginnen</td></tr>`;
 }
 
 // ── Status ────────────────────────────────────────────────────────────────────
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+}
+
 function cycleStatus(goalId) {
     const cycle = ['', 'groen', 'oranje', 'roze'];
     const cur   = assessments[goalId] || '';
@@ -783,6 +822,32 @@ document.addEventListener('click', function(e) {
     const action = btn.dataset.action;
     if (action === 'cycleStatus') { cycleStatus(btn.dataset.id); }
 });
+
+document.addEventListener('change', function(e) {
+    const inp = e.target.closest('[data-action="saveOpmerking"]');
+    if (inp) saveOpmerking(inp.dataset.id, inp.value);
+});
+
+
+// ── Opmerking opslaan ─────────────────────────────────────────────────────────
+let opmTimer = null;
+function saveOpmerking(goalId, tekst) {
+    if (!currentVakId) return;
+    opmerkingen[goalId] = tekst.trim() || undefined;
+    if (!opmerkingen[goalId]) delete opmerkingen[goalId];
+
+    // Debounce: wacht 600ms voor versturen
+    clearTimeout(opmTimer);
+    opmTimer = setTimeout(async () => {
+        try {
+            await fetch('/api/assessments/opmerking', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ vak_id: currentVakId, goal_id: goalId, opmerking: tekst.trim() })
+            });
+        } catch(e) { console.error('Opmerking opslaan mislukt:', e); }
+    }, 600);
+}
 
 // ── Legacy JSON import (uit vorige standalone versie) ────────────────────────
 async function importLegacyJson(file) {
