@@ -9,7 +9,7 @@
             --primary: #4f46e5; --primary-dark: #4338ca;
             --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
             --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
-            --gray-300: #d1d5db; --gray-500: #6b7280; --gray-600: #4b5563;
+            --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280; --gray-600: #4b5563;
             --gray-700: #374151; --gray-800: #1f2937;
             --status-groen: #10b981; --status-oranje: #f59e0b; --status-roze: #ec4899;
         }
@@ -150,6 +150,46 @@
         .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.35rem; }
         .form-group input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 0.9rem; }
         .modal-buttons { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+
+        /* Tab navigatie */
+        .tab-btn {
+            padding: 0.5rem 1rem; border: none; border-radius: 8px 8px 0 0;
+            background: var(--gray-100); color: var(--gray-600);
+            font-size: 0.875rem; font-weight: 500; cursor: pointer;
+            transition: all 0.15s; border-bottom: 2px solid transparent;
+        }
+        .tab-btn:hover { background: var(--gray-200); color: var(--gray-800); }
+        .tab-btn.active {
+            background: white; color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 -2px 8px rgba(79,70,229,0.08);
+        }
+
+        /* Version badge */
+        .version-badge {
+            font-size: 0.7rem; background: rgba(255,255,255,0.25);
+            padding: 0.15rem 0.5rem; border-radius: 9999px; font-weight: 500;
+            vertical-align: middle;
+        }
+
+        /* Klasoverzicht progress */
+        .klas-progress-row {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .klas-label { font-size: 0.82rem; color: var(--gray-600); min-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .klas-progress-bar {
+            flex: 1; height: 10px; background: var(--gray-200);
+            border-radius: 5px; overflow: hidden; display: flex;
+        }
+        .klas-pct { font-size: 0.78rem; color: var(--gray-500); min-width: 36px; text-align: right; }
+
+        /* Vergelijking progress bars */
+        .vergelijk-bar-wrap {
+            height: 12px; background: var(--gray-200);
+            border-radius: 4px; overflow: hidden;
+            margin-bottom: 0.2rem;
+        }
     
 @media (prefers-color-scheme: dark) {
     :root {
@@ -167,18 +207,20 @@
 
     body { background: #0f172a; color: #e2e8f0; }
 
-    /* Kaarten en secties */
+    /* Kaarten en secties - NIET de gradient header! */
     .card, .section, .stat-card, .school-card,
     .table-container, .filters-container, .legend-container,
     .stats-bar .stat-card, .stats-overview, .vak-stats,
     .import-section, .detail-section, .filters-bar,
-    .header:not([class*="gradient"]) {
+    .teachers-section {
         background: #1e293b !important;
         border-color: #334155 !important;
     }
 
-    /* Header kaart in leerkracht.html */
-    .header { background: #1e293b !important; }
+    /* Tab knoppen */
+    .tab-btn { background: #162032 !important; color: #94a3b8 !important; }
+    .tab-btn:hover { background: #1e293b !important; color: #e2e8f0 !important; }
+    .tab-btn.active { background: #1e293b !important; color: #a5b4fc !important; border-bottom-color: #6366f1 !important; }
 
     /* Tabellen */
     thead, th { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
@@ -276,8 +318,8 @@
     .vak-card-header h3  { color: #e2e8f0 !important; }
     .vak-card-stats      { color: #94a3b8 !important; }
 
-    /* Progress bars achtergrond */
-    .progress-bar { background: #334155 !important; }
+    /* Klas progress bars achtergrond */
+    .progress-bar, .klas-progress-bar, .vergelijk-bar-wrap { background: #334155 !important; }
 
     /* Vak card */
     .vak-card { background: #162032 !important; }
@@ -414,14 +456,14 @@
     </div>
 
     <!-- Tab navigatie -->
-    <div style="display:flex;gap:.25rem;margin-bottom:.5rem;">
+    <div style="display:flex;gap:.25rem;margin-bottom:0;">
         <button class="tab-btn active" id="tab-doelen">📋 Doelen</button>
         <button class="tab-btn" id="tab-klassen">🏫 Klasoverzicht</button>
         <button class="tab-btn" id="tab-vergelijk">⚖️ Klasvergelijking</button>
     </div>
 
     <!-- Tab: Doelen -->
-    <div id="panel-doelen" class="section">
+    <div id="panel-doelen" class="section" style="border-radius:0 12px 12px 12px;">
 
         <!-- Legenda -->
         <div class="legend-container">
@@ -534,14 +576,14 @@
     </div><!-- /panel-doelen -->
 
     <!-- Tab: Klasoverzicht -->
-    <div id="panel-klassen" class="section" style="display:none;">
+    <div id="panel-klassen" class="section" style="display:none;border-radius:0 12px 12px 12px;">
         <div id="klasOverzichtContent">
             <p style="color:var(--gray-400);font-style:italic;">Laden...</p>
         </div>
     </div>
 
     <!-- Tab: Klasvergelijking -->
-    <div id="panel-vergelijk" class="section" style="display:none;">
+    <div id="panel-vergelijk" class="section" style="display:none;border-radius:0 12px 12px 12px;">
         <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
             <div class="filter-group">
                 <label>Klas A</label>
@@ -577,6 +619,33 @@
 <!-- Modal: leerkracht toevoegen -->
 <div class="modal-overlay" id="addTeacherModal">
     <div class="modal">
+        <h2>👤 Leerkracht toevoegen</h2>
+        <div class="form-group">
+            <label>Voornaam</label>
+            <input type="text" id="newFirstName" placeholder="Voornaam...">
+        </div>
+        <div class="form-group">
+            <label>Achternaam</label>
+            <input type="text" id="newLastName" placeholder="Achternaam...">
+        </div>
+        <div class="form-group">
+            <label>E-mailadres</label>
+            <input type="email" id="newEmail" placeholder="naam@school.be">
+        </div>
+        <div class="form-group">
+            <label>Wachtwoord (tijdelijk)</label>
+            <input type="password" id="newPassword" placeholder="Minimaal 8 tekens...">
+        </div>
+        <div id="addTeacherError" style="display:none;color:var(--danger);font-size:0.85rem;margin-top:0.5rem;"></div>
+        <div class="modal-buttons">
+            <button id="btnCancelTeacher" class="btn btn-secondary">Annuleren</button>
+            <button id="btnConfirmTeacher" class="btn btn-primary">Toevoegen</button>
+        </div>
+    </div>
+</div>
+
+<div class="notification" id="notification"></div>
+
 <script nonce="{{ csp_nonce() }}">
 function bind(id, ev, fn) {
     const el = document.getElementById(id);
@@ -607,6 +676,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('filterSectie', 'change', applyFilters);
     bind('filterSearch', 'input', applyFilters);
     document.querySelectorAll('.leeftijd-checkbox input').forEach(cb => cb.addEventListener('change', applyFilters));
+    // Vergelijk tab selects
+    bind('vergelijkKlasA', 'change', renderVergelijking);
+    bind('vergelijkKlasB', 'change', renderVergelijking);
+    bind('vergelijkVak',   'change', renderVergelijking);
     await loadUser();
     await loadJaren();
     await loadTeachers();
@@ -856,14 +929,22 @@ function applyFilters() {
     if (!overviewData) return;
     const vakFilter     = document.getElementById('filterVak').value;
     const teacherFilter = document.getElementById('filterTeacher').value;
+    const klasFilter    = document.getElementById('filterKlas')?.value || 'all';
     const statusFilter  = document.getElementById('filterStatus').value;
     const sectieFilter  = document.getElementById('filterSectie')?.value || 'all';
     const search        = document.getElementById('filterSearch').value.toLowerCase();
     const leeftijdFilter = [...document.querySelectorAll('.leeftijd-checkbox input:checked')].map(cb => cb.value);
 
-    const shownTeachers = teacherFilter === 'all'
+    // Filter leerkrachten op geselecteerde klas én op leerkrachtfilter
+    let shownTeachers = teacherFilter === 'all'
         ? overviewData.teachers
         : overviewData.teachers.filter(t => t.id == teacherFilter);
+
+    if (klasFilter !== 'all') {
+        shownTeachers = shownTeachers.filter(t =>
+            (t.classes || []).some(c => c.name === klasFilter)
+        );
+    }
 
     const shownVakken = vakFilter === 'all' ? Object.keys(allGoals) : [vakFilter];
 

@@ -43,6 +43,8 @@ def create_app():
     # OAuth2
     app.config['MICROSOFT_CLIENT_ID']         = os.environ.get('MICROSOFT_CLIENT_ID')
     app.config['MICROSOFT_CLIENT_SECRET']     = os.environ.get('MICROSOFT_CLIENT_SECRET')
+    app.config['GOOGLE_CLIENT_ID']            = os.environ.get('GOOGLE_CLIENT_ID')
+    app.config['GOOGLE_CLIENT_SECRET']        = os.environ.get('GOOGLE_CLIENT_SECRET')
     app.config['MICROSOFT_TENANT_ID']         = os.environ.get('MICROSOFT_TENANT_ID', 'common')
 
     # Session cookie beveiliging

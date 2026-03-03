@@ -151,7 +151,7 @@
     <div class="section">
         <div class="section-header">
             <h2>📅 Schooljaren</h2>
-            <button class="btn btn-primary btn-sm">+ Nieuw schooljaar</button>
+            <button id="btnAddJaar" class="btn btn-primary btn-sm">+ Nieuw schooljaar</button>
         </div>
         <p class="section-hint">
             Het actieve schooljaar geldt voor alle scholen tegelijk.
@@ -338,7 +338,7 @@ function bind(id, ev, fn) {
     if (el) el.addEventListener(ev, fn);
 }
 
-const IS_SUPERADMIN = {{ 'true' if is_superadmin else 'false' }};
+const IS_SUPERADMIN = {{ is_superadmin | tojson }};
 let schools = [];
 
 const SCHOOL_ROLLEN = [
@@ -357,6 +357,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('auditSearch', 'input', loadAuditLog);
     document.getElementById('btnCancelSchool') && bind('btnCancelSchool', 'click', closeModal);
     document.getElementById('btnSaveSchool') && bind('btnSaveSchool', 'click', addSchool);
+    document.getElementById('btnCancelEditSch') && bind('btnCancelEditSch', 'click', closeModal);
+    document.getElementById('btnSaveEditSch') && bind('btnSaveEditSch', 'click', saveSchool);
     document.getElementById('btnCancelSgIct') && bind('btnCancelSgIct', 'click', closeModal);
     document.getElementById('btnSaveSgIct') && bind('btnSaveSgIct', 'click', addSgIct);
     document.getElementById('btnCancelJaar') && bind('btnCancelJaar', 'click', closeModal);

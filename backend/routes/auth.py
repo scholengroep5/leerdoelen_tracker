@@ -111,9 +111,11 @@ def superadmin_page():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('pages.dashboard'))
-    entra_configured = bool(_entra_client_id() and _entra_client_secret())
+    entra_configured  = bool(_entra_client_id() and _entra_client_secret())
+    google_configured = bool(_google_client_id() and _google_client_secret())
     org_name = current_app.config.get('ORG_NAME', 'GO! Scholengroep')
-    return render_template('login.html', entra_configured=entra_configured, org_name=org_name)
+    return render_template('login.html', entra_configured=entra_configured,
+                           google_configured=google_configured, org_name=org_name)
 
 
 @auth_bp.route('/logout')
@@ -238,6 +240,173 @@ def microsoft_callback():
     logger.info(f"Entra login: {email} (nieuw: {is_new}, school_id: {user.school_id})")
     return redirect(_safe_next_url(request.args.get('next')))
 
+
+
+# ── Google OAuth2 ─────────────────────────────────────────────────────────────
+GOOGLE_AUTH_URL     = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL    = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+GOOGLE_SCOPES       = "openid email profile"
+
+def _google_client_id():
+    return current_app.config.get('GOOGLE_CLIENT_ID')
+
+def _google_client_secret():
+    return current_app.config.get('GOOGLE_CLIENT_SECRET')
+
+def _google_callback_url():
+    base = current_app.config.get('BASE_URL', 'http://localhost').rstrip('/')
+    return f"{base}/auth/google/callback"
+
+def _get_or_create_google_user(email, first_name, last_name, google_sub):
+    """Zelfde logica als Microsoft — zoek op google sub, dan email, dan maak aan."""
+    # 1. Zoek op Google sub (stabielste identifier)
+    user = User.query.filter_by(oauth_provider='google', oauth_id=google_sub).first()
+    if user:
+        user.first_name = first_name or user.first_name
+        user.last_name  = last_name  or user.last_name
+        user.email      = email
+        db.session.commit()
+        return user, False
+
+    # 2. Zoek op email — koppel bestaand account aan Google
+    user = User.query.filter_by(email=email).first()
+    if user:
+        user.oauth_provider = 'google'
+        user.oauth_id       = google_sub
+        user.first_name     = first_name or user.first_name
+        user.last_name      = last_name  or user.last_name
+        db.session.commit()
+        return user, False
+
+    # 3. Nieuw account — koppel aan school via emaildomein
+    school = _find_school_for_email(email)
+    user = User(
+        email=email, first_name=first_name, last_name=last_name,
+        role='teacher', school_id=school.id if school else None,
+        oauth_provider='google', oauth_id=google_sub,
+        is_active=True,
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user, True
+
+
+@auth_bp.route('/google')
+@limiter.limit('20 per minute')
+def google_login():
+    if not _google_client_id():
+        flash('Google login is niet geconfigureerd.', 'error')
+        return redirect(url_for('auth.login'))
+
+    # Aparte state-sleutel voor Google om verwarring met Microsoft te vermijden
+    state = secrets.token_urlsafe(32)
+    session['google_oauth_state'] = state
+
+    params = {
+        'client_id':     _google_client_id(),
+        'response_type': 'code',
+        'redirect_uri':  _google_callback_url(),
+        'scope':         GOOGLE_SCOPES,
+        'state':         state,
+        'access_type':   'online',   # geen refresh token nodig
+        'prompt':        'select_account',
+        # hd-parameter beperkt NIET — we valideren zelf via emaildomein
+        # zodat scholen met meerdere domeinen correct werken
+    }
+    return redirect(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
+
+
+@auth_bp.route('/google/callback')
+@limiter.limit('20 per minute')
+def google_callback():
+    error = request.args.get('error')
+    if error:
+        logger.warning(f"Google OAuth fout: {error}")
+        flash('Inloggen via Google mislukt. Probeer opnieuw.', 'error')
+        return redirect(url_for('auth.login'))
+
+    state          = request.args.get('state', '')
+    expected_state = session.pop('google_oauth_state', None)
+    if not expected_state or state != expected_state:
+        logger.warning("Google OAuth2 state mismatch")
+        flash('Ongeldige sessie. Probeer opnieuw in te loggen.', 'error')
+        return redirect(url_for('auth.login'))
+
+    code = request.args.get('code')
+    if not code:
+        flash('Geen autorisatiecode ontvangen van Google.', 'error')
+        return redirect(url_for('auth.login'))
+
+    # Wissel code in voor tokens
+    try:
+        token_resp = requests.post(GOOGLE_TOKEN_URL, data={
+            'client_id':     _google_client_id(),
+            'client_secret': _google_client_secret(),
+            'code':          code,
+            'redirect_uri':  _google_callback_url(),
+            'grant_type':    'authorization_code',
+        }, timeout=15)
+        token_resp.raise_for_status()
+        tokens = token_resp.json()
+    except requests.RequestException as e:
+        logger.error(f"Google token uitwisseling mislukt: {e}")
+        flash('Kon niet communiceren met Google. Probeer opnieuw.', 'error')
+        return redirect(url_for('auth.login'))
+
+    access_token = tokens.get('access_token')
+    if not access_token:
+        flash('Geen access token ontvangen van Google.', 'error')
+        return redirect(url_for('auth.login'))
+
+    # Haal gebruikersprofiel op
+    try:
+        userinfo_resp = requests.get(
+            GOOGLE_USERINFO_URL,
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=10
+        )
+        userinfo_resp.raise_for_status()
+        profile = userinfo_resp.json()
+    except requests.RequestException as e:
+        logger.error(f"Google userinfo mislukt: {e}")
+        flash('Kon gebruikersgegevens niet ophalen bij Google.', 'error')
+        return redirect(url_for('auth.login'))
+
+    email      = profile.get('email', '').lower().strip()
+    first_name = profile.get('given_name', '')
+    last_name  = profile.get('family_name', '')
+    google_sub = profile.get('sub', '')      # stabiele unieke Google user ID
+
+    # Vereiste velden
+    if not email or not google_sub:
+        flash('Onvoldoende profielgegevens ontvangen van Google.', 'error')
+        return redirect(url_for('auth.login'))
+
+    # Google geeft 'email_verified' mee — weiger onverifieerde adressen
+    if not profile.get('email_verified', False):
+        flash('Uw Google e-mailadres is nog niet geverifieerd.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user, is_new = _get_or_create_google_user(email, first_name, last_name, google_sub)
+
+    if not user.is_active:
+        flash('Uw account is gedeactiveerd. Contacteer uw ICT-beheerder.', 'error')
+        return redirect(url_for('auth.login'))
+
+    if not user.school_id and not user.is_scholengroep_ict and not user.is_superadmin:
+        flash(
+            'Uw account is aangemaakt maar nog niet gekoppeld aan een school. '
+            'Contacteer uw ICT-beheerder.', 'warning'
+        )
+
+    login_user(user, remember=True)
+    user.last_login = datetime.utcnow()
+    audit_log('login.success', 'auth', detail={'provider': 'google', 'new_user': is_new})
+    db.session.commit()
+
+    logger.info(f"Google login: {email} (nieuw: {is_new}, school_id: {user.school_id})")
+    return redirect(_safe_next_url(request.args.get('next')))
 
 @auth_bp.route('/setup', methods=['GET', 'POST'])
 @limiter.limit('5 per minute')
