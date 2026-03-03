@@ -102,6 +102,55 @@ def update_school(school_id):
     return jsonify({'school': school.to_dict()})
 
 
+@admin_bp.route('/schools/<int:school_id>/google-sso', methods=['PUT'])
+@login_required
+@school_ict_required
+def update_school_google_sso(school_id):
+    """
+    Sla Google Workspace OAuth2 credentials op voor een school.
+    Toegankelijk voor scholengroep_ict (alle scholen) én school_ict
+    (enkel hun eigen school).
+
+    Body:
+        google_client_id:     string   (verplicht om in te stellen)
+        google_client_secret: string   (verplicht om in te stellen)
+        clear:                boolean  (optioneel — verwijdert de credentials)
+    """
+    # School ICT mag enkel zijn eigen school aanpassen
+    if not current_user.is_scholengroep_ict and current_user.school_id != school_id:
+        return jsonify({'error': 'Geen toegang tot deze school'}), 403
+
+    school = School.query.get_or_404(school_id)
+    data   = request.get_json() or {}
+
+    if data.get('clear'):
+        school.google_client_id     = None
+        school.google_client_secret = None
+        audit_log('school.google_sso_removed', 'school',
+                  target_type='school', target_id=str(school_id),
+                  detail={'name': school.name}, school_id=school_id)
+        db.session.commit()
+        return jsonify({'school': school.to_dict(), 'message': 'Google SSO verwijderd'})
+
+    client_id     = (data.get('google_client_id') or '').strip()
+    client_secret = (data.get('google_client_secret') or '').strip()
+
+    if not client_id or not client_secret:
+        return jsonify({'error': 'Zowel Client ID als Client Secret zijn verplicht'}), 400
+
+    # Basis validatie: Google client IDs eindigen op .apps.googleusercontent.com
+    if not client_id.endswith('.apps.googleusercontent.com'):
+        return jsonify({'error': 'Ongeldig Client ID — moet eindigen op .apps.googleusercontent.com'}), 400
+
+    school.google_client_id     = client_id
+    school.google_client_secret = client_secret
+    audit_log('school.google_sso_configured', 'school',
+              target_type='school', target_id=str(school_id),
+              detail={'name': school.name}, school_id=school_id)
+    db.session.commit()
+    return jsonify({'school': school.to_dict(), 'message': 'Google SSO ingesteld'})
+
+
 @admin_bp.route('/schools/<int:school_id>', methods=['DELETE'])
 @login_required
 @scholengroep_ict_required

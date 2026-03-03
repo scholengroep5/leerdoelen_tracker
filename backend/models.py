@@ -7,11 +7,14 @@ from app import db
 class School(db.Model):
     __tablename__ = 'schools'
 
-    id             = db.Column(db.Integer, primary_key=True)
-    name           = db.Column(db.String(255), nullable=False)
-    slug           = db.Column(db.String(100), nullable=False, unique=True)
-    email_domains  = db.Column(db.ARRAY(db.Text), nullable=False, default=list)
-    created_at     = db.Column(db.DateTime, default=datetime.utcnow)
+    id                   = db.Column(db.Integer, primary_key=True)
+    name                 = db.Column(db.String(255), nullable=False)
+    slug                 = db.Column(db.String(100), nullable=False, unique=True)
+    email_domains        = db.Column(db.ARRAY(db.Text), nullable=False, default=list)
+    created_at           = db.Column(db.DateTime, default=datetime.utcnow)
+    # Google Workspace SSO — per school eigen OAuth2 credentials
+    google_client_id     = db.Column(db.String(255), nullable=True)
+    google_client_secret = db.Column(db.String(255), nullable=True)
 
     users        = db.relationship('User', back_populates='school', lazy='dynamic')
     school_years = db.relationship('SchoolYear', back_populates='school', lazy='dynamic')
@@ -19,10 +22,13 @@ class School(db.Model):
 
     def to_dict(self):
         return {
-            'id':            self.id,
-            'name':          self.name,
-            'slug':          self.slug,
-            'email_domains': self.email_domains or [],
+            'id':                    self.id,
+            'name':                  self.name,
+            'slug':                  self.slug,
+            'email_domains':         self.email_domains or [],
+            'google_client_id':      self.google_client_id or '',
+            # Secret nooit teruggeven — enkel of het ingesteld is
+            'google_sso_configured': bool(self.google_client_id and self.google_client_secret),
         }
 
 

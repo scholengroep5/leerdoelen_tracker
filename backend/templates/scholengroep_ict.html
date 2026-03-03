@@ -256,15 +256,40 @@ toevoegen</button>
 </div>
 
 <div class="modal-overlay" id="modal-editSchool">
-    <div class="modal">
+    <div class="modal" style="max-width:520px;">
         <h2>School bewerken</h2>
         <input type="hidden" id="editSchoolId">
         <div class="form-group"><label>Naam</label><input type="text" id="editSchoolName"></div>
         <div class="form-group"><label>E-maildomeinen</label><input type="text" id="editSchoolDomains"><div class="form-hint">Komma-gescheiden.</div></div>
+        <hr style="border:none;border-top:1px solid var(--gray-200);margin:1rem 0;">
+        <div style="font-size:.82rem;font-weight:700;color:var(--gray-600);margin-bottom:.65rem;">
+            <svg width="13" height="13" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:.3rem;">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Google Workspace SSO
+        </div>
+        <div id="editSsoStatus" style="margin-bottom:.75rem;font-size:.8rem;"></div>
+        <div class="form-group">
+            <label>Client ID</label>
+            <input type="text" id="editGoogleClientId" placeholder="...apps.googleusercontent.com" style="font-family:monospace;font-size:.82rem;">
+            <div class="form-hint">Leeg laten = huidige waarde behouden. Vul in om te wijzigen.</div>
+        </div>
+        <div class="form-group">
+            <label>Client Secret</label>
+            <input type="password" id="editGoogleClientSecret" placeholder="GOCSPX-..." style="font-family:monospace;font-size:.82rem;">
+        </div>
+        <div style="margin-bottom:.75rem;">
+            <label style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;cursor:pointer;color:var(--danger);">
+                <input type="checkbox" id="editGoogleClear"> Google SSO verwijderen voor deze school
+            </label>
+        </div>
         <div class="form-error" id="edit-school-error"></div>
         <div class="modal-buttons">
             <button class="btn btn-secondary" id="btnCancelEditSch">Annuleren</button>
-        <button class="btn btn-primary" id="btnSaveEditSch">Opslaan</button>
+            <button class="btn btn-primary" id="btnSaveEditSch">Opslaan</button>
         </div>
     </div>
 </div>
@@ -435,7 +460,10 @@ async function loadSchoolsTable() {
     tbody.innerHTML = schools.map(s => `
         <tr>
             <td><strong>${s.name}</strong></td>
-            <td>${(s.email_domains||[]).map(d=>`<span class="domain-chip">${d}</span>`).join('') || '<em style="color:var(--gray-400)">geen</em>'}</td>
+            <td>${(s.email_domains||[]).map(d=>`<span class="domain-chip">${d}</span>`).join('') || '<em style="color:var(--gray-400)">geen</em>'}
+                ${s.google_sso_configured
+                    ? '<span style="margin-left:.4rem;font-size:.7rem;background:#d1fae5;color:#065f46;padding:.15rem .4rem;border-radius:4px;font-weight:600;">G SSO ✓</span>'
+                    : ''}</td>
             <td style="color:var(--gray-500);">${s.user_count}</td>
             <td style="display:flex;gap:.35rem;">
                 <button class="btn btn-secondary btn-sm" data-action="editSchool" data-id="${s.id}" data-name="${s.name.replace(/'/g,'&#39;')}" data-domains="${(s.email_domains||[]).join(', ')}">Bewerken</button>
@@ -465,6 +493,18 @@ function editSchool(id, name, domainsStr) {
     document.getElementById('editSchoolId').value      = id;
     document.getElementById('editSchoolName').value    = name;
     document.getElementById('editSchoolDomains').value = domainsStr;
+    // Reset Google velden
+    document.getElementById('editGoogleClientId').value     = '';
+    document.getElementById('editGoogleClientSecret').value = '';
+    document.getElementById('editGoogleClear').checked      = false;
+    // Toon huidige SSO status
+    const school = schools.find(s => s.id == id);
+    const ssoStatusEl = document.getElementById('editSsoStatus');
+    if (ssoStatusEl && school) {
+        ssoStatusEl.innerHTML = school.google_sso_configured
+            ? `<span style="color:#065f46;background:#d1fae5;padding:.25rem .5rem;border-radius:4px;">✅ Google SSO actief — Client ID: ${school.google_client_id}</span>`
+            : `<span style="color:#92400e;background:#fef3c7;padding:.25rem .5rem;border-radius:4px;">⚠️ Google SSO nog niet ingesteld</span>`;
+    }
     openModal('editSchool');
 }
 
@@ -472,13 +512,47 @@ async function saveSchool() {
     const err = document.getElementById('edit-school-error');
     err.style.display = 'none';
     const id = document.getElementById('editSchoolId').value;
+
+    // 1. Sla naam en domeinen op (bestaand endpoint — scholengroep_ict)
     const res = await fetch(`/admin/schools/${id}`, {
         method: 'PUT', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ name: document.getElementById('editSchoolName').value, email_domains: document.getElementById('editSchoolDomains').value.split(',').map(d=>d.trim()).filter(Boolean) })
+        body: JSON.stringify({
+            name: document.getElementById('editSchoolName').value,
+            email_domains: document.getElementById('editSchoolDomains').value.split(',').map(d=>d.trim()).filter(Boolean)
+        })
     });
     const data = await res.json();
     if (!res.ok) { err.textContent = data.error; err.style.display = 'block'; return; }
-    closeModal(); notify('School opgeslagen', 'success');
+
+    // 2. Verwerk Google SSO velden (apart endpoint — ondersteunt ook school_ict)
+    const clearSso  = document.getElementById('editGoogleClear').checked;
+    const clientId  = document.getElementById('editGoogleClientId').value.trim();
+    const clientSec = document.getElementById('editGoogleClientSecret').value.trim();
+
+    if (clearSso) {
+        const ssoRes = await fetch(`/admin/schools/${id}/google-sso`, {
+            method: 'PUT', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ clear: true })
+        });
+        if (!ssoRes.ok) {
+            const ssoData = await ssoRes.json();
+            err.textContent = 'SSO: ' + (ssoData.error || 'Verwijderen mislukt');
+            err.style.display = 'block'; return;
+        }
+    } else if (clientId || clientSec) {
+        const ssoRes = await fetch(`/admin/schools/${id}/google-sso`, {
+            method: 'PUT', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ google_client_id: clientId, google_client_secret: clientSec })
+        });
+        if (!ssoRes.ok) {
+            const ssoData = await ssoRes.json();
+            err.textContent = 'SSO: ' + (ssoData.error || 'Opslaan mislukt');
+            err.style.display = 'block'; return;
+        }
+    }
+
+    closeModal();
+    notify('School opgeslagen', 'success');
     await Promise.all([loadSchoolsTable(), loadSchoolsGrid()]);
 }
 

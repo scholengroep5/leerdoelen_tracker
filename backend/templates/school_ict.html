@@ -248,6 +248,75 @@
         <div id="klassenList">Laden...</div>
     </div>
 
+    <!-- Google Workspace SSO -->
+    <div class="section">
+        <div class="section-header">
+            <h2>🔑 Google Workspace SSO</h2>
+        </div>
+        <p style="color:var(--gray-500);font-size:.85rem;margin-bottom:1.25rem;line-height:1.6;">
+            Leerkrachten en directeurs kunnen inloggen met hun Google Workspace account van deze school.
+            Maak hiervoor een OAuth2-app aan in de
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener"
+               style="color:var(--primary);">Google Cloud Console</a>
+            en vul de gegevens hieronder in.
+        </p>
+
+        <!-- Status badge -->
+        <div id="ssoStatus" style="margin-bottom:1.25rem;"></div>
+
+        <div style="display:grid;gap:.85rem;max-width:520px;">
+            <div>
+                <label style="display:block;font-size:.82rem;font-weight:600;color:var(--gray-600);margin-bottom:.35rem;">
+                    Client ID
+                </label>
+                <input type="text" id="ssoClientId"
+                       placeholder="1234567890-abc123.apps.googleusercontent.com"
+                       style="width:100%;padding:.6rem .75rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;font-family:monospace;">
+                <div style="font-size:.75rem;color:var(--gray-500);margin-top:.3rem;">
+                    Eindigt altijd op <code>.apps.googleusercontent.com</code>
+                </div>
+            </div>
+            <div>
+                <label style="display:block;font-size:.82rem;font-weight:600;color:var(--gray-600);margin-bottom:.35rem;">
+                    Client Secret
+                </label>
+                <input type="password" id="ssoClientSecret"
+                       placeholder="GOCSPX-..."
+                       style="width:100%;padding:.6rem .75rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.85rem;font-family:monospace;">
+                <div style="font-size:.75rem;color:var(--gray-500);margin-top:.3rem;">
+                    Het secret is nooit zichtbaar na opslaan — vul het opnieuw in om te wijzigen.
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" id="btnSaveSso">💾 Opslaan</button>
+            <button class="btn btn-secondary btn-sm" id="btnClearSso"
+                    style="color:var(--danger);">🗑 SSO verwijderen</button>
+        </div>
+        <div id="ssoError" style="color:var(--danger);font-size:.82rem;margin-top:.5rem;display:none;"></div>
+
+        <!-- Instructies -->
+        <details style="margin-top:1.5rem;border:1px solid var(--gray-200);border-radius:8px;padding:.85rem 1rem;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.85rem;color:var(--gray-700);">
+                📋 Hoe stel ik een Google OAuth2-app in?
+            </summary>
+            <ol style="margin-top:.85rem;padding-left:1.25rem;font-size:.83rem;color:var(--gray-600);line-height:2;">
+                <li>Ga naar <strong>console.cloud.google.com</strong> → maak een project aan voor uw school</li>
+                <li>Ga naar <strong>API's en services → Inlogscherm OAuth</strong> → kies "Intern" (enkel uw Workspace)</li>
+                <li>Ga naar <strong>Credentials → Create Credentials → OAuth client ID</strong></li>
+                <li>Type: <strong>Webapplicatie</strong></li>
+                <li>Voeg als Redirect URI toe:
+                    <code id="redirectUriDisplay"
+                          style="display:block;margin-top:.25rem;padding:.35rem .5rem;background:var(--gray-100);border-radius:4px;font-size:.8rem;word-break:break-all;user-select:all;">
+                        Laden...
+                    </code>
+                </li>
+                <li>Kopieer de <strong>Client ID</strong> en het <strong>Client Secret</strong> en plak ze hierboven</li>
+            </ol>
+        </details>
+    </div>
+
     <!-- Auditlog -->
     <div class="section">
         <div class="section-header">
@@ -345,6 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('schoolName').textContent = me.user?.school_name || '';
     await loadUsers();
     await loadKlassen();
+    await loadSsoStatus();
     await loadAuditLog();
 });
 
@@ -590,6 +660,74 @@ async function loadAuditLog(page = 1) {
                    ${i+1 === data.page ? 'background:var(--primary);color:white;border-color:var(--primary);' : ''}">
             ${i+1}
         </button>`).join('');
+}
+
+// ── Google SSO beheer ─────────────────────────────────────────────────────────
+async function loadSsoStatus() {
+    const res  = await fetch('/admin/schools');
+    if (!res.ok) return;
+    const data = await res.json();
+    const school = (data.schools || []).find(s => s.id === mySchoolId);
+
+    const statusEl = document.getElementById('ssoStatus');
+    if (!statusEl || !school) return;
+
+    // Toon de redirect URI in de instructies
+    const redirectEl = document.getElementById('redirectUriDisplay');
+    if (redirectEl) redirectEl.textContent = window.location.origin + '/auth/google/callback';
+
+    if (school.google_sso_configured) {
+        statusEl.innerHTML = `
+            <div style="display:inline-flex;align-items:center;gap:.5rem;
+                        padding:.5rem .85rem;background:#d1fae5;color:#065f46;
+                        border-radius:6px;font-size:.83rem;font-weight:600;">
+                ✅ Google SSO is actief
+                <span style="font-weight:400;opacity:.8;">— Client ID: ${school.google_client_id}</span>
+            </div>`;
+    } else {
+        statusEl.innerHTML = `
+            <div style="display:inline-flex;align-items:center;gap:.5rem;
+                        padding:.5rem .85rem;background:#fef3c7;color:#92400e;
+                        border-radius:6px;font-size:.83rem;">
+                ⚠️ Google SSO is nog niet ingesteld
+            </div>`;
+    }
+}
+
+async function saveSso() {
+    const errEl       = document.getElementById('ssoError');
+    const clientId    = document.getElementById('ssoClientId').value.trim();
+    const clientSecret = document.getElementById('ssoClientSecret').value.trim();
+    errEl.style.display = 'none';
+
+    if (!clientId || !clientSecret) {
+        errEl.textContent   = 'Vul zowel het Client ID als het Client Secret in.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const res  = await fetch(`/admin/schools/${mySchoolId}/google-sso`, {
+        method: 'PUT', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ google_client_id: clientId, google_client_secret: clientSecret })
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
+
+    document.getElementById('ssoClientId').value     = '';
+    document.getElementById('ssoClientSecret').value = '';
+    notify('Google SSO ingesteld ✅', 'success');
+    await loadSsoStatus();
+}
+
+async function clearSso() {
+    if (!confirm('Google SSO verwijderen? Leerkrachten kunnen dan niet meer inloggen via Google.')) return;
+    const res  = await fetch(`/admin/schools/${mySchoolId}/google-sso`, {
+        method: 'PUT', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ clear: true })
+    });
+    if (!res.ok) { notify('Verwijderen mislukt', 'error'); return; }
+    notify('Google SSO verwijderd', 'success');
+    await loadSsoStatus();
 }
 
 // ── Event delegation voor dynamisch gegenereerde elementen ────────────────────

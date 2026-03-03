@@ -111,11 +111,12 @@ def superadmin_page():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('pages.dashboard'))
-    entra_configured  = bool(_entra_client_id() and _entra_client_secret())
-    google_configured = bool(_google_client_id() and _google_client_secret())
+    entra_configured = bool(_entra_client_id() and _entra_client_secret())
     org_name = current_app.config.get('ORG_NAME', 'GO! Scholengroep')
+    # Google SSO is per school — we tonen altijd de Google-sectie
+    # zodat gebruikers hun e-mail kunnen invullen voor de lookup
     return render_template('login.html', entra_configured=entra_configured,
-                           google_configured=google_configured, org_name=org_name)
+                           google_configured=True, org_name=org_name)
 
 
 @auth_bp.route('/logout')
@@ -242,25 +243,44 @@ def microsoft_callback():
 
 
 
-# ── Google OAuth2 ─────────────────────────────────────────────────────────────
+# ── Google OAuth2 (multi-tenant: per school eigen credentials) ────────────────
+#
+# Waarom per school?  Microsoft heeft één "common" endpoint dat voor alle
+# tenants werkt — één globale client_id volstaat.  Google heeft dit NIET:
+# elke Google Workspace organisatie is een aparte OAuth2-app.  We slaan
+# google_client_id + google_client_secret daarom per school op in de DB.
+# De beheerder (scholengroep ICT of school ICT) vult die in via de web UI.
+#
+# Login flow:
+#   1. Gebruiker typt e-mailadres op de loginpagina
+#   2. JS roept /api/sso-lookup?email=... aan
+#   3. Backend zoekt school via e-maildomein → geeft school_id + google_sso terug
+#   4. JS stuurt door naar /auth/google?school_id=<id>
+#   5. We laden credentials uit DB, starten OAuth, bewaren school_id in sessie
+#   6. Callback leest school_id uit sessie → gebruikt zelfde credentials
+#      om de autorisatiecode in te wisselen
+
 GOOGLE_AUTH_URL     = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL    = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 GOOGLE_SCOPES       = "openid email profile"
 
-def _google_client_id():
-    return current_app.config.get('GOOGLE_CLIENT_ID')
-
-def _google_client_secret():
-    return current_app.config.get('GOOGLE_CLIENT_SECRET')
 
 def _google_callback_url():
     base = current_app.config.get('BASE_URL', 'http://localhost').rstrip('/')
     return f"{base}/auth/google/callback"
 
+
+def _get_school_google_creds(school_id: int):
+    """Haal Google credentials op voor een specifieke school. Geeft (id, secret) of (None, None)."""
+    school = School.query.get(school_id)
+    if school and school.google_client_id and school.google_client_secret:
+        return school.google_client_id, school.google_client_secret
+    return None, None
+
+
 def _get_or_create_google_user(email, first_name, last_name, google_sub):
-    """Zelfde logica als Microsoft — zoek op google sub, dan email, dan maak aan."""
-    # 1. Zoek op Google sub (stabielste identifier)
+    """Zoek gebruiker op Google sub, dan e-mail, maak aan als nieuw."""
     user = User.query.filter_by(oauth_provider='google', oauth_id=google_sub).first()
     if user:
         user.first_name = first_name or user.first_name
@@ -269,7 +289,6 @@ def _get_or_create_google_user(email, first_name, last_name, google_sub):
         db.session.commit()
         return user, False
 
-    # 2. Zoek op email — koppel bestaand account aan Google
     user = User.query.filter_by(email=email).first()
     if user:
         user.oauth_provider = 'google'
@@ -279,7 +298,6 @@ def _get_or_create_google_user(email, first_name, last_name, google_sub):
         db.session.commit()
         return user, False
 
-    # 3. Nieuw account — koppel aan school via emaildomein
     school = _find_school_for_email(email)
     user = User(
         email=email, first_name=first_name, last_name=last_name,
@@ -295,24 +313,29 @@ def _get_or_create_google_user(email, first_name, last_name, google_sub):
 @auth_bp.route('/google')
 @limiter.limit('20 per minute')
 def google_login():
-    if not _google_client_id():
-        flash('Google login is niet geconfigureerd.', 'error')
+    school_id = request.args.get('school_id', type=int)
+    if not school_id:
+        flash('Geen school gevonden voor dit e-mailadres. Contacteer uw ICT-beheerder.', 'error')
         return redirect(url_for('auth.login'))
 
-    # Aparte state-sleutel voor Google om verwarring met Microsoft te vermijden
+    client_id, _ = _get_school_google_creds(school_id)
+    if not client_id:
+        flash('Google login is niet geconfigureerd voor deze school. '
+              'Contacteer uw ICT-beheerder.', 'error')
+        return redirect(url_for('auth.login'))
+
     state = secrets.token_urlsafe(32)
-    session['google_oauth_state'] = state
+    session['google_oauth_state']   = state
+    session['google_oauth_school']  = school_id   # bewaren voor de callback
 
     params = {
-        'client_id':     _google_client_id(),
+        'client_id':     client_id,
         'response_type': 'code',
         'redirect_uri':  _google_callback_url(),
         'scope':         GOOGLE_SCOPES,
         'state':         state,
-        'access_type':   'online',   # geen refresh token nodig
+        'access_type':   'online',
         'prompt':        'select_account',
-        # hd-parameter beperkt NIET — we valideren zelf via emaildomein
-        # zodat scholen met meerdere domeinen correct werken
     }
     return redirect(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
 
@@ -328,9 +351,20 @@ def google_callback():
 
     state          = request.args.get('state', '')
     expected_state = session.pop('google_oauth_state', None)
+    school_id      = session.pop('google_oauth_school', None)
+
     if not expected_state or state != expected_state:
         logger.warning("Google OAuth2 state mismatch")
         flash('Ongeldige sessie. Probeer opnieuw in te loggen.', 'error')
+        return redirect(url_for('auth.login'))
+
+    if not school_id:
+        flash('Sessie verlopen. Probeer opnieuw in te loggen.', 'error')
+        return redirect(url_for('auth.login'))
+
+    client_id, client_secret = _get_school_google_creds(school_id)
+    if not client_id:
+        flash('Google login is niet (meer) geconfigureerd voor deze school.', 'error')
         return redirect(url_for('auth.login'))
 
     code = request.args.get('code')
@@ -338,11 +372,10 @@ def google_callback():
         flash('Geen autorisatiecode ontvangen van Google.', 'error')
         return redirect(url_for('auth.login'))
 
-    # Wissel code in voor tokens
     try:
         token_resp = requests.post(GOOGLE_TOKEN_URL, data={
-            'client_id':     _google_client_id(),
-            'client_secret': _google_client_secret(),
+            'client_id':     client_id,
+            'client_secret': client_secret,
             'code':          code,
             'redirect_uri':  _google_callback_url(),
             'grant_type':    'authorization_code',
@@ -359,7 +392,6 @@ def google_callback():
         flash('Geen access token ontvangen van Google.', 'error')
         return redirect(url_for('auth.login'))
 
-    # Haal gebruikersprofiel op
     try:
         userinfo_resp = requests.get(
             GOOGLE_USERINFO_URL,
@@ -376,14 +408,12 @@ def google_callback():
     email      = profile.get('email', '').lower().strip()
     first_name = profile.get('given_name', '')
     last_name  = profile.get('family_name', '')
-    google_sub = profile.get('sub', '')      # stabiele unieke Google user ID
+    google_sub = profile.get('sub', '')
 
-    # Vereiste velden
     if not email or not google_sub:
         flash('Onvoldoende profielgegevens ontvangen van Google.', 'error')
         return redirect(url_for('auth.login'))
 
-    # Google geeft 'email_verified' mee — weiger onverifieerde adressen
     if not profile.get('email_verified', False):
         flash('Uw Google e-mailadres is nog niet geverifieerd.', 'error')
         return redirect(url_for('auth.login'))

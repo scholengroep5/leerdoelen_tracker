@@ -444,3 +444,46 @@ def get_audit_log():
         'entries': [e.to_dict() for e in entries],
     })
 
+
+# ── SSO-lookup: welke loginmethodes heeft dit e-maildomein? ──────────────────
+
+@api_bp.route('/sso-lookup')
+def sso_lookup():
+    """
+    Publieke endpoint — geen auth vereist.
+    Geeft aan welke SSO-methodes beschikbaar zijn voor een e-maildomein.
+    Legt NOOIT credentials bloot — enkel of Google geconfigureerd is.
+    """
+    from flask import current_app
+    from app import limiter
+
+    email = request.args.get('email', '').lower().strip()
+    if not email or '@' not in email:
+        return jsonify({'error': 'Ongeldig e-mailadres'}), 400
+
+    domain  = email.split('@')[-1]
+    schools = School.query.all()
+    school  = next(
+        (s for s in schools if s.email_domains and domain in [d.lower() for d in s.email_domains]),
+        None
+    )
+
+    microsoft_available = bool(
+        current_app.config.get('MICROSOFT_CLIENT_ID') and
+        current_app.config.get('MICROSOFT_CLIENT_SECRET')
+    )
+
+    if not school:
+        return jsonify({
+            'found':     False,
+            'microsoft': microsoft_available,
+            'google':    False,
+        })
+
+    return jsonify({
+        'found':       True,
+        'school_id':   school.id,
+        'school_name': school.name,
+        'microsoft':   microsoft_available,
+        'google':      bool(school.google_client_id and school.google_client_secret),
+    })

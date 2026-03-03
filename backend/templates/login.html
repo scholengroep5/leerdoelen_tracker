@@ -9,269 +9,128 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            min-height: 100vh; display: flex;
+            align-items: center; justify-content: center; padding: 1rem;
         }
         .card {
-            background: white;
-            border-radius: 16px;
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            background: white; border-radius: 16px; padding: 2.5rem;
+            width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
         }
         .logo { text-align: center; margin-bottom: 2rem; }
         .logo .icon { font-size: 3rem; margin-bottom: 0.5rem; }
-        .logo h1 { font-size: 1.4rem; color: var(--gray-900, #1f2937); font-weight: 700; }
-        .logo p { color: var(--gray-500, #6b7280); font-size: 0.85rem; margin-top: 0.25rem; }
-
-        .btn-google {
-            display: flex; align-items: center; justify-content: center; gap: 0.75rem;
-            width: 100%; padding: 0.8rem 1rem;
-            background: white; color: #1f2937;
-            border: 1px solid #d1d5db; border-radius: 8px;
-            font-size: 0.95rem; font-weight: 500;
-            text-decoration: none; transition: background 0.15s, box-shadow 0.15s;
-            margin-bottom: 0.75rem;
-        }
-        .btn-google:hover { background: #f9fafb; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-        .btn-google svg   { flex-shrink: 0; }
-        .sso-divider {
-            display: flex; align-items: center; gap: 0.75rem;
-            margin: 0.5rem 0 0.75rem; color: #9ca3af; font-size: 0.8rem;
-        }
-        .sso-divider::before, .sso-divider::after {
-            content: ''; flex: 1; height: 1px; background: #e5e7eb;
-        }
-
+        .logo h1 { font-size: 1.4rem; color: #1f2937; font-weight: 700; }
+        .logo p { color: #6b7280; font-size: 0.85rem; margin-top: 0.25rem; }
         .btn-microsoft {
-            width: 100%;
-            padding: 0.85rem;
-            background: #0078d4;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            transition: background 0.2s;
-            margin-bottom: 1rem;
+            width: 100%; padding: 0.85rem; background: #0078d4; color: white;
+            border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 0.75rem; text-decoration: none; transition: background 0.2s; margin-bottom: 1rem;
         }
         .btn-microsoft:hover { background: #006cbe; }
-
-        .alert {
-            padding: 0.85rem 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.25rem;
-            font-size: 0.875rem;
-            line-height: 1.5;
+        .sso-divider {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin: 0.5rem 0 1.25rem; color: #9ca3af; font-size: 0.8rem;
         }
+        .sso-divider::before, .sso-divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+        .google-section-title {
+            font-size: 0.82rem; font-weight: 600; color: #374151;
+            margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem;
+        }
+        .email-input-row { display: flex; gap: 0.5rem; }
+        .email-input-row input {
+            flex: 1; padding: 0.65rem 0.75rem;
+            border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .email-input-row input:focus {
+            outline: none; border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66,133,244,0.15);
+        }
+        .btn-lookup {
+            padding: 0.65rem 1rem; background: #f3f4f6; color: #374151;
+            border: 1px solid #d1d5db; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 500; cursor: pointer;
+            transition: background 0.15s; white-space: nowrap;
+        }
+        .btn-lookup:hover { background: #e5e7eb; }
+        .btn-lookup:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-google {
+            display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+            width: 100%; padding: 0.8rem 1rem; background: white; color: #1f2937;
+            border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem;
+            font-weight: 500; text-decoration: none; cursor: pointer;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+        .btn-google:hover { background: #f9fafb; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .school-found-label { font-size: 0.78rem; color: #6b7280; text-align: center; margin-top: 0.5rem; }
+        .lookup-msg {
+            margin-top: 0.5rem; padding: 0.6rem 0.75rem; border-radius: 6px;
+            font-size: 0.82rem; display: none;
+        }
+        .lookup-msg.error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .lookup-msg.warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .alert { padding: 0.85rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.875rem; }
         .alert-error   { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-        .alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
         .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
-
-        .not-configured {
-            text-align: center; padding: 1.5rem; background: #f9fafb;
-            border-radius: 8px; color: #6b7280; font-size: 0.9rem;
-            border: 1px dashed #d1d5db;
-        }
-        .not-configured code {
-            background: #e5e7eb; padding: 0.15rem 0.4rem;
-            border-radius: 4px; font-size: 0.8rem;
-        }
-
-        /* Superadmin fallback */
+        .alert-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
         .superadmin-toggle {
-            text-align: center;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #f3f4f6;
+            text-align: center; margin-top: 1.5rem;
+            padding-top: 1rem; border-top: 1px solid #f3f4f6;
         }
         .superadmin-toggle button {
-            background: none; border: none;
-            color: #9ca3af; font-size: 0.75rem;
-            cursor: pointer; text-decoration: underline;
-            text-underline-offset: 2px;
+            background: none; border: none; color: #9ca3af;
+            font-size: 0.75rem; cursor: pointer;
+            text-decoration: underline; text-underline-offset: 2px;
         }
         .superadmin-toggle button:hover { color: #6b7280; }
-
         .superadmin-form { display: none; margin-top: 1rem; }
         .superadmin-form.visible { display: block; }
         .superadmin-form .form-group { margin-bottom: 0.75rem; }
-        .superadmin-form label {
-            display: block; font-size: 0.8rem;
-            font-weight: 600; color: #374151; margin-bottom: 0.3rem;
-        }
+        .superadmin-form label { display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 0.3rem; }
         .superadmin-form input {
             width: 100%; padding: 0.6rem 0.75rem;
             border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem;
         }
-        .superadmin-form input:focus {
-            outline: none; border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
-        }
+        .superadmin-form input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
         .btn-superadmin {
-            width: 100%; padding: 0.6rem;
-            background: #6b7280; color: white;
-            border: none; border-radius: 6px;
-            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            width: 100%; padding: 0.6rem; background: #6b7280; color: white;
+            border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
         }
         .btn-superadmin:hover { background: #4b5563; }
         #sa-error { color: #dc2626; font-size: 0.8rem; margin-top: 0.5rem; display: none; }
-    
-@media (prefers-color-scheme: dark) {
-    :root {
-        --gray-50:  #1a1a2e;
-        --gray-100: #16213e;
-        --gray-200: #0f3460;
-        --gray-300: #1a1a3e;
-        --gray-400: #6b7280;
-        --gray-500: #9ca3af;
-        --gray-600: #d1d5db;
-        --gray-700: #e5e7eb;
-        --gray-800: #f3f4f6;
-        --gray-900: #f9fafb;
-    }
-
-    body { background: #0f172a; color: #e2e8f0; }
-
-    /* Kaarten en secties */
-    .card, .section, .stat-card, .school-card,
-    .table-container, .filters-container, .legend-container,
-    .stats-bar .stat-card, .stats-overview, .vak-stats,
-    .import-section, .detail-section, .filters-bar,
-    .header:not([class*="gradient"]) {
-        background: #1e293b !important;
-        border-color: #334155 !important;
-    }
-
-    /* Header kaart in leerkracht.html */
-    .header { background: #1e293b !important; }
-
-    /* Tabellen */
-    thead, th { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
-    td { border-color: #1e293b !important; color: #e2e8f0; }
-    tr:hover td, tr:hover { background: #263548 !important; }
-    tr.status-groen   { background: #064e3b !important; }
-    tr.status-groen:hover  { background: #065f46 !important; }
-    tr.status-oranje  { background: #451a03 !important; }
-    tr.status-oranje:hover { background: #78350f !important; }
-    tr.status-roze    { background: #500724 !important; }
-    tr.status-roze:hover   { background: #701a35 !important; }
-
-    /* Inputs en selects */
-    input, select, textarea {
-        background: #0f172a !important;
-        color: #e2e8f0 !important;
-        border-color: #334155 !important;
-    }
-    input::placeholder { color: #64748b !important; }
-    input:focus, select:focus, textarea:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.2) !important;
-    }
-
-    /* Role select inline */
-    .role-select {
-        background: #1e293b !important;
-        color: #e2e8f0 !important;
-        border-color: #334155 !important;
-    }
-
-    /* Modals */
-    .modal { background: #1e293b !important; color: #e2e8f0; }
-    .modal h2 { color: #f1f5f9; }
-
-    /* Knoppen */
-    .btn-secondary { background: #334155 !important; color: #e2e8f0 !important; }
-    .btn-secondary:hover { background: #475569 !important; }
-
-    /* Status selector knoppen (leerkracht tabel) */
-    .status-selector.status-none { background: #1e293b !important; border-color: #475569 !important; color: #64748b !important; }
-
-    /* Stat cards */
-    .stat-card { background: #1e293b !important; }
-
-    /* School card header */
-    .school-card-header { background: #162032 !important; border-color: #334155 !important; }
-    .school-card { border-color: #334155 !important; }
-
-    /* Drop zone */
-    .drop-zone { background: #162032 !important; border-color: #334155 !important; }
-    .drop-zone:hover, .drop-zone.over { background: #1a2744 !important; border-color: #6366f1 !important; }
-
-    /* Domain chips */
-    .domain-chip { background: #1e3a5f !important; border-color: #2563eb !important; color: #93c5fd !important; }
-
-    /* Badges */
-    .leeftijd-badge { background: #334155 !important; color: #94a3b8 !important; }
-    .ebg-begrijpen { color: #1f2937 !important; }
-
-    /* MIA container */
-    .mia-container { background: #162032 !important; }
-    .mia-item { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
-    .mia-item.niet-aanklikbaar { background: #162032 !important; color: #64748b !important; }
-
-    /* Not configured box */
-    .not-configured { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
-    .not-configured code { background: #0f172a !important; color: #a5b4fc !important; }
-
-    /* Profile section */
-    .profile-section { background: #162032 !important; }
-
-    /* Leeftijd checkboxes */
-    .leeftijd-checkbox { border-color: #334155 !important; color: #e2e8f0; }
-    .leeftijd-checkbox:has(input:checked) { background: var(--primary) !important; }
-
-    /* Vak indicator */
-    .vak-indicator { /* gradient blijft, ziet er goed uit */ }
-
-    /* Progress bars achtergrond */
-    .progress-bar { background: #334155 !important; }
-
-    /* Vak card */
-    .vak-card { background: #162032 !important; }
-
-    /* Upload results */
-    .upload-ok  { background: #064e3b !important; border-color: #065f46 !important; }
-    .upload-err { background: #450a0a !important; border-color: #7f1d1d !important; }
-
-    /* Alert boxes */
-    .alert-error   { background: #450a0a !important; border-color: #7f1d1d !important; color: #fca5a5 !important; }
-    .alert-success { background: #064e3b !important; border-color: #065f46 !important; color: #6ee7b7 !important; }
-    .alert-warning { background: #451a03 !important; border-color: #78350f !important; color: #fcd34d !important; }
-    .alert-info    { background: #1e3a5f !important; border-color: #1d4ed8 !important; color: #93c5fd !important; }
-
-    /* Error text */
-    .form-error, #sa-error, #addUser-error { color: #f87171 !important; }
-    .form-hint { color: #64748b !important; }
-
-    /* Superadmin toggle */
-    .superadmin-toggle { border-color: #334155 !important; }
-    .superadmin-toggle button { color: #475569 !important; }
-    .superadmin-toggle button:hover { color: #94a3b8 !important; }
-
-    /* Superadmin form inputs */
-    .superadmin-form label { color: #94a3b8 !important; }
-
-    /* Footer */
-    .footer { color: #64748b !important; }
-    .status-legend { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
-
-    /* Scrollbar (webkit) */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
-}
-</style>
+        .spinner-inline {
+            display: inline-block; width: 14px; height: 14px;
+            border: 2px solid #d1d5db; border-top-color: #6b7280;
+            border-radius: 50%; animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (prefers-color-scheme: dark) {
+            body { background: linear-gradient(135deg, #1e1b4b, #312e81); }
+            .card { background: #1e293b; color: #e2e8f0; }
+            .logo h1 { color: #f1f5f9; }
+            .logo p { color: #94a3b8; }
+            .sso-divider { color: #475569; }
+            .sso-divider::before, .sso-divider::after { background: #334155; }
+            .google-section-title { color: #cbd5e1; }
+            .email-input-row input { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+            .email-input-row input::placeholder { color: #475569; }
+            .email-input-row input:focus { border-color: #4285f4; }
+            .btn-lookup { background: #334155; color: #e2e8f0; border-color: #475569; }
+            .btn-lookup:hover { background: #475569; }
+            .btn-google { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+            .btn-google:hover { background: #1e293b; }
+            .school-found-label { color: #94a3b8; }
+            .lookup-msg.error   { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
+            .lookup-msg.warning { background: #451a03; border-color: #78350f; color: #fcd34d; }
+            .superadmin-toggle { border-color: #334155; }
+            .superadmin-toggle button { color: #475569; }
+            .superadmin-toggle button:hover { color: #94a3b8; }
+            .superadmin-form label { color: #94a3b8; }
+            .superadmin-form input { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+            .alert-error   { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
+            .alert-warning { background: #451a03; border-color: #78350f; color: #fcd34d; }
+        }
+    </style>
 </head>
 <body>
     <div class="card">
@@ -287,6 +146,7 @@
             {% endfor %}
         {% endwith %}
 
+        {# Microsoft: één global endpoint — werkt direct voor alle scholen #}
         {% if entra_configured %}
             <a href="/auth/microsoft" class="btn-microsoft">
                 <svg width="20" height="20" viewBox="0 0 21 21">
@@ -297,46 +157,36 @@
                 </svg>
                 Inloggen met Microsoft
             </a>
+            <div class="sso-divider">of via Google Workspace</div>
         {% endif %}
 
-        {% if entra_configured and google_configured %}
-            <div class="sso-divider">of</div>
-        {% endif %}
-
-        {% if google_configured %}
-            <a href="/auth/google" class="btn-google">
-                <svg width="20" height="20" viewBox="0 0 48 48">
+        {# Google: email-first — domein bepaalt welke school-credentials gebruikt worden #}
+        <div class="google-section">
+            <div class="google-section-title">
+                <svg width="15" height="15" viewBox="0 0 48 48">
                     <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
                     <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
                     <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
                     <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    <path fill="none" d="M0 0h48v48H0z"/>
                 </svg>
-                Inloggen met Google
-            </a>
-        {% endif %}
-
-        {% if not entra_configured and not google_configured %}
-            <div class="not-configured">
-                <strong>SSO login niet geconfigureerd</strong><br><br>
-                Stel <code>MICROSOFT_CLIENT_ID</code> of <code>GOOGLE_CLIENT_ID</code>
-                in de <code>.env</code> in om SSO login te activeren.
+                Inloggen met Google Workspace
             </div>
-        {% endif %}
+            <div class="email-input-row">
+                <input type="email" id="googleEmail"
+                       placeholder="uw.naam@school.be"
+                       autocomplete="email" autocapitalize="none" spellcheck="false">
+                <button class="btn-lookup" id="btnLookup">Verder →</button>
+            </div>
+            <div class="lookup-msg error"   id="lookupError"></div>
+            <div class="lookup-msg warning" id="lookupWarning"></div>
+            <div id="googleResult" style="display:none; margin-top:0.85rem;"></div>
+        </div>
 
-        {% if entra_configured or google_configured %}
-            <p style="text-align:center; color:#6b7280; font-size:0.8rem; margin-top:0.25rem;">
-                Log in met uw school account
-            </p>
-        {% endif %}
-
-        <!-- Superadmin fallback — zichtbaar maar discreet -->
         <div class="superadmin-toggle">
             <button id="btnToggleSuperadmin">Platformbeheerder</button>
         </div>
-
         <div class="superadmin-form" id="superadminForm">
-            <div style="font-size:0.8rem; color:#6b7280; margin-bottom:0.75rem; text-align:center;">
+            <div style="font-size:0.8rem;color:#6b7280;margin-bottom:.75rem;text-align:center;">
                 Platformbeheerder toegang
             </div>
             <div class="form-group">
@@ -353,49 +203,94 @@
     </div>
 
     <script nonce="{{ csp_nonce() }}">
-function bind(id, ev, fn) {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener(ev, fn);
+function bind(id, ev, fn) { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); }
+
+const GOOGLE_SVG = `<svg width="20" height="20" viewBox="0 0 48 48">
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+</svg>`;
+
+let busy = false;
+
+async function doGoogleLookup() {
+    if (busy) return;
+    const email   = document.getElementById('googleEmail').value.trim();
+    const errEl   = document.getElementById('lookupError');
+    const warnEl  = document.getElementById('lookupWarning');
+    const resultEl = document.getElementById('googleResult');
+    const btn      = document.getElementById('btnLookup');
+
+    errEl.style.display   = 'none';
+    warnEl.style.display  = 'none';
+    resultEl.style.display = 'none';
+    resultEl.innerHTML    = '';
+
+    if (!email || !email.includes('@')) {
+        errEl.textContent  = 'Vul een geldig e-mailadres in.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    busy = true; btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span>';
+
+    try {
+        const res  = await fetch('/api/sso-lookup?email=' + encodeURIComponent(email));
+        const data = await res.json();
+
+        if (!data.found) {
+            warnEl.innerHTML  = 'Geen school gevonden voor <strong>' + email.split('@')[1] + '</strong>. '
+                              + 'Controleer uw e-mailadres of contacteer uw ICT-beheerder.';
+            warnEl.style.display = 'block';
+        } else if (!data.google) {
+            warnEl.innerHTML  = '<strong>' + data.school_name + '</strong> heeft Google Workspace SSO '
+                              + 'nog niet ingesteld. Contacteer uw school ICT-beheerder.';
+            warnEl.style.display = 'block';
+        } else {
+            resultEl.innerHTML = '<a href="/auth/google?school_id=' + data.school_id + '" class="btn-google">'
+                + GOOGLE_SVG + 'Doorgaan met Google &mdash; ' + data.school_name + '</a>'
+                + '<p class="school-found-label">School herkend via ' + email.split('@')[1] + '</p>';
+            resultEl.style.display = 'block';
+        }
+    } catch {
+        errEl.textContent   = 'Verbindingsfout. Probeer opnieuw.';
+        errEl.style.display = 'block';
+    } finally {
+        busy = false; btn.disabled = false; btn.textContent = 'Verder \u2192';
+    }
 }
 
-        let saVisible = false;
+let saVisible = false;
+function toggleSuperadmin() {
+    saVisible = !saVisible;
+    document.getElementById('superadminForm').classList.toggle('visible', saVisible);
+    if (saVisible) document.getElementById('saPassword').focus();
+}
 
-        function toggleSuperadmin() {
-            saVisible = !saVisible;
-            document.getElementById('superadminForm').classList.toggle('visible', saVisible);
-            if (saVisible) document.getElementById('saPassword').focus();
-        }
+async function superadminLogin() {
+    const errEl = document.getElementById('sa-error');
+    errEl.style.display = 'none';
+    const res  = await fetch('/auth/superadmin-login', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            email:    document.getElementById('saEmail').value,
+            password: document.getElementById('saPassword').value,
+        })
+    });
+    const data = await res.json();
+    if (res.ok) { window.location.href = data.redirect || '/dashboard'; }
+    else { errEl.textContent = data.error || 'Inloggen mislukt'; errEl.style.display = 'block'; }
+}
 
-        async function superadminLogin() {
-            const errorEl = document.getElementById('sa-error');
-            errorEl.style.display = 'none';
-
-            const res = await fetch('/auth/superadmin-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email:    document.getElementById('saEmail').value,
-                    password: document.getElementById('saPassword').value,
-                })
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-                window.location.href = data.redirect || '/dashboard';
-            } else {
-                errorEl.textContent   = data.error || 'Inloggen mislukt';
-                errorEl.style.display = 'block';
-            }
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && saVisible) superadminLogin();
-        });
-    
 document.addEventListener('DOMContentLoaded', () => {
-    bind('btnToggleSuperadmin', 'click', () => { toggleSuperadmin() });
-    bind('btnSuperadminLogin', 'click', () => { superadminLogin() });
+    bind('btnLookup',           'click', doGoogleLookup);
+    bind('btnToggleSuperadmin', 'click', toggleSuperadmin);
+    bind('btnSuperadminLogin',  'click', superadminLogin);
+    document.getElementById('googleEmail').addEventListener('keydown', e => { if (e.key === 'Enter') doGoogleLookup(); });
+    document.getElementById('saPassword').addEventListener('keydown',  e => { if (e.key === 'Enter') superadminLogin(); });
 });
-</script>
+    </script>
 </body>
 </html>
