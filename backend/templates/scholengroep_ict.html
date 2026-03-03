@@ -49,12 +49,20 @@
 
         .domain-chip{display:inline-block;padding:.15rem .45rem;background:#eff6ff;color:#1d4ed8;border-radius:4px;font-size:.72rem;margin:.1rem;border:1px solid #bfdbfe;}
 
-        /* Scholen grid */
-        .schools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:1rem;}
-        .school-card{border:1px solid var(--gray-200);border-radius:10px;overflow:hidden;}
-        .school-card-header{padding:.9rem 1.1rem;background:var(--gray-50);border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;}
-        .school-card-header h3{font-size:.95rem;}
-        .school-card-body{padding:.75rem 1.1rem;}
+        /* Gebruikers-per-school tabel */
+        .schools-user-table{width:100%;border-collapse:collapse;}
+        .schools-user-table th{padding:.6rem .85rem;text-align:left;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);border-bottom:2px solid var(--gray-200);background:var(--gray-50);}
+        .school-row td{padding:.7rem .85rem;border-bottom:1px solid var(--gray-100);vertical-align:middle;font-size:.875rem;}
+        .school-row{cursor:pointer;transition:background .12s;}
+        .school-row:hover td{background:var(--gray-50);}
+        .school-row.expanded td{background:#f0f9ff;border-bottom:none;}
+        .expand-icon{display:inline-block;transition:transform .2s;font-style:normal;width:18px;text-align:center;}
+        .school-row.expanded .expand-icon{transform:rotate(90deg);}
+        .users-panel-row td{padding:0;border-bottom:1px solid var(--gray-200);}
+        .users-panel{padding:.75rem 1.1rem 1rem;background:#f8fafc;display:none;}
+        .users-panel.open{display:block;}
+        .users-search{width:100%;max-width:280px;padding:.4rem .65rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.82rem;margin-bottom:.75rem;}
+        .users-search:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(79,70,229,.1);}
         .user-row{display:flex;align-items:center;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--gray-100);font-size:.84rem;gap:.5rem;}
         .user-row:last-child{border-bottom:none;}
         .user-info{flex:1;min-width:0;}
@@ -64,6 +72,10 @@
         .role-select{padding:.2rem .4rem;border:1px solid var(--gray-300);border-radius:4px;font-size:.75rem;cursor:pointer;background:white;color:var(--gray-700);}
         .role-select:focus{outline:none;border-color:var(--primary);}
         .group-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-400);margin:.6rem 0 .3rem;display:flex;justify-content:space-between;}
+        .school-search-bar{display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem;}
+        .school-search-input{flex:1;max-width:320px;padding:.5rem .75rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.875rem;}
+        .school-search-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.1);}
+        .school-count-badge{font-size:.75rem;color:var(--gray-500);}
 
         /* Modal */
         .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;}
@@ -91,8 +103,10 @@
             th{background:#1e293b !important;color:#94a3b8 !important;border-color:#334155 !important;}
             td{border-color:#1e293b !important;color:#e2e8f0;}
             tr:hover td{background:#263548 !important;}
-            .school-card{border-color:#334155 !important;}
-            .school-card-header{background:#162032 !important;border-color:#334155 !important;}
+            .school-row.expanded td{background:#1a2744 !important;}
+            .users-panel{background:#162032 !important;}
+            .users-search{background:#0f172a !important;color:#e2e8f0 !important;border-color:#334155 !important;}
+            .school-search-input{background:#0f172a !important;color:#e2e8f0 !important;border-color:#334155 !important;}
             .domain-chip{background:#1e3a5f !important;border-color:#2563eb !important;color:#93c5fd !important;}
             .role-select,.form-group input,.form-group select{background:#0f172a !important;color:#e2e8f0 !important;border-color:#334155 !important;}
             .btn-secondary{background:#334155 !important;color:#e2e8f0 !important;}
@@ -184,13 +198,32 @@ toevoegen</button>
         </table>
     </div>
 
-    <!-- Scholen & gebruikers detail -->
+    <!-- Gebruikers per school — lazy tabel -->
     <div class="section">
         <div class="section-header">
             <h2>👥 Gebruikers per school</h2>
             <button id="btnAddUser" class="btn btn-primary btn-sm">+ Gebruiker toevoegen</button>
         </div>
-        <div class="schools-grid" id="schoolsGrid">Laden...</div>
+        <div class="school-search-bar">
+            <input type="text" id="schoolSearchInput" class="school-search-input"
+                   placeholder="Zoek op schoolnaam of gebruikersnaam...">
+            <span class="school-count-badge" id="schoolCountBadge"></span>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="schools-user-table">
+                <thead>
+                    <tr>
+                        <th style="width:32px;"></th>
+                        <th>School</th>
+                        <th>Domeinen</th>
+                        <th>SSO</th>
+                        <th style="text-align:center;">Gebruikers</th>
+                        <th style="text-align:right;">Acties</th>
+                    </tr>
+                </thead>
+                <tbody id="schoolsUserTbody"></tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Auditlog -->
@@ -390,6 +423,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnSaveJaar') && bind('btnSaveJaar', 'click', addJaar);
     document.getElementById('btnCancelUser') && bind('btnCancelUser', 'click', closeModal);
     document.getElementById('btnSaveUser') && bind('btnSaveUser', 'click', addUser);
+    // Zoekbalk scholen/gebruikers
+    const schoolSearchEl = document.getElementById('schoolSearchInput');
+    if (schoolSearchEl) {
+        schoolSearchEl.addEventListener('input', () => {
+            schoolFilter = schoolSearchEl.value.trim();
+            renderSchoolsUserTable();
+        });
+    }
     const tasks = [loadStats(), loadSchoolsTable(), loadSchoolsGrid(), loadSgIct()];
     await Promise.all(tasks);
     await loadJaren();
@@ -486,6 +527,7 @@ async function addSchool() {
     const data = await res.json();
     if (!res.ok) { err.textContent = data.error; err.style.display = 'block'; return; }
     closeModal(); notify('School aangemaakt', 'success');
+    delete loadedUsers[data.school?.id]; // forceer herlaad als al gecached
     await Promise.all([loadSchoolsTable(), loadSchoolsGrid(), loadStats()]);
 }
 
@@ -553,6 +595,8 @@ async function saveSchool() {
 
     closeModal();
     notify('School opgeslagen', 'success');
+    // Gebruikerscache wissen zodat heropenen verse data toont
+    delete loadedUsers[parseInt(id)];
     await Promise.all([loadSchoolsTable(), loadSchoolsGrid()]);
 }
 
@@ -561,114 +605,239 @@ async function deleteSchool(id, name) {
     const res = await fetch(`/admin/schools/${id}`, { method: 'DELETE' });
     if (!res.ok) { notify('Verwijderen mislukt', 'error'); return; }
     notify('School verwijderd', 'success');
+    expandedSchools.delete(parseInt(id));
+    delete loadedUsers[parseInt(id)];
     await Promise.all([loadSchoolsTable(), loadSchoolsGrid(), loadStats()]);
 }
 
-// ── Gebruikers grid ───────────────────────────────────────────────────────────
+// ── Gebruikers-per-school: lazy tabel ────────────────────────────────────────
+// State
+const expandedSchools = new Set();   // welke school-rijen zijn open
+const loadedUsers     = {};          // cache: school_id -> users array
+const loadingSchools  = new Set();   // bezig met laden
+let   schoolFilter    = '';          // huidig zoekterm
+
+// Laad de scholenlijst (zonder gebruikers) en render de tabel
 async function loadSchoolsGrid() {
     const res  = await fetch('/admin/schools');
     const data = await res.json();
     schools    = data.schools || [];
-    const grid = document.getElementById('schoolsGrid');
-    if (!schools.length) {
-        grid.innerHTML = '<p style="color:var(--gray-500);font-style:italic;padding:.5rem 0;">Nog geen scholen aangemaakt.</p>';
+    renderSchoolsUserTable();
+    updateSchoolCountBadge();
+
+    // Vul ook de school select in het "gebruiker toevoegen" modal
+    const sel = document.getElementById('addUserSchool');
+    if (sel) sel.innerHTML = schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+// Teken (of herteken) de volledige tabel op basis van huidige filter + expanded state
+function renderSchoolsUserTable() {
+    const tbody     = document.getElementById('schoolsUserTbody');
+    const term      = schoolFilter.toLowerCase();
+    // Filter: schoolnaam OF (als school al geladen) gebruikersnaam
+    const filtered  = schools.filter(s => {
+        if (s.name.toLowerCase().includes(term)) return true;
+        const users = loadedUsers[s.id];
+        if (users && term) return users.some(u => u.full_name.toLowerCase().includes(term));
+        return !term;
+    });
+
+    updateSchoolCountBadge(filtered.length);
+
+    if (!filtered.length) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="6">Geen scholen gevonden voor "${schoolFilter}"</td></tr>`;
         return;
     }
-    grid.innerHTML = '';
-    await Promise.all(schools.map(s => renderSchoolCard(s, grid)));
+
+    const rows = filtered.map(s => buildSchoolRows(s, term)).join('');
+    tbody.innerHTML = rows;
 }
 
-async function renderSchoolCard(school, container) {
-    const res   = await fetch(`/admin/schools/${school.id}/users`);
-    const data  = await res.json();
-    const users = data.users || [];
+function buildSchoolRows(school, term) {
+    const isOpen    = expandedSchools.has(school.id);
+    const isLoading = loadingSchools.has(school.id);
+    const ssoIcon   = school.google_sso_configured
+        ? '<span style="font-size:.7rem;background:#d1fae5;color:#065f46;padding:.15rem .4rem;border-radius:4px;font-weight:600;">G ✓</span>'
+        : '<span style="font-size:.7rem;color:var(--gray-400);">—</span>';
+    const domainHtml = (school.email_domains||[]).map(d=>`<span class="domain-chip">${d}</span>`).join('') 
+                     || '<em style="color:var(--gray-400);font-size:.75rem;">geen</em>';
+
+    // Hoofdrij
+    const mainRow = `
+        <tr class="school-row${isOpen ? ' expanded' : ''}" data-action="toggleSchool" data-id="${school.id}">
+            <td><i class="expand-icon">▶</i></td>
+            <td><strong>${school.name}</strong></td>
+            <td>${domainHtml}</td>
+            <td>${ssoIcon}</td>
+            <td style="text-align:center;color:var(--gray-500);">${school.user_count}</td>
+            <td style="text-align:right;white-space:nowrap;">
+                <button class="btn btn-secondary btn-sm" data-action="editSchool"
+                    data-id="${school.id}"
+                    data-name="${school.name.replace(/'/g,'&#39;')}"
+                    data-domains="${(school.email_domains||[]).join(', ')}">Bewerken</button>
+                <button class="btn btn-danger btn-sm" data-action="deleteSchool"
+                    data-id="${school.id}"
+                    data-name="${school.name.replace(/'/g,'&#39;')}">Verwijderen</button>
+            </td>
+        </tr>`;
+
+    // Uitklapbare gebruikerspaneel rij
+    const panelRow = `
+        <tr class="users-panel-row" id="panel-row-${school.id}">
+            <td colspan="6">
+                <div class="users-panel${isOpen ? ' open' : ''}" id="users-panel-${school.id}">
+                    ${isLoading
+                        ? '<div style="padding:.5rem;color:var(--gray-500);font-size:.85rem;">⏳ Laden...</div>'
+                        : renderUsersPanel(school.id, term)}
+                </div>
+            </td>
+        </tr>`;
+
+    return mainRow + panelRow;
+}
+
+function renderUsersPanel(schoolId, term) {
+    const users = loadedUsers[schoolId];
+    if (!users) return '';  // nog niet geladen
+
+    // Filter op gebruikersnaam als er een zoekterm is
+    const filtered = term
+        ? users.filter(u => u.full_name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term))
+        : users;
+
     const byRole = {
-        school_ict: users.filter(u => u.role === 'school_ict'),
-        director:   users.filter(u => u.role === 'director'),
-        teacher:    users.filter(u => u.role === 'teacher'),
+        school_ict: filtered.filter(u => u.role === 'school_ict'),
+        director:   filtered.filter(u => u.role === 'director'),
+        teacher:    filtered.filter(u => u.role === 'teacher'),
     };
-    const card = document.createElement('div');
-    card.className = 'school-card';
-    card.id        = `school-card-${school.id}`;
-    card.innerHTML = `
-        <div class="school-card-header">
-            <div>
-                <h3>${school.name}</h3>
-                <div style="margin-top:.35rem;">${(school.email_domains||[]).map(d=>`<span class="domain-chip">${d}</span>`).join('') || '<span style="color:var(--gray-400);font-size:.75rem;">geen domeinen</span>'}</div>
-            </div>
-            <span style="color:var(--gray-500);font-size:.8rem;white-space:nowrap;">${users.length} gebruikers</span>
-        </div>
-        <div class="school-card-body">
-            ${renderUserGroup(school.id,'School ICT',byRole.school_ict)}
-            ${renderUserGroup(school.id,'Directeurs',byRole.director)}
-            ${renderUserGroup(school.id,'Leerkrachten',byRole.teacher,5)}
-        </div>`;
-    container.appendChild(card);
+    const total = filtered.length;
+
+    if (!total) return `<div style="color:var(--gray-500);font-size:.85rem;padding:.25rem 0;">Geen gebruikers gevonden${term ? ` voor "${term}"` : ''}.</div>`;
+
+    return [
+        renderUserGroup(schoolId, 'School ICT',  byRole.school_ict),
+        renderUserGroup(schoolId, 'Directeurs',  byRole.director),
+        renderUserGroup(schoolId, 'Leerkrachten', byRole.teacher),
+    ].join('');
 }
 
-function renderUserGroup(schoolId, label, users, maxShow=99) {
+function renderUserGroup(schoolId, label, users) {
     if (!users.length) return '';
-    const shown  = users.slice(0, maxShow);
-    const hidden = users.length - shown.length;
     return `
-        <div class="group-label"><span>${label}</span><span style="font-weight:400;text-transform:none;letter-spacing:0;">${users.length}</span></div>
-        ${shown.map(u => `
+        <div class="group-label">
+            <span>${label}</span>
+            <span style="font-weight:400;text-transform:none;letter-spacing:0;">${users.length}</span>
+        </div>
+        ${users.map(u => `
             <div class="user-row">
                 <div class="user-info">
                     <div class="user-name">${u.full_name}</div>
                     <div class="user-email">${u.email}</div>
                     <div class="user-email" style="color:var(--gray-400);font-size:.7rem;">
                         ${u.last_login
-                            ? '↩ ' + new Date(u.last_login).toLocaleString('nl-BE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+                            ? '↩ ' + new Date(u.last_login).toLocaleString('nl-BE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
                             : 'Nog niet ingelogd'}
                     </div>
                 </div>
                 <div class="user-actions">
-                    <select class="role-select" data-action="changeRole" data-school-id="${schoolId}" data-user-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">
+                    <select class="role-select" data-action="changeRole"
+                            data-school-id="${schoolId}" data-user-id="${u.id}"
+                            data-name="${u.full_name.replace(/'/g,'&#39;')}">
                         ${SCHOOL_ROLLEN.map(r=>`<option value="${r.value}" ${r.value===u.role?'selected':''}>${r.label}</option>`).join('')}
                     </select>
-                    <button class="btn btn-danger btn-sm" data-action="removeUser" data-school-id="${schoolId}" data-user-id="${u.id}" data-name="${u.full_name.replace(/'/g,'&#39;')}">×</button>
+                    <button class="btn btn-danger btn-sm" data-action="removeUser"
+                            data-school-id="${schoolId}" data-user-id="${u.id}"
+                            data-name="${u.full_name.replace(/'/g,'&#39;')}">×</button>
                 </div>
-            </div>`).join('')}
-        ${hidden > 0 ? `<div style="color:var(--gray-500);font-size:.8rem;padding:.3rem 0 0;">+ ${hidden} meer...</div>` : ''}`;
+            </div>`).join('')}`;
 }
 
-async function changeRole(schoolId, userId, newRole, naam, selectEl) {
+function updateSchoolCountBadge(visibleCount) {
+    const el = document.getElementById('schoolCountBadge');
+    if (!el) return;
+    const total = schools.length;
+    if (visibleCount === undefined || visibleCount === total) {
+        el.textContent = `${total} school${total !== 1 ? 'en' : ''}`;
+    } else {
+        el.textContent = `${visibleCount} van ${total} scholen`;
+    }
+}
+
+// Toggle een school open/dicht; laad gebruikers als dat nog niet is gebeurd
+async function toggleSchool(schoolId) {
+    if (expandedSchools.has(schoolId)) {
+        expandedSchools.delete(schoolId);
+        renderSchoolsUserTable();
+        return;
+    }
+
+    expandedSchools.add(schoolId);
+
+    if (!loadedUsers[schoolId]) {
+        // Toon laad-indicator via hertekenen (loading state)
+        loadingSchools.add(schoolId);
+        renderSchoolsUserTable();
+
+        const res  = await fetch(`/admin/schools/${schoolId}/users`);
+        const data = await res.json();
+        loadedUsers[schoolId] = data.users || [];
+        loadingSchools.delete(schoolId);
+    }
+
+    renderSchoolsUserTable();
+}
+
+// Herlaad de gebruikers van één school (na wijziging) en herteken
+async function refreshSchool(schoolId) {
+    const res  = await fetch(`/admin/schools/${schoolId}/users`);
+    const data = await res.json();
+    loadedUsers[schoolId] = data.users || [];
+    // Bijwerken user_count in schools array
+    const school = schools.find(s => s.id === schoolId);
+    if (school) school.user_count = (data.users || []).length;
+    renderSchoolsUserTable();
+}
+
+async function changeRole(schoolId, userId, newRole, naam) {
     const res = await fetch(`/admin/schools/${schoolId}/users/${userId}/role`, {
         method: 'PUT', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ role: newRole })
     });
-    if (!res.ok) { notify((await res.json()).error || 'Wijzigen mislukt', 'error'); await refreshCard(schoolId); return; }
+    if (!res.ok) { notify((await res.json()).error || 'Wijzigen mislukt', 'error'); await refreshSchool(schoolId); return; }
     notify(`${naam} is nu ${SCHOOL_ROLLEN.find(r=>r.value===newRole)?.label}`, 'success');
-    await refreshCard(schoolId);
+    await refreshSchool(schoolId);
 }
 
 async function addUser() {
     const err = document.getElementById('addUser-error');
     err.style.display = 'none';
-    const schoolId = document.getElementById('addUserSchool').value;
+    const schoolId = parseInt(document.getElementById('addUserSchool').value);
     const res = await fetch(`/admin/schools/${schoolId}/users`, {
         method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ email: document.getElementById('addUserEmail').value, first_name: document.getElementById('addUserFirst').value, last_name: document.getElementById('addUserLast').value, role: document.getElementById('addUserRole').value })
+        body: JSON.stringify({
+            email:      document.getElementById('addUserEmail').value,
+            first_name: document.getElementById('addUserFirst').value,
+            last_name:  document.getElementById('addUserLast').value,
+            role:       document.getElementById('addUserRole').value,
+        })
     });
     const data = await res.json();
     if (!res.ok) { err.textContent = data.error; err.style.display = 'block'; return; }
-    closeModal(); notify(data.linked ? 'Account heractiveerd en bijgewerkt' : 'Gebruiker toegevoegd', 'success');
-    await Promise.all([refreshCard(parseInt(schoolId)), loadStats()]);
+    closeModal();
+    notify(data.linked ? 'Account heractiveerd en bijgewerkt' : 'Gebruiker toegevoegd', 'success');
+    // Zorg dat de school open staat zodat de nieuwe gebruiker zichtbaar is
+    expandedSchools.add(schoolId);
+    delete loadedUsers[schoolId]; // forceer herlaad
+    await Promise.all([refreshSchool(schoolId), loadStats()]);
 }
 
 async function removeUser(schoolId, userId, naam) {
     if (!confirm(`${naam} verwijderen?`)) return;
-    const res = await fetch(`/admin/schools/${schoolId}/users/${userId}`, { method: 'DELETE' });
+    const res = await fetch(`/admin/schools/${parseInt(schoolId)}/users/${userId}`, { method: 'DELETE' });
     if (!res.ok) { notify('Verwijderen mislukt', 'error'); return; }
     notify(`${naam} verwijderd`, 'success');
-    await Promise.all([refreshCard(schoolId), loadStats()]);
-}
-
-async function refreshCard(schoolId) {
-    const card   = document.getElementById(`school-card-${schoolId}`);
-    const school = schools.find(s => s.id === schoolId);
-    if (card && school) { card.remove(); await renderSchoolCard(school, document.getElementById('schoolsGrid')); }
+    delete loadedUsers[parseInt(schoolId)]; // forceer herlaad
+    await Promise.all([refreshSchool(parseInt(schoolId)), loadStats()]);
 }
 
 // ── Schooljaren ───────────────────────────────────────────────────────────────
@@ -798,6 +967,12 @@ function notify(msg, type='success') {
 
 // ── Event delegation voor dynamisch gegenereerde elementen ────────────────────
 document.addEventListener('click', function(e) {
+    // toggleSchool: klik op de rij zelf, maar NIET op knoppen erin
+    const schoolRow = e.target.closest('.school-row[data-action="toggleSchool"]');
+    if (schoolRow && !e.target.closest('button') && !e.target.closest('select')) {
+        toggleSchool(parseInt(schoolRow.dataset.id));
+        return;
+    }
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const action = btn.dataset.action;
@@ -810,7 +985,7 @@ document.addEventListener('click', function(e) {
 });
 document.addEventListener('change', function(e) {
     const sel = e.target.closest('[data-action="changeRole"]');
-    if (sel) { changeRole(sel.dataset.schoolId, sel.dataset.userId, sel.value, sel.dataset.name, sel); }
+    if (sel) { changeRole(sel.dataset.schoolId, sel.dataset.userId, sel.value, sel.dataset.name); }
 });
 </script>
 </body>
