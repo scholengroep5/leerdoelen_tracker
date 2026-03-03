@@ -24,10 +24,22 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-secondary { background: var(--gray-200); color: var(--gray-700); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-        .stat-card { background: white; border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .stat-value { font-size: 2rem; font-weight: 700; }
-        .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); margin-top: 0.25rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 0; }
+        .stat-card {
+            background: white; border-radius: 10px; padding: 1.1rem 1rem;
+            text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-top: 3px solid transparent; transition: transform 0.15s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card.highlight { border-top-color: var(--primary); }
+        .stat-card.accent-groen  { border-top-color: var(--status-groen); }
+        .stat-card.accent-oranje { border-top-color: var(--status-oranje); }
+        .stat-card.accent-roze   { border-top-color: var(--status-roze); }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+        .stat-card.accent-groen  .stat-value { color: var(--status-groen); }
+        .stat-card.accent-oranje .stat-value { color: var(--status-oranje); }
+        .stat-card.accent-roze   .stat-value { color: var(--status-roze); }
+        .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); margin-top: 0.3rem; }
         .section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .section h2 { font-size: 1.1rem; color: var(--gray-700); margin-bottom: 1rem; }
 
@@ -193,6 +205,9 @@
 
     /* Stat cards */
     .stat-card { background: #1e293b !important; }
+    .stat-card.accent-groen  .stat-value { color: #34d399 !important; }
+    .stat-card.accent-oranje .stat-value { color: #fbbf24 !important; }
+    .stat-card.accent-roze   .stat-value { color: #f472b6 !important; }
 
     /* School card header */
     .school-card-header { background: #162032 !important; border-color: #334155 !important; }
@@ -280,6 +295,8 @@
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
 }
 </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -310,9 +327,9 @@
             <div class="stat-card highlight"><div class="stat-value" id="statTeachers">-</div><div class="stat-label">Leerkrachten</div></div>
             <div class="stat-card"><div class="stat-value" id="statVakken">-</div><div class="stat-label">Vakken</div></div>
             <div class="stat-card"><div class="stat-value" id="statBeoordeeld">-</div><div class="stat-label">Beoordelingen</div></div>
-            <div class="stat-card" style="border-left:3px solid var(--status-groen)"><div class="stat-value" id="statGroen">-</div><div class="stat-label">Groen</div></div>
-            <div class="stat-card" style="border-left:3px solid var(--status-oranje)"><div class="stat-value" id="statOranje">-</div><div class="stat-label">Oranje</div></div>
-            <div class="stat-card" style="border-left:3px solid var(--status-roze)"><div class="stat-value" id="statRoze">-</div><div class="stat-label">Roze</div></div>
+            <div class="stat-card accent-groen"><div class="stat-value" id="statGroen">-</div><div class="stat-label">Groen</div></div>
+            <div class="stat-card accent-oranje"><div class="stat-value" id="statOranje">-</div><div class="stat-label">Oranje</div></div>
+            <div class="stat-card accent-roze"><div class="stat-value" id="statRoze">-</div><div class="stat-label">Roze</div></div>
         </div>
     </div>
 
@@ -956,7 +973,93 @@ function exportToCSV() {
 
 function exportToPDF() {
     if (!overviewData) { showNotification('Nog geen data om te exporteren', 'warning'); return; }
-    showNotification('PDF export: installeer jsPDF of gebruik de CSV export.', 'warning');
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    const vakFilter     = document.getElementById('filterVak').value;
+    const teacherFilter = document.getElementById('filterTeacher').value;
+    const statusFilter  = document.getElementById('filterStatus').value;
+    const sectieFilter  = document.getElementById('filterSectie')?.value || 'all';
+    const search        = document.getElementById('filterSearch').value.toLowerCase();
+    const leeftijdFilter = [...document.querySelectorAll('.leeftijd-checkbox input:checked')].map(cb => cb.value);
+
+    const shownVakken   = vakFilter === 'all' ? Object.keys(allGoals) : [vakFilter];
+    const shownTeachers = teacherFilter === 'all'
+        ? overviewData.teachers
+        : overviewData.teachers.filter(t => t.id == teacherFilter);
+
+    // Titel
+    doc.setFontSize(16);
+    doc.text('Leerdoelen Overzicht — Directeur', 14, 15);
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text(`Export: ${new Date().toLocaleDateString('nl-BE')}`, 14, 21);
+
+    // Headers
+    const headers = ['Vak', 'Code', 'Omschrijving', 'Leeftijd',
+        ...shownTeachers.map(t => t.full_name), '✓', '~', '!'];
+
+    // Rijen
+    const rows = [];
+    shownVakken.forEach(vakId => {
+        (allGoals[vakId] || []).forEach(goal => {
+            if (search && !`${goal.goNr} ${goal.inhoud} ${goal.sectie||''}`.toLowerCase().includes(search)) return;
+            if (leeftijdFilter.length && !leeftijdFilter.some(l => (goal.leeftijden||[]).includes(l))) return;
+            if (sectieFilter !== 'all' && goal.sectie !== sectieFilter) return;
+
+            const statussen = shownTeachers.map(t =>
+                overviewData.assessments_by_teacher[t.id]?.[vakId]?.[goal.id] || '');
+
+            if (statusFilter === 'groen'  && !statussen.some(s => s === 'groen'))  return;
+            if (statusFilter === 'oranje' && !statussen.some(s => s === 'oranje')) return;
+            if (statusFilter === 'roze'   && !statussen.some(s => s === 'roze'))   return;
+            if (statusFilter === 'niemand' && statussen.some(s => s)) return;
+            if (statusFilter === 'verschil') {
+                const filled = statussen.filter(s => s);
+                if (filled.length <= 1 || new Set(filled).size <= 1) return;
+            }
+
+            const groen  = statussen.filter(s => s === 'groen').length;
+            const oranje = statussen.filter(s => s === 'oranje').length;
+            const roze   = statussen.filter(s => s === 'roze').length;
+
+            rows.push([
+                vakNaam(vakId),
+                goal.goNr,
+                (goal.inhoud || '').substring(0, 70) + (goal.inhoud?.length > 70 ? '…' : ''),
+                (goal.leeftijden || []).join(', '),
+                ...statussen.map(s => s === 'groen' ? '✓' : s === 'oranje' ? '~' : s === 'roze' ? '!' : '-'),
+                groen, oranje, roze
+            ]);
+        });
+    });
+
+    doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 26,
+        styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak' },
+        headStyles: { fillColor: [79, 70, 229], textColor: 255, fontSize: 7 },
+        columnStyles: {
+            0: { cellWidth: 22 },
+            1: { cellWidth: 14 },
+            2: { cellWidth: 'auto' },
+            3: { cellWidth: 18 },
+        },
+        margin: { left: 10, right: 10 },
+        didParseCell: (data) => {
+            // Kleur de status cellen
+            if (data.section === 'body' && data.column.index >= 4) {
+                const v = data.cell.raw;
+                if (v === '✓') { data.cell.styles.textColor = [16, 185, 129]; data.cell.styles.fontStyle = 'bold'; }
+                if (v === '~') { data.cell.styles.textColor = [245, 158, 11]; data.cell.styles.fontStyle = 'bold'; }
+                if (v === '!') { data.cell.styles.textColor = [236, 72, 153]; data.cell.styles.fontStyle = 'bold'; }
+            }
+        }
+    });
+
+    doc.save(`Leerdoelen_Directeur_${new Date().toISOString().split('T')[0]}.pdf`);
+    showNotification('PDF geëxporteerd!', 'success');
 }
 
 function showNotification(msg, type='success') {
