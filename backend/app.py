@@ -95,7 +95,7 @@ def create_app():
         'style-src':    ["'self'", "'unsafe-inline'"],         # inline styles in templates (aanvaardbaar)
         'img-src':      ["'self'", 'data:'],
         'font-src':     ["'self'"],
-        'connect-src':  ["'self'"],
+        'connect-src':  ["'self'", 'cdnjs.cloudflare.com'],
         'form-action':  ["'self'"],                             # voorkomt form hijacking
         'base-uri':     ["'self'"],                             # voorkomt base tag injection
         'frame-ancestors': ["'none'"],                          # clickjacking preventie

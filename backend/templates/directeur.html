@@ -24,22 +24,40 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-secondary { background: var(--gray-200); color: var(--gray-700); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 0; }
-        .stat-card {
-            background: white; border-radius: 10px; padding: 1.1rem 1rem;
-            text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            border-top: 3px solid transparent; transition: transform 0.15s;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 0;
         }
-        .stat-card:hover { transform: translateY(-2px); }
-        .stat-card.highlight { border-top-color: var(--primary); }
-        .stat-card.accent-groen  { border-top-color: var(--status-groen); }
-        .stat-card.accent-oranje { border-top-color: var(--status-oranje); }
-        .stat-card.accent-roze   { border-top-color: var(--status-roze); }
-        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.1rem 1rem 1rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .stat-icon {
+            width: 36px; height: 36px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; margin-bottom: 0.1rem;
+        }
+        .stat-card.highlight .stat-icon  { background: rgba(79,70,229,0.12); }
+        .stat-card.c-blauw   .stat-icon  { background: rgba(99,102,241,0.1); }
+        .stat-card.accent-groen  .stat-icon  { background: rgba(16,185,129,0.12); }
+        .stat-card.accent-oranje .stat-icon  { background: rgba(245,158,11,0.12); }
+        .stat-card.accent-roze   .stat-icon  { background: rgba(236,72,153,0.12); }
+
+        .stat-value { font-size: 1.9rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+        .stat-card.highlight  .stat-value { color: var(--primary); }
+        .stat-card.c-blauw    .stat-value { color: #6366f1; }
         .stat-card.accent-groen  .stat-value { color: var(--status-groen); }
         .stat-card.accent-oranje .stat-value { color: var(--status-oranje); }
         .stat-card.accent-roze   .stat-value { color: var(--status-roze); }
-        .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-500); margin-top: 0.3rem; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-400); font-weight: 600; }
         .section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .section h2 { font-size: 1.1rem; color: var(--gray-700); margin-bottom: 1rem; }
 
@@ -205,9 +223,16 @@
 
     /* Stat cards */
     .stat-card { background: #1e293b !important; }
+    .stat-card.highlight  .stat-value { color: #a5b4fc !important; }
+    .stat-card.c-blauw    .stat-value { color: #818cf8 !important; }
     .stat-card.accent-groen  .stat-value { color: #34d399 !important; }
     .stat-card.accent-oranje .stat-value { color: #fbbf24 !important; }
     .stat-card.accent-roze   .stat-value { color: #f472b6 !important; }
+    .stat-card.highlight  .stat-icon { background: rgba(165,180,252,0.15) !important; }
+    .stat-card.c-blauw    .stat-icon { background: rgba(129,140,248,0.15) !important; }
+    .stat-card.accent-groen  .stat-icon { background: rgba(52,211,153,0.15) !important; }
+    .stat-card.accent-oranje .stat-icon { background: rgba(251,191,36,0.15) !important; }
+    .stat-card.accent-roze   .stat-icon { background: rgba(244,114,182,0.15) !important; }
 
     /* School card header */
     .school-card-header { background: #162032 !important; border-color: #334155 !important; }
@@ -324,12 +349,36 @@
     <div class="stats-overview" id="statsOverview">
         <h2>📊 Schoolbrede statistieken</h2>
         <div class="stats-grid" id="statsGrid">
-            <div class="stat-card highlight"><div class="stat-value" id="statTeachers">-</div><div class="stat-label">Leerkrachten</div></div>
-            <div class="stat-card"><div class="stat-value" id="statVakken">-</div><div class="stat-label">Vakken</div></div>
-            <div class="stat-card"><div class="stat-value" id="statBeoordeeld">-</div><div class="stat-label">Beoordelingen</div></div>
-            <div class="stat-card accent-groen"><div class="stat-value" id="statGroen">-</div><div class="stat-label">Groen</div></div>
-            <div class="stat-card accent-oranje"><div class="stat-value" id="statOranje">-</div><div class="stat-label">Oranje</div></div>
-            <div class="stat-card accent-roze"><div class="stat-value" id="statRoze">-</div><div class="stat-label">Roze</div></div>
+            <div class="stat-card highlight">
+                <div class="stat-icon">👩‍🏫</div>
+                <div class="stat-value" id="statTeachers">-</div>
+                <div class="stat-label">Leerkrachten</div>
+            </div>
+            <div class="stat-card c-blauw">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value" id="statVakken">-</div>
+                <div class="stat-label">Vakken</div>
+            </div>
+            <div class="stat-card c-blauw">
+                <div class="stat-icon">📋</div>
+                <div class="stat-value" id="statBeoordeeld">-</div>
+                <div class="stat-label">Beoordelingen</div>
+            </div>
+            <div class="stat-card accent-groen">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="statGroen">-</div>
+                <div class="stat-label">Groen</div>
+            </div>
+            <div class="stat-card accent-oranje">
+                <div class="stat-icon">🔶</div>
+                <div class="stat-value" id="statOranje">-</div>
+                <div class="stat-label">Oranje</div>
+            </div>
+            <div class="stat-card accent-roze">
+                <div class="stat-icon">🆕</div>
+                <div class="stat-value" id="statRoze">-</div>
+                <div class="stat-label">Roze</div>
+            </div>
         </div>
     </div>
 
