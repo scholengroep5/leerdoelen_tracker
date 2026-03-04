@@ -48,6 +48,16 @@ def school_ict_required(f):
     return decorated
 
 
+def director_or_ict_required(f):
+    """Decorator: school_ict én director mogen door (binnen eigen school)."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_director:  # is_director omvat ook school_ict en hoger
+            return jsonify({'error': 'Geen toegang'}), 403
+        return f(*args, **kwargs)
+    return decorated
+
+
 # ── Scholen (scholengroep_ict) ────────────────────────────────────────────────
 
 @admin_bp.route('/schools', methods=['GET'])
@@ -577,7 +587,7 @@ def global_stats():
 
 @admin_bp.route('/schools/<int:school_id>/classes', methods=['GET'])
 @login_required
-@school_ict_required
+@director_or_ict_required
 def list_classes(school_id):
     if not current_user.is_scholengroep_ict and current_user.school_id != school_id:
         return jsonify({'error': 'Geen toegang'}), 403
@@ -587,7 +597,7 @@ def list_classes(school_id):
 
 @admin_bp.route('/schools/<int:school_id>/classes', methods=['POST'])
 @login_required
-@school_ict_required
+@director_or_ict_required
 def create_class(school_id):
     if not current_user.is_scholengroep_ict and current_user.school_id != school_id:
         return jsonify({'error': 'Geen toegang'}), 403
@@ -609,7 +619,7 @@ def create_class(school_id):
 
 @admin_bp.route('/schools/<int:school_id>/classes/<int:class_id>', methods=['DELETE'])
 @login_required
-@school_ict_required
+@director_or_ict_required
 def delete_class(school_id, class_id):
     if not current_user.is_scholengroep_ict and current_user.school_id != school_id:
         return jsonify({'error': 'Geen toegang'}), 403
@@ -623,7 +633,7 @@ def delete_class(school_id, class_id):
 
 @admin_bp.route('/schools/<int:school_id>/classes/<int:class_id>/teachers', methods=['PUT'])
 @login_required
-@school_ict_required
+@director_or_ict_required
 def set_class_teachers(school_id, class_id):
     """Vervang alle leerkrachten van een klas in één keer."""
     if not current_user.is_scholengroep_ict and current_user.school_id != school_id:

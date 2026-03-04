@@ -437,7 +437,12 @@
         </h2>
         <div class="teacher-chips" id="teacherChips"></div>
         <div class="action-bar" style="margin-top:1rem;">
-            <button id="btnAddTeacher" class="btn btn-primary">+ Leerkracht toevoegen</button>
+            <a href="/klassen" class="btn btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+                </svg>
+                Klassenbeheer
+            </a>
             <button id="btnExportCSV" class="btn btn-secondary">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Exporteer CSV
@@ -616,33 +621,6 @@
 
 </div><!-- /container -->
 
-<!-- Modal: leerkracht toevoegen -->
-<div class="modal-overlay" id="addTeacherModal">
-    <div class="modal">
-        <h2>👤 Leerkracht toevoegen</h2>
-        <div class="form-group">
-            <label>Voornaam</label>
-            <input type="text" id="newFirstName" placeholder="Voornaam...">
-        </div>
-        <div class="form-group">
-            <label>Achternaam</label>
-            <input type="text" id="newLastName" placeholder="Achternaam...">
-        </div>
-        <div class="form-group">
-            <label>E-mailadres</label>
-            <input type="email" id="newEmail" placeholder="naam@school.be">
-        </div>
-        <div class="form-group">
-            <label>Wachtwoord (tijdelijk)</label>
-            <input type="password" id="newPassword" placeholder="Minimaal 8 tekens...">
-        </div>
-        <div id="addTeacherError" style="display:none;color:var(--danger);font-size:0.85rem;margin-top:0.5rem;"></div>
-        <div class="modal-buttons">
-            <button id="btnCancelTeacher" class="btn btn-secondary">Annuleren</button>
-            <button id="btnConfirmTeacher" class="btn btn-primary">Toevoegen</button>
-        </div>
-    </div>
-</div>
 
 <div class="notification" id="notification"></div>
 
@@ -661,14 +639,11 @@ let activeYearId = null;   // null = huidig actief jaar
 document.addEventListener('DOMContentLoaded', async () => {
     bind('jaarSelector', 'change', switchJaar);
     bind('btnVernieuw', 'click', loadOverview);
-    bind('btnAddTeacher', 'click', openAddTeacher);
     bind('btnExportCSV', 'click', exportToCSV);
     bind('btnExportPDF', 'click', exportToPDF);
     bind('tab-doelen', 'click', () => switchTab('doelen'));
     bind('tab-klassen', 'click', () => switchTab('klassen'));
     document.getElementById('tab-vergelijk') && bind('tab-vergelijk', 'click', () => switchTab('vergelijk'));
-    bind('btnCancelTeacher', 'click', closeModal);
-    bind('btnConfirmTeacher', 'click', addTeacher);
     bind('filterVak', 'change', applyFilters);
     bind('filterTeacher', 'change', applyFilters);
     document.getElementById('filterKlas') && bind('filterKlas', 'change', applyFilters);
@@ -746,9 +721,6 @@ function renderTeacherList() {
                 <div class="teacher-chip">
                     <span class="name">${t.full_name}</span>
                     <span class="klas">${(t.classes||[]).map(c=>c.name).join(', ') || ''}</span>
-                    <button data-action="removeTeacher" data-id="${t.id}"
-                        style="width:18px;height:18px;border-radius:50%;border:none;background:var(--gray-300);cursor:pointer;font-size:0.7rem;"
-                        title="Verwijderen">×</button>
                 </div>`).join('');
     }
     // Toon/verberg de sectie
@@ -1016,50 +988,6 @@ function applyFilters() {
         </td></tr>`;
         return row;
     }).join('');
-}
-
-// ── Leerkrachten beheer ───────────────────────────────────────────────────────
-function openAddTeacher() {
-    document.getElementById('addTeacherModal').classList.add('active');
-}
-function closeModal() {
-    document.getElementById('addTeacherModal').classList.remove('active');
-}
-
-async function addTeacher() {
-    const errorEl = document.getElementById('addTeacherError');
-    errorEl.style.display = 'none';
-
-    const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            first_name: document.getElementById('newFirstName').value,
-            last_name:  document.getElementById('newLastName').value,
-            email:      document.getElementById('newEmail').value,
-            password:   document.getElementById('newPassword').value,
-        })
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-        errorEl.textContent   = data.error;
-        errorEl.style.display = 'block';
-        return;
-    }
-
-    closeModal();
-    showNotification(`${data.user.full_name} toegevoegd!`, 'success');
-    await loadTeachers();
-    await loadOverview();
-}
-
-async function removeTeacher(userId) {
-    if (!confirm('Leerkracht deactiveren?')) return;
-    await fetch(`/api/users/${userId}`, { method: 'DELETE' });
-    showNotification('Leerkracht verwijderd', 'success');
-    await loadTeachers();
-    await loadOverview();
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -1473,8 +1401,7 @@ function renderVergelijking() {
 document.addEventListener('click', function(e) {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
-    const action = btn.dataset.action;
-    if (action === 'removeTeacher') { removeTeacher(btn.dataset.id); }
+    // (geen acties meer via event delegation in directeur dashboard)
 });
 </script>
 </body>

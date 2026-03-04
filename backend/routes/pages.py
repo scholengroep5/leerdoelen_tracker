@@ -58,3 +58,13 @@ def doelen_beheer():
 @login_required
 def admin_page():
     return redirect(url_for('pages.dashboard'))
+
+
+@pages_bp.route('/klassen')
+@login_required
+def klassen_beheer():
+    """Klassenbeheer voor directeurs (en school_ict)."""
+    if not current_user.is_director:
+        from flask import abort
+        abort(403)
+    return render_template('directeur_klassen.html', org_name=_org_name())
