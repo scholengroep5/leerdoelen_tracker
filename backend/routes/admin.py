@@ -238,7 +238,7 @@ def activate_year(year_id):
 
 @admin_bp.route('/schools/<int:school_id>/users', methods=['GET'])
 @login_required
-@school_ict_required
+@director_or_ict_required
 def list_school_users(school_id):
     if not current_user.is_scholengroep_ict and current_user.school_id != school_id:
         return jsonify({'error': 'Geen toegang tot deze school'}), 403
