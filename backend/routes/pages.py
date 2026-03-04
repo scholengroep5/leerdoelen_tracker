@@ -43,7 +43,6 @@ def dashboard():
         return render_template('directeur.html', org_name=org)
     return render_template('leerkracht.html', org_name=org)
 
-
 @pages_bp.route('/doelen-beheer')
 @login_required
 @_beheer_required
@@ -68,3 +67,13 @@ def klassen_beheer():
         from flask import abort
         abort(403)
     return render_template('directeur_klassen.html', org_name=_org_name())
+
+
+@pages_bp.route('/leerkracht-view')
+@login_required
+def leerkracht_view():
+    """Directeur bekijkt de tracker als leerkracht."""
+    if not current_user.is_director:
+        from flask import abort
+        abort(403)
+    return render_template('leerkracht.html', org_name=_org_name(), director_mode=True)

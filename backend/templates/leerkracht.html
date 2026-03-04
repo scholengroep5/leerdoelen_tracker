@@ -299,7 +299,13 @@
                 📥 Vorige beoordelingen importeren
             </button>
             <input type="file" id="importJsonFile" accept=".json" style="display:none">
+            {% if director_mode %}
+            <a href="/dashboard" class="btn btn-secondary" style="font-weight:600;">
+                ← Terug naar directeurdashboard
+            </a>
+            {% else %}
             <a href="/auth/logout" class="btn btn-secondary">Uitloggen</a>
+            {% endif %}
         </div>
     </div>
 
