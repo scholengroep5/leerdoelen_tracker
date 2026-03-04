@@ -409,6 +409,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnConfirmUser') && bind('btnConfirmUser', 'click', addUser);
     document.getElementById('auditCategory') && bind('auditCategory', 'change', loadAuditLog);
     document.getElementById('auditSearch') && bind('auditSearch', 'input', loadAuditLog);
+    // Redirect URI is altijd bekend — vul meteen in zodat het niet "Laden..." blijft
+    const redirectEl = document.getElementById('redirectUriDisplay');
+    if (redirectEl) redirectEl.textContent = window.location.origin + '/auth/google/callback';
+
     const me = await fetch('/api/me').then(r => r.json());
     mySchoolId = me.user?.school_id;
     document.getElementById('schoolName').textContent = me.user?.school_name || '';
@@ -671,10 +675,6 @@ async function loadSsoStatus() {
 
     const statusEl = document.getElementById('ssoStatus');
     if (!statusEl || !school) return;
-
-    // Toon de redirect URI in de instructies
-    const redirectEl = document.getElementById('redirectUriDisplay');
-    if (redirectEl) redirectEl.textContent = window.location.origin + '/auth/google/callback';
 
     if (school.google_sso_configured) {
         statusEl.innerHTML = `
