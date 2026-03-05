@@ -1,0 +1,100 @@
+name: Build & Push
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'           # ook triggeren op versie-tags zoals v1.2.3
+  workflow_dispatch:   # handmatig te triggeren via de GitHub UI
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Vereiste variabelen (stel in via GitHub → Settings → Variables → Actions):
+#
+#   IMAGE_NAME    Volledig pad van de image zonder tag
+#                 Formaat: ghcr.io/<org-of-gebruiker>/<repo-naam>
+#                 Voorbeeld: ghcr.io/scholengroep-naam/leerdoelen-tracker
+#
+# Geen secrets nodig — de workflow gebruikt het automatische GITHUB_TOKEN.
+# Zorg wel dat in de repo-instellingen packages schrijven is toegestaan:
+#   GitHub → repo → Settings → Actions → General →
+#   "Workflow permissions" → "Read and write permissions" aanvinken
+# ──────────────────────────────────────────────────────────────────────────────
+
+env:
+  REGISTRY:   ghcr.io
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+
+jobs:
+  build-and-push:
+    name: Build & Push image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write   # geeft GITHUB_TOKEN schrijftoegang tot ghcr.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Genereer image tags
+        id: meta
+        run: |
+          SHA_SHORT=$(echo "${{ github.sha }}" | cut -c1-8)
+
+          # Altijd een sha-tag aanmaken
+          TAGS="${{ env.IMAGE_NAME }}:sha-${SHA_SHORT}"
+
+          # Op main branch ook :latest taggen
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            TAGS="${TAGS},${{ env.IMAGE_NAME }}:latest"
+          fi
+
+          # Op een versie-tag (v1.2.3) ook die tag meegeven
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${{ github.ref_name }}"
+            TAGS="${TAGS},${{ env.IMAGE_NAME }}:${VERSION}"
+          fi
+
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "sha_short=${SHA_SHORT}" >> $GITHUB_OUTPUT
+
+      - name: Inloggen op ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build en push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context:  ./backend
+          file:     ./backend/Dockerfile
+          push:     true
+          tags:     ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
+          cache-to:   type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+
+      - name: Samenvatting
+        run: |
+          echo "## ✅ Build geslaagd" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ steps.meta.outputs.sha_short }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tags** | \`${{ steps.meta.outputs.tags }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Image staat klaar in de registry. Trek ze op je server met:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "docker compose pull backend && docker compose up -d backend" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
