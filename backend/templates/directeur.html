@@ -9,818 +9,454 @@
             --primary: #4f46e5; --primary-dark: #4338ca;
             --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
             --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
-            --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280; --gray-600: #4b5563;
-            --gray-700: #374151; --gray-800: #1f2937;
+            --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280;
+            --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937;
             --status-groen: #10b981; --status-oranje: #f59e0b; --status-roze: #ec4899;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gray-100); color: var(--gray-800); }
         .container { max-width: 1600px; margin: 0 auto; padding: 1rem; }
-        .header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
-        .btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 1rem; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; }
+        .btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.85rem; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none; }
         .btn-light { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
         .btn-light:hover { background: rgba(255,255,255,0.3); }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-secondary { background: var(--gray-200); color: var(--gray-700); }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 0.75rem;
-            margin-bottom: 0;
-        }
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.1rem 1rem 1rem;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-            transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-        .stat-icon {
-            width: 36px; height: 36px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; margin-bottom: 0.1rem;
-        }
-        .stat-card.highlight .stat-icon  { background: rgba(79,70,229,0.12); }
-        .stat-card.c-blauw   .stat-icon  { background: rgba(99,102,241,0.1); }
-        .stat-card.accent-groen  .stat-icon  { background: rgba(16,185,129,0.12); }
-        .stat-card.accent-oranje .stat-icon  { background: rgba(245,158,11,0.12); }
-        .stat-card.accent-roze   .stat-icon  { background: rgba(236,72,153,0.12); }
-
-        .stat-value { font-size: 1.9rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
-        .stat-card.highlight  .stat-value { color: var(--primary); }
-        .stat-card.c-blauw    .stat-value { color: #6366f1; }
-        .stat-card.accent-groen  .stat-value { color: var(--status-groen); }
-        .stat-card.accent-oranje .stat-value { color: var(--status-oranje); }
-        .stat-card.accent-roze   .stat-value { color: var(--status-roze); }
-        .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-400); font-weight: 600; }
-        .section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .section h2 { font-size: 1.1rem; color: var(--gray-700); margin-bottom: 1rem; }
-
-        .status-selector { width: 22px; height: 22px; border-radius: 5px; border: 2px solid var(--gray-300); display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: bold; flex-shrink: 0; }
-        .status-selector.status-groen  { background: var(--status-groen);  border-color: var(--status-groen);  color: white; }
-        .status-selector.status-groen::after  { content: '✓'; }
-        .status-selector.status-oranje { background: var(--status-oranje); border-color: var(--status-oranje); color: white; }
-        .status-selector.status-oranje::after { content: '~'; }
-        .status-selector.status-roze   { background: var(--status-roze);   border-color: var(--status-roze);   color: white; }
-        .status-selector.status-roze::after   { content: '!'; }
-        .status-selector.status-none   { background: white; border-color: var(--gray-300); color: var(--gray-400); }
-        .status-selector.status-none::after   { content: '○'; }
-        .legend-container { background: white; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-        .legend-title { font-weight: 600; color: var(--gray-700); margin-bottom: .75rem; font-size: .9rem; }
-        .legend-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
-        .legend-section { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
-        .legend-item { display: flex; align-items: center; gap: .4rem; font-size: .85rem; white-space: nowrap; }
-        .legend-color { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
-        .legend-divider { width: 1px; height: 28px; background: var(--gray-300); margin: 0 .5rem; }
-        .filters-bar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: 1rem; }
-        .filter-group { display: flex; flex-direction: column; gap: 0.25rem; }
-        .filter-group label { font-size: 0.75rem; font-weight: 500; color: var(--gray-500); }
-        .filter-group select, .filter-group input { padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 0.9rem; min-width: 150px; }
-        .table-scroll { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        thead { background: var(--gray-50); }
-        th { padding: 0.75rem 0.5rem; text-align: center; font-weight: 600; color: var(--gray-600); border-bottom: 2px solid var(--gray-200); white-space: nowrap; }
-        th.goal-header { text-align: left; min-width: 250px; }
-        th.teacher-header { min-width: 80px; font-size: 0.75rem; }
-        td { padding: 0.5rem; border-bottom: 1px solid var(--gray-100); text-align: center; }
-        td.goal-cell { text-align: left; }
-        tr:hover { background: var(--gray-50); }
-        .goal-code { font-weight: 600; color: var(--gray-700); }
-        .goal-desc { font-size: 0.8rem; color: var(--gray-500); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .status-indicator { width: 24px; height: 24px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; }
-        .status-indicator.groen { background: var(--status-groen); color: white; }
-        .status-indicator.oranje { background: var(--status-oranje); color: white; }
-        .status-indicator.roze { background: var(--status-roze); color: white; }
-        .status-indicator.none { background: var(--gray-200); color: var(--gray-400); }
-        .progress-bar { height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; min-width: 60px; }
-        .progress-bar-inner { height: 100%; display: flex; }
-        .p-groen { background: var(--status-groen); }
+        .btn-secondary:hover { background: var(--gray-300); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .stat-card { background: white; border-radius: 10px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .stat-card.highlight { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .05em; opacity: .8; margin-top: .2rem; }
+        .tabs { display: flex; gap: .25rem; background: white; border-radius: 10px; padding: .35rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); flex-wrap: wrap; }
+        .tab-btn { flex: 1; min-width: 100px; padding: .5rem .75rem; border: none; border-radius: 7px; font-size: .85rem; font-weight: 500; cursor: pointer; background: transparent; color: var(--gray-600); transition: all .2s; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-btn:hover:not(.active) { background: var(--gray-100); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .card h2 { font-size: 1.05rem; color: var(--gray-700); margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+        .klas-chips { display: flex; flex-wrap: wrap; gap: .6rem; }
+        .klas-chip { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: .5rem .85rem; font-size: .85rem; }
+        .klas-chip .klas-name { font-weight: 600; color: var(--gray-800); }
+        .klas-chip .klas-teachers { font-size: .75rem; color: var(--gray-500); margin-top: .15rem; }
+        .vak-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .75rem; }
+        .vak-card { background: var(--gray-50); border-radius: 8px; padding: 1rem; }
+        .vak-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
+        .vak-card-header h3 { font-size: .9rem; font-weight: 600; }
+        .progress-bar { height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; }
+        .progress-inner { height: 100%; display: flex; }
+        .p-groen  { background: var(--status-groen); }
         .p-oranje { background: var(--status-oranje); }
-        .p-roze { background: var(--status-roze); }
-        .leeftijd-badge { font-size: 0.7rem; padding: 0.15rem 0.35rem; background: var(--gray-200); border-radius: 3px; }
-        .empty-state { text-align: center; padding: 3rem; color: var(--gray-500); }
-        .loading { text-align: center; padding: 3rem; color: var(--gray-500); }
-        .notification { position: fixed; bottom: 1rem; right: 1rem; padding: 1rem 1.5rem; border-radius: 8px; color: white; font-weight: 500; transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1001; }
+        .p-roze   { background: var(--status-roze); }
+        .vak-legend { display: flex; gap: .75rem; font-size: .75rem; color: var(--gray-600); margin-top: .4rem; flex-wrap: wrap; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 2px; }
+        .filter-bar { background: white; border-radius: 10px; padding: .85rem 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
+        .fg { display: flex; flex-direction: column; gap: .2rem; }
+        .fg label { font-size: .72rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .04em; }
+        .fg select, .fg input { padding: .45rem .65rem; border: 1px solid var(--gray-300); border-radius: 6px; font-size: .88rem; min-width: 140px; }
+        .fg select:focus, .fg input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+        .leeftijd-cbs { display: flex; flex-wrap: wrap; gap: .3rem; }
+        .lft-cb { display: flex; align-items: center; gap: .2rem; padding: .28rem .5rem; border: 1px solid var(--gray-300); border-radius: 5px; font-size: .78rem; cursor: pointer; user-select: none; }
+        .lft-cb:has(input:checked) { background: var(--primary); border-color: var(--primary); color: white; }
+        .lft-cb input { display: none; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .83rem; }
+        thead { position: sticky; top: 0; z-index: 10; }
+        th { padding: .6rem .5rem; text-align: center; font-weight: 600; color: var(--gray-600);
+             border-bottom: 2px solid var(--gray-200); white-space: nowrap;
+             background: var(--gray-50); }
+        th.goal-col { text-align: left; min-width: 220px; max-width: 280px;
+                      position: sticky; left: 0; z-index: 11;
+                      background: var(--gray-50); box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+        th.klas-col { min-width: 64px; max-width: 90px; font-size: .72rem;
+                      overflow: hidden; text-overflow: ellipsis; }
+        th.sum-col  { min-width: 56px; }
+        td { padding: .4rem .5rem; border-bottom: 1px solid var(--gray-100); text-align: center; }
+        td.goal-cell { text-align: left; position: sticky; left: 0; z-index: 1;
+                       background: white; box-shadow: 2px 0 4px rgba(0,0,0,.06); }
+        tr:hover td { background: var(--gray-50); }
+        tr:hover td.goal-cell { background: var(--gray-50); }
+        .goal-nr { font-weight: 600; font-size: .82rem; }
+        .goal-desc { font-size: .77rem; color: var(--gray-500); max-width: 220px;
+                     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lft-badges { display: flex; flex-wrap: wrap; gap: .2rem; }
+        .lft-badge { font-size: .68rem; padding: .1rem .3rem; background: var(--gray-200); border-radius: 3px; color: var(--gray-600); }
+        .si { width: 26px; height: 26px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 700; }
+        .si.groen  { background: var(--status-groen);  color: white; }
+        .si.oranje { background: var(--status-oranje); color: white; }
+        .si.roze   { background: var(--status-roze);   color: white; }
+        .si.none   { background: var(--gray-200);       color: var(--gray-400); }
+        .sum-bar { display: flex; height: 18px; border-radius: 3px; overflow: hidden; min-width: 50px; }
+        .sum-cell { background: var(--gray-50); }
+        .vergelijk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        @media (max-width: 600px) { .vergelijk-grid { grid-template-columns: 1fr; } }
+        .vergelijk-select { padding: .5rem .75rem; border: 1px solid var(--gray-300); border-radius: 6px; font-size: .9rem; width: 100%; }
+        .diff-row-same   { background: #f0fdf4 !important; }
+        .diff-row-differ { background: #fff7ed !important; }
+        .empty { text-align: center; padding: 3rem; color: var(--gray-400); font-size: .9rem; }
+        .notification { position: fixed; bottom: 1rem; right: 1rem; padding: .9rem 1.4rem; border-radius: 8px; color: white; font-weight: 500; transform: translateY(100px); opacity: 0; transition: all .3s; z-index: 1001; }
         .notification.show { transform: translateY(0); opacity: 1; }
         .notification.success { background: var(--success); }
-        .notification.error { background: var(--danger); }
-        /* Leerkrachten beheer */
-        .teacher-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-        .teacher-chip { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; background: var(--gray-100); border-radius: 9999px; font-size: 0.85rem; }
-        .teacher-chip .name { font-weight: 500; }
-        .teacher-chip .klas { color: var(--gray-500); }
-        .teacher-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-
-        /* Leerkrachten sectie */
-        .teachers-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .teachers-section h2 { font-size: 1.1rem; color: var(--gray-700); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .action-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-
-        /* Statistieken */
-        .stats-overview { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .stats-overview h2 { font-size: 1.1rem; color: var(--gray-700); margin-bottom: 1rem; }
-
-        /* Vak statistieken */
-        .vak-stats h2 { font-size: 1.1rem; color: var(--gray-700); margin-bottom: 1rem; }
-        .vak-card { background: var(--gray-50); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
-        .vak-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
-        .vak-card-header h3 { font-size: 1rem; color: var(--gray-800); }
-        .vak-card-header .percentage { font-weight: 600; color: var(--primary); }
-        .vak-card-stats { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--gray-600); }
-        .vak-card-stats span { display: flex; align-items: center; gap: 0.25rem; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-        .dot-groen { background: var(--status-groen); }
-        .dot-oranje { background: var(--status-oranje); }
-        .dot-roze { background: var(--status-roze); }
-
-        /* Progress bars vak stats */
-        .progress-groen { background: var(--status-groen); }
-        .progress-oranje { background: var(--status-oranje); }
-        .progress-roze { background: var(--status-roze); }
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal { background: white; border-radius: 12px; padding: 1.5rem; max-width: 450px; width: 90%; }
-        .modal h2 { margin-bottom: 1rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.35rem; }
-        .form-group input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 0.9rem; }
-        .modal-buttons { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
-
-        /* Tab navigatie */
-        .tab-btn {
-            padding: 0.5rem 1rem; border: none; border-radius: 8px 8px 0 0;
-            background: var(--gray-100); color: var(--gray-600);
-            font-size: 0.875rem; font-weight: 500; cursor: pointer;
-            transition: all 0.15s; border-bottom: 2px solid transparent;
+        .notification.error   { background: var(--danger); }
+        .notification.warning { background: var(--warning); }
+        .modal-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal-inner { background:white;border-radius:12px;padding:1.5rem;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3); }
+        .modal-inner h2 { font-size:1.05rem;margin-bottom:.35rem; }
+        .modal-inner p { font-size:.82rem;color:var(--gray-500);margin-bottom:1rem; }
+        .modal-buttons { display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.1rem; }
+        .form-input { width:100%;padding:.55rem .75rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.9rem;margin-top:.5rem; }
+        .form-input:focus { outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.1); }
+        .form-error { font-size:.82rem;color:var(--danger);margin-top:.5rem;min-height:1.2em; }
+        .klas-chip-card { background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;padding:.6rem .85rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem; }
+        .klas-chip-card .klas-info { flex:1;cursor:pointer; }
+        .klas-chip-card .klas-name { font-weight:600;color:var(--gray-800); }
+        .klas-chip-card .klas-teachers { font-size:.75rem;color:var(--gray-500);margin-top:.15rem; }
+        .klas-chip-card .btn-delete { background:none;border:1px solid var(--gray-200);border-radius:6px;padding:.3rem .45rem;cursor:pointer;color:var(--gray-400);font-size:.85rem;transition:all .15s;flex-shrink:0; }
+        .klas-chip-card .btn-delete:hover { background:var(--danger);border-color:var(--danger);color:white; }
+        .legend-footer { padding: .85rem 1.25rem; border-top: 1px solid var(--gray-200); display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: .78rem; color: var(--gray-600); }
+        .legend-item { display: flex; align-items: center; gap: .35rem; }
+        @media (prefers-color-scheme: dark) {
+            :root { --gray-50:#1a1a2e;--gray-100:#16213e;--gray-200:#0f3460;--gray-300:#1a1a3e;--gray-700:#e5e7eb;--gray-800:#f3f4f6; }
+            body { background:#0f172a;color:#e2e8f0; }
+            .card,.tabs,.stats-grid .stat-card,.filter-bar { background:#1e293b!important; }
+            th,thead { background:#1e293b!important;color:#94a3b8!important;border-color:#334155!important; }
+            td { border-color:#1e293b!important; }
+            tr:hover { background:#263548!important; }
+            td.goal-cell { background:#0f172a!important; }
+            tr:hover td.goal-cell { background:#263548!important; }
+            th.goal-col { background:#1e293b!important;box-shadow:2px 0 4px rgba(0,0,0,.3)!important; }
+            select,input { background:#0f172a!important;color:#e2e8f0!important;border-color:#334155!important; }
+            .vak-card,.klas-chip { background:#162032!important;border-color:#334155!important; }
+            .lft-badge { background:#334155!important;color:#94a3b8!important; }
+            .lft-cb { border-color:#334155!important;color:#e2e8f0; }
+            .si.none { background:#334155!important; }
+            .sum-cell { background:#1e293b!important; }
+            .tab-btn { color:#94a3b8; }
+            .btn-secondary { background:#334155!important;color:#e2e8f0!important; }
+            .diff-row-same   { background:#064e3b!important; }
+            .diff-row-differ { background:#451a03!important; }
+            .modal-overlay .modal-inner { background:#1e293b!important;color:#e2e8f0!important; }
+            #koppelingCheckboxes label { color:#e2e8f0!important; }
+            #koppelingCheckboxes label:hover { background:#263548!important; }
+            #koppelingCheckboxes span { color:#94a3b8!important; }
+            #koppelingCheckboxes input[type=checkbox] { accent-color:var(--primary); }
+            .modal-overlay .form-input { background:#0f172a!important;color:#e2e8f0!important;border-color:#334155!important; }
         }
-        .tab-btn:hover { background: var(--gray-200); color: var(--gray-800); }
-        .tab-btn.active {
-            background: white; color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-            box-shadow: 0 -2px 8px rgba(79,70,229,0.08);
-        }
-
-        /* Version badge */
-        .version-badge {
-            font-size: 0.7rem; background: rgba(255,255,255,0.25);
-            padding: 0.15rem 0.5rem; border-radius: 9999px; font-weight: 500;
-            vertical-align: middle;
-        }
-
-        /* Klasoverzicht progress */
-        .klas-progress-row {
-            display: flex; align-items: center; gap: 0.75rem;
-            margin-bottom: 0.5rem;
-        }
-        .klas-label { font-size: 0.82rem; color: var(--gray-600); min-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .klas-progress-bar {
-            flex: 1; height: 10px; background: var(--gray-200);
-            border-radius: 5px; overflow: hidden; display: flex;
-        }
-        .klas-pct { font-size: 0.78rem; color: var(--gray-500); min-width: 36px; text-align: right; }
-
-        /* Vergelijking progress bars */
-        .vergelijk-bar-wrap {
-            height: 12px; background: var(--gray-200);
-            border-radius: 4px; overflow: hidden;
-            margin-bottom: 0.2rem;
-        }
-    
-@media (prefers-color-scheme: dark) {
-    :root {
-        --gray-50:  #1a1a2e;
-        --gray-100: #16213e;
-        --gray-200: #0f3460;
-        --gray-300: #1a1a3e;
-        --gray-400: #6b7280;
-        --gray-500: #9ca3af;
-        --gray-600: #d1d5db;
-        --gray-700: #e5e7eb;
-        --gray-800: #f3f4f6;
-        --gray-900: #f9fafb;
-    }
-
-    body { background: #0f172a; color: #e2e8f0; }
-
-    /* Kaarten en secties - NIET de gradient header! */
-    .card, .section, .stat-card, .school-card,
-    .table-container, .filters-container, .legend-container,
-    .stats-bar .stat-card, .stats-overview, .vak-stats,
-    .import-section, .detail-section, .filters-bar,
-    .teachers-section {
-        background: #1e293b !important;
-        border-color: #334155 !important;
-    }
-
-    /* Tab knoppen */
-    .tab-btn { background: #162032 !important; color: #94a3b8 !important; }
-    .tab-btn:hover { background: #1e293b !important; color: #e2e8f0 !important; }
-    .tab-btn.active { background: #1e293b !important; color: #a5b4fc !important; border-bottom-color: #6366f1 !important; }
-
-    /* Tabellen */
-    thead, th { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
-    td { border-color: #1e293b !important; color: #e2e8f0; }
-    tr:hover td, tr:hover { background: #263548 !important; }
-    tr.status-groen   { background: #064e3b !important; }
-    tr.status-groen:hover  { background: #065f46 !important; }
-    tr.status-oranje  { background: #451a03 !important; }
-    tr.status-oranje:hover { background: #78350f !important; }
-    tr.status-roze    { background: #500724 !important; }
-    tr.status-roze:hover   { background: #701a35 !important; }
-
-    /* Inputs en selects */
-    input, select, textarea {
-        background: #0f172a !important;
-        color: #e2e8f0 !important;
-        border-color: #334155 !important;
-    }
-    input::placeholder { color: #64748b !important; }
-    input:focus, select:focus, textarea:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.2) !important;
-    }
-
-    /* Role select inline */
-    .role-select {
-        background: #1e293b !important;
-        color: #e2e8f0 !important;
-        border-color: #334155 !important;
-    }
-
-    /* Modals */
-    .modal { background: #1e293b !important; color: #e2e8f0; }
-    .modal h2 { color: #f1f5f9; }
-
-    /* Knoppen */
-    .btn-secondary { background: #334155 !important; color: #e2e8f0 !important; }
-    .btn-secondary:hover { background: #475569 !important; }
-
-    /* Status selector knoppen (leerkracht tabel) */
-    .status-selector.status-none { background: #1e293b !important; border-color: #475569 !important; color: #64748b !important; }
-
-    /* Stat cards */
-    .stat-card { background: #1e293b !important; }
-    .stat-card.highlight  .stat-value { color: #a5b4fc !important; }
-    .stat-card.c-blauw    .stat-value { color: #818cf8 !important; }
-    .stat-card.accent-groen  .stat-value { color: #34d399 !important; }
-    .stat-card.accent-oranje .stat-value { color: #fbbf24 !important; }
-    .stat-card.accent-roze   .stat-value { color: #f472b6 !important; }
-    .stat-card.highlight  .stat-icon { background: rgba(165,180,252,0.15) !important; }
-    .stat-card.c-blauw    .stat-icon { background: rgba(129,140,248,0.15) !important; }
-    .stat-card.accent-groen  .stat-icon { background: rgba(52,211,153,0.15) !important; }
-    .stat-card.accent-oranje .stat-icon { background: rgba(251,191,36,0.15) !important; }
-    .stat-card.accent-roze   .stat-icon { background: rgba(244,114,182,0.15) !important; }
-
-    /* School card header */
-    .school-card-header { background: #162032 !important; border-color: #334155 !important; }
-    .school-card { border-color: #334155 !important; }
-
-    /* Drop zone */
-    .drop-zone { background: #162032 !important; border-color: #334155 !important; }
-    .drop-zone:hover, .drop-zone.over { background: #1a2744 !important; border-color: #6366f1 !important; }
-
-    /* Domain chips */
-    .domain-chip { background: #1e3a5f !important; border-color: #2563eb !important; color: #93c5fd !important; }
-
-    /* Badges */
-    .leeftijd-badge { background: #334155 !important; color: #94a3b8 !important; }
-    .ebg-begrijpen { color: #1f2937 !important; }
-
-    /* MIA container */
-    .mia-container { background: #162032 !important; }
-    .mia-item { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
-    .mia-item.niet-aanklikbaar { background: #162032 !important; color: #64748b !important; }
-
-    /* Not configured box */
-    .not-configured { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
-    .not-configured code { background: #0f172a !important; color: #a5b4fc !important; }
-
-    /* Profile section */
-    .profile-section { background: #162032 !important; }
-
-    /* Leeftijd checkboxes */
-    .leeftijd-checkbox { border-color: #334155 !important; color: #e2e8f0; }
-    .leeftijd-checkbox:has(input:checked) { background: var(--primary) !important; }
-
-    /* Vak indicator */
-    .vak-indicator { /* gradient blijft, ziet er goed uit */ }
-
-    /* Nieuwe layout blokken */
-    .teachers-section { background: #1e293b !important; }
-    .stats-overview   { background: #1e293b !important; }
-    .teacher-chip     { background: #334155 !important; color: #e2e8f0 !important; }
-    .teacher-chip .klas { color: #94a3b8 !important; }
-    .vak-card-header h3  { color: #e2e8f0 !important; }
-    .vak-card-stats      { color: #94a3b8 !important; }
-
-    /* Klas progress bars achtergrond */
-    .progress-bar, .klas-progress-bar, .vergelijk-bar-wrap { background: #334155 !important; }
-
-    /* Vak card */
-    .vak-card { background: #162032 !important; }
-
-    /* Upload results */
-    .upload-ok  { background: #064e3b !important; border-color: #065f46 !important; }
-    .upload-err { background: #450a0a !important; border-color: #7f1d1d !important; }
-
-    /* Alert boxes */
-    .alert-error   { background: #450a0a !important; border-color: #7f1d1d !important; color: #fca5a5 !important; }
-    .alert-success { background: #064e3b !important; border-color: #065f46 !important; color: #6ee7b7 !important; }
-    .alert-warning { background: #451a03 !important; border-color: #78350f !important; color: #fcd34d !important; }
-    .alert-info    { background: #1e3a5f !important; border-color: #1d4ed8 !important; color: #93c5fd !important; }
-
-    /* Error text */
-    .form-error, #sa-error, #addUser-error { color: #f87171 !important; }
-    .form-hint { color: #64748b !important; }
-
-    /* Superadmin toggle */
-    .superadmin-toggle { border-color: #334155 !important; }
-    .superadmin-toggle button { color: #475569 !important; }
-    .superadmin-toggle button:hover { color: #94a3b8 !important; }
-
-    /* Superadmin form inputs */
-    .superadmin-form label { color: #94a3b8 !important; }
-
-    /* Footer */
-    .footer { color: #64748b !important; }
-    /* Legend container */
-    .legend-container { background: #1e293b !important; }
-    .legend-title { color: #94a3b8 !important; }
-    .legend-divider { background: #334155 !important; }
-    .status-selector.status-none { background: #1e293b !important; border-color: #475569 !important; color: #64748b !important; }
-        .status-legend { background: #162032 !important; border-color: #334155 !important; color: #94a3b8 !important; }
-
-    /* Scrollbar (webkit) */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
-}
-</style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    </style>
 </head>
 <body>
 <div class="container">
 
-    <!-- Header -->
     <div class="header">
         <div>
-            <h1>🏫 Directeur Dashboard <span class="version-badge">v4.0</span></h1>
-            <div style="opacity:0.85;font-size:0.85rem;margin-top:0.25rem;" id="schoolInfo">Schooloverzicht van alle leerdoelen en leerkrachten</div>
+            <h1>🏫 Directeur Dashboard <span style="font-size:.7rem;background:rgba(255,255,255,.2);padding:.15rem .5rem;border-radius:99px;font-weight:500;">v5.0</span></h1>
+            <div style="opacity:.85;font-size:.85rem;margin-top:.25rem;" id="schoolInfo">Laden...</div>
         </div>
-        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.7rem;opacity:0.75;text-transform:uppercase;letter-spacing:0.05em;">Schooljaar</label>
-                <select id="jaarSelector"
-                    style="padding:0.35rem 0.6rem;border:1px solid rgba(255,255,255,0.3);border-radius:6px;background:rgba(255,255,255,0.15);color:white;font-size:0.85rem;cursor:pointer;">
-                    <option value="">Laden...</option>
-                </select>
-            </div>
-            <button id="btnVernieuw" class="btn btn-light">↻ Vernieuwen</button>
-            <a href="/leerkracht-view" class="btn btn-light" title="Bekijk en vul de tracker in als leerkracht">
-                👩‍🏫 Leerkrachtsweergave
-            </a>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+            <select id="jaarSelector" class="btn btn-light" style="min-width:120px;cursor:pointer;">
+                <option>Laden...</option>
+            </select>
+            <a href="/leerkracht-view" class="btn btn-light">👤 Leerkrachtenweergave</a>
             <a href="/auth/logout" class="btn btn-light">Uitloggen</a>
         </div>
     </div>
 
-    <!-- Schoolbrede statistieken -->
-    <div class="stats-overview" id="statsOverview">
-        <h2>📊 Schoolbrede statistieken</h2>
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card highlight">
-                <div class="stat-icon">👩‍🏫</div>
-                <div class="stat-value" id="statTeachers">-</div>
-                <div class="stat-label">Leerkrachten</div>
-            </div>
-            <div class="stat-card c-blauw">
-                <div class="stat-icon">📚</div>
-                <div class="stat-value" id="statVakken">-</div>
-                <div class="stat-label">Vakken</div>
-            </div>
-            <div class="stat-card c-blauw">
-                <div class="stat-icon">📋</div>
-                <div class="stat-value" id="statBeoordeeld">-</div>
-                <div class="stat-label">Beoordelingen</div>
-            </div>
-            <div class="stat-card accent-groen">
-                <div class="stat-icon">✅</div>
-                <div class="stat-value" id="statGroen">-</div>
-                <div class="stat-label">Groen</div>
-            </div>
-            <div class="stat-card accent-oranje">
-                <div class="stat-icon">🔶</div>
-                <div class="stat-value" id="statOranje">-</div>
-                <div class="stat-label">Oranje</div>
-            </div>
-            <div class="stat-card accent-roze">
-                <div class="stat-icon">🆕</div>
-                <div class="stat-value" id="statRoze">-</div>
-                <div class="stat-label">Roze</div>
-            </div>
+    <div class="stats-grid">
+        <div class="stat-card highlight"><div class="stat-value" id="statKlassen">-</div><div class="stat-label">Klassen</div></div>
+        <div class="stat-card"><div class="stat-value" id="statVakken">-</div><div class="stat-label">Vakken</div></div>
+        <div class="stat-card"><div class="stat-value" id="statBeoordeeld">-</div><div class="stat-label">Beoordelingen</div></div>
+        <div class="stat-card" style="border-left:3px solid var(--status-groen);"><div class="stat-value" id="statGroen">-</div><div class="stat-label">Groen</div></div>
+        <div class="stat-card" style="border-left:3px solid var(--status-oranje);"><div class="stat-value" id="statOranje">-</div><div class="stat-label">Oranje</div></div>
+        <div class="stat-card" style="border-left:3px solid var(--status-roze);"><div class="stat-value" id="statRoze">-</div><div class="stat-label">Roze</div></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="klassen">🏫 Klassen</button>
+        <button class="tab-btn" data-tab="vakken">📚 Per vak</button>
+        <button class="tab-btn" data-tab="doelen">📋 Doelen detail</button>
+        <button class="tab-btn" data-tab="vergelijk">⚖️ Vergelijken</button>
+        <button class="tab-btn" data-tab="koppeling">👥 Leerkrachten</button>
+    </div>
+
+    <div class="tab-content active" id="tab-klassen">
+        <div class="card">
+            <h2>🏫 Klassen overzicht</h2>
+            <div class="klas-chips" id="klasChips"><div class="empty">Laden...</div></div>
+        </div>
+        <div class="card">
+            <h2>📊 Voortgang per klas</h2>
+            <div id="klasProgressContent"><div class="empty">Laden...</div></div>
         </div>
     </div>
 
-    <!-- Leerkrachten sectie -->
-    <div class="teachers-section" id="teachersSection">
-        <h2>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            Leerkrachten
-        </h2>
-        <div class="teacher-chips" id="teacherChips"></div>
-        <div class="action-bar" style="margin-top:1rem;">
-            <a href="/klassen" class="btn btn-primary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
-                </svg>
-                Klassenbeheer
-            </a>
-            <button id="btnExportCSV" class="btn btn-secondary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                Exporteer CSV
-            </button>
-            <button id="btnExportPDF" class="btn btn-secondary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                Exporteer PDF
-            </button>
+    <div class="tab-content" id="tab-vakken">
+        <div class="card">
+            <h2>📚 Statistieken per vak</h2>
+            <div class="vak-grid" id="vakStatsContent"><div class="empty">Laden...</div></div>
         </div>
     </div>
 
-    <!-- Statistieken per vak -->
-    <div class="vak-stats section" id="vakStats" style="display:none;">
-        <h2>📚 Statistieken per vak</h2>
-        <div id="vakStatsContent"></div>
-    </div>
-
-    <!-- Tab navigatie -->
-    <div style="display:flex;gap:.25rem;margin-bottom:0;">
-        <button class="tab-btn active" id="tab-doelen">📋 Doelen</button>
-        <button class="tab-btn" id="tab-klassen">🏫 Klasoverzicht</button>
-        <button class="tab-btn" id="tab-vergelijk">⚖️ Klasvergelijking</button>
-    </div>
-
-    <!-- Tab: Doelen -->
-    <div id="panel-doelen" class="section" style="border-radius:0 12px 12px 12px;">
-
-        <!-- Legenda -->
-        <div class="legend-container">
-            <div class="legend-title">Legenda</div>
-            <div class="legend-grid">
-                <div class="legend-section">
-                    <div class="legend-item">
-                        <div class="status-selector status-groen" style="pointer-events:none;flex-shrink:0;"></div>
-                        <span>Doen we al</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="status-selector status-oranje" style="pointer-events:none;flex-shrink:0;"></div>
-                        <span>Doen we ongeveer</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="status-selector status-roze" style="pointer-events:none;flex-shrink:0;"></div>
-                        <span>Nieuw (doen we nog niet)</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="status-selector status-none" style="pointer-events:none;flex-shrink:0;"></div>
-                        <span>Niet beoordeeld</span>
-                    </div>
-                </div>
-                <div class="legend-divider"></div>
-                <div class="legend-section">
-                    <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--status-groen);flex-shrink:0;"></div><span>Groen = consensus</span></div>
-                    <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--status-oranje);flex-shrink:0;"></div><span>Oranje = gedeeltelijk</span></div>
-                    <div class="legend-item"><div style="width:10px;height:10px;border-radius:50%;background:var(--status-roze);flex-shrink:0;"></div><span>Roze = nog te doen</span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="filters-bar">
-            <div class="filter-group">
+    <div class="tab-content" id="tab-doelen">
+        <div class="filter-bar">
+            <div class="fg">
                 <label>Vak</label>
-                <select id="filterVak">
-                    <option value="all">Alle vakken</option>
-                </select>
+                <select id="filterVak"><option value="all">Alle vakken</option></select>
             </div>
-            <div class="filter-group">
-                <label>Leerkracht</label>
-                <select id="filterTeacher">
-                    <option value="all">Alle leerkrachten</option>
-                </select>
-            </div>
-            <div class="filter-group">
+            <div class="fg">
                 <label>Klas</label>
-                <select id="filterKlas">
-                    <option value="all">Alle klassen</option>
-                </select>
+                <select id="filterKlas"><option value="all">Alle klassen</option></select>
             </div>
-            <div class="filter-group">
+            <div class="fg">
                 <label>Status</label>
                 <select id="filterStatus">
                     <option value="all">Alle statussen</option>
-                    <option value="groen">✓ Groen (minstens 1)</option>
-                    <option value="oranje">~ Oranje (minstens 1)</option>
-                    <option value="roze">! Roze (minstens 1)</option>
+                    <option value="groen">✓ Minstens één groen</option>
+                    <option value="oranje">~ Minstens één oranje</option>
+                    <option value="roze">! Minstens één roze</option>
+                    <option value="consensus">✓ Consensus (iedereen groen)</option>
                     <option value="verschil">⚠ Verschillen</option>
-                    <option value="niemand">○ Geen status</option>
+                    <option value="niemand">○ Niemand beoordeeld</option>
                 </select>
             </div>
-            <div class="filter-group">
+            <div class="fg">
+                <label>Leeftijd</label>
+                <div class="leeftijd-cbs" id="leeftijdCbs"></div>
+            </div>
+            <div class="fg">
                 <label>Sectie</label>
-                <select id="filterSectie">
-                    <option value="all">Alle secties</option>
-                </select>
+                <select id="filterSectie"><option value="all">Alle secties</option></select>
             </div>
-            <div class="filter-group">
+            <div class="fg">
                 <label>Zoeken</label>
                 <input type="text" id="filterSearch" placeholder="Code of beschrijving...">
             </div>
-            <div class="filter-group" style="min-width:unset;">
-                <label>Leeftijd</label>
-                <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="2,5-4"><span>2,5-4</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="4-5"><span>4-5</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="5-6"><span>5-6</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="6-7"><span>6-7</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="7-8"><span>7-8</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="8-9"><span>8-9</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="9-10"><span>9-10</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="10-11"><span>10-11</span></label>
-                    <label class="leeftijd-checkbox"><input type="checkbox" value="11-12"><span>11-12</span></label>
+            <div class="fg" style="justify-content:flex-end;">
+                <label>&nbsp;</label>
+                <div style="display:flex;gap:.5rem;">
+                    <button class="btn btn-success" id="btnExportCSV">⬇ CSV</button>
+                    <button class="btn btn-secondary" id="btnExportPDF">⬇ PDF</button>
                 </div>
             </div>
         </div>
-
-        <!-- Tabel -->
-        <div class="table-scroll">
-            <table>
-                <thead id="tableHead">
-                    <tr><th class="goal-header">Doel</th><th>Samenvatting</th></tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr><td colspan="3" class="loading">Laden...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Legenda tabel onderaan -->
-        <div class="legend" style="padding:1rem 1.5rem;border-top:1px solid var(--gray-200);display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.8rem;color:var(--gray-600);">
-            <div class="legend-item"><div class="status-indicator groen">✓</div><span>Doen we al</span></div>
-            <div class="legend-item"><div class="status-indicator oranje">~</div><span>Doen we ongeveer</span></div>
-            <div class="legend-item"><div class="status-indicator roze">!</div><span>Nieuw</span></div>
-            <div class="legend-item"><div class="status-indicator none">○</div><span>Niet beoordeeld</span></div>
-        </div>
-
-    </div><!-- /panel-doelen -->
-
-    <!-- Tab: Klasoverzicht -->
-    <div id="panel-klassen" class="section" style="display:none;border-radius:0 12px 12px 12px;">
-        <div id="klasOverzichtContent">
-            <p style="color:var(--gray-400);font-style:italic;">Laden...</p>
+        <div class="card" style="padding:0;overflow:hidden;">
+            <div class="table-wrap">
+                <table>
+                    <thead id="tblHead"><tr><th class="goal-col">Doel</th><th>Samenvatting</th></tr></thead>
+                    <tbody id="tblBody"><tr><td colspan="3" class="empty">Selecteer een vak om te beginnen</td></tr></tbody>
+                </table>
+            </div>
+            <div class="legend-footer">
+                <div class="legend-item"><div class="si groen">✓</div> Doen we al</div>
+                <div class="legend-item"><div class="si oranje">~</div> Doen we ongeveer</div>
+                <div class="legend-item"><div class="si roze">!</div> Nieuw</div>
+                <div class="legend-item"><div class="si none">○</div> Niet beoordeeld</div>
+            </div>
         </div>
     </div>
 
-    <!-- Tab: Klasvergelijking -->
-    <div id="panel-vergelijk" class="section" style="display:none;border-radius:0 12px 12px 12px;">
-        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
-            <div class="filter-group">
-                <label>Klas A</label>
-                <select id="vergelijkKlasA"><option value="">-- Kies klas --</option></select>
+    <div class="tab-content" id="tab-vergelijk">
+        <div class="card">
+            <h2>⚖️ Twee klassen vergelijken</h2>
+            <div class="vergelijk-grid">
+                <div class="fg"><label>Klas A</label><select class="vergelijk-select" id="vergKlasA"><option value="">-- Kies klas --</option></select></div>
+                <div class="fg"><label>Klas B</label><select class="vergelijk-select" id="vergKlasB"><option value="">-- Kies klas --</option></select></div>
             </div>
-            <div class="filter-group">
-                <label>Klas B</label>
-                <select id="vergelijkKlasB"><option value="">-- Kies klas --</option></select>
-            </div>
-            <div class="filter-group">
+            <div class="fg" style="margin-bottom:1rem;max-width:200px;">
                 <label>Vak</label>
-                <select id="vergelijkVak"><option value="">Alle vakken</option></select>
+                <select class="vergelijk-select" id="vergVak"><option value="">-- Kies vak --</option></select>
+            </div>
+            <div id="vergelijkResult"><div class="empty">Kies twee klassen en een vak om te vergelijken</div></div>
+        </div>
+    </div>
+
+    <!-- TAB: Leerkrachten koppelen -->
+    <div class="tab-content" id="tab-koppeling">
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem;">
+                <h2 style="margin:0;">👥 Klassen &amp; Leerkrachten</h2>
+                <button class="btn btn-primary" id="btnNieuweKlas">+ Klas toevoegen</button>
+            </div>
+            <p style="font-size:.85rem;color:var(--gray-500);margin-bottom:1rem;">
+                Klik op een klas om leerkrachten te wijzigen. Gebruik het prullenbakje om een klas te verwijderen.
+            </p>
+            <div id="koppelingContent"><div class="empty">Laden...</div></div>
+        </div>
+    </div>
+
+    <!-- Modal: leerkrachten koppelen -->
+    <div id="koppelingModal" class="modal-overlay">
+        <div class="modal-inner">
+            <h2 id="koppelingModalTitle">Leerkrachten koppelen</h2>
+            <p>Selecteer de leerkrachten voor deze klas.</p>
+            <div id="koppelingCheckboxes" style="display:flex;flex-direction:column;gap:.4rem;max-height:280px;overflow-y:auto;"></div>
+            <div class="modal-buttons">
+                <button id="btnKoppelingAnnuleer" class="btn btn-secondary">Annuleren</button>
+                <button id="btnKoppelingOpslaan" class="btn btn-primary">Opslaan</button>
             </div>
         </div>
-        <div id="vergelijkContent">
-            <p style="color:var(--gray-400);font-style:italic;">Selecteer twee klassen om te vergelijken.</p>
+    </div>
+
+    <!-- Modal: nieuwe klas -->
+    <div id="nieuweKlasModal" class="modal-overlay">
+        <div class="modal-inner">
+            <h2>Nieuwe klas toevoegen</h2>
+            <p>Geef een naam op voor de nieuwe klas (bv. "1A", "3B").</p>
+            <input type="text" id="nieuweKlasNaam" class="form-input" placeholder="Naam van de klas...">
+            <div class="form-error" id="nieuweKlasError"></div>
+            <div class="modal-buttons">
+                <button id="btnNieuweKlasAnnuleer" class="btn btn-secondary">Annuleren</button>
+                <button id="btnNieuweKlasBevestig" class="btn btn-primary">Aanmaken</button>
+            </div>
         </div>
     </div>
 
-    <!-- Empty state -->
-    <div class="empty-state" id="emptyState" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="80" height="80" style="opacity:0.4;margin-bottom:1rem;">
-            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-        </svg>
-        <h3 style="font-size:1.1rem;margin-bottom:0.5rem;color:var(--gray-700);">Nog geen data beschikbaar</h3>
-        <p>Nog geen leerkrachten hebben doelen beoordeeld.</p>
-    </div>
-
-    <footer class="footer">💡 Gegevens worden automatisch geladen van de server.</footer>
-
-</div><!-- /container -->
-
+</div>
 
 <div class="notification" id="notification"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script nonce="{{ csp_nonce() }}">
-function bind(id, ev, fn) {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener(ev, fn);
-}
-
-let teachers     = [];
+// ── State ──────────────────────────────────────────────────────────────────────
+let overviewData = { classes: [], assessments_by_class: {} };
 let allGoals     = {};
-let vakData      = {};
-let overviewData = null;
-let activeYearId = null;   // null = huidig actief jaar
+let vakCache     = {};
+let currentUser  = null;
 
+// ── Init ───────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-    bind('jaarSelector', 'change', switchJaar);
-    bind('btnVernieuw', 'click', loadOverview);
-    bind('btnExportCSV', 'click', exportToCSV);
-    bind('btnExportPDF', 'click', exportToPDF);
-    bind('tab-doelen', 'click', () => switchTab('doelen'));
-    bind('tab-klassen', 'click', () => switchTab('klassen'));
-    document.getElementById('tab-vergelijk') && bind('tab-vergelijk', 'click', () => switchTab('vergelijk'));
-    bind('filterVak', 'change', applyFilters);
-    bind('filterTeacher', 'change', applyFilters);
-    document.getElementById('filterKlas') && bind('filterKlas', 'change', applyFilters);
-    bind('filterStatus', 'change', applyFilters);
-    bind('filterSectie', 'change', applyFilters);
-    bind('filterSearch', 'input', applyFilters);
-    document.querySelectorAll('.leeftijd-checkbox input').forEach(cb => cb.addEventListener('change', applyFilters));
-    // Vergelijk tab selects
-    bind('vergelijkKlasA', 'change', renderVergelijking);
-    bind('vergelijkKlasB', 'change', renderVergelijking);
-    bind('vergelijkVak',   'change', renderVergelijking);
+    // Leeftijd checkboxes dynamisch aanmaken (vermijdt Jinja in inline handlers)
+    const ages = ['3-4','4-5','5-6','6-7','7-8','8-9','9-10','10-11','11-12'];
+    const cbContainer = document.getElementById('leeftijdCbs');
+    ages.forEach(age => {
+        const lbl = document.createElement('label');
+        lbl.className = 'lft-cb';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.value = age;
+        cb.addEventListener('change', applyFilters);
+        lbl.appendChild(cb);
+        lbl.appendChild(Object.assign(document.createElement('span'), {textContent: age}));
+        cbContainer.appendChild(lbl);
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Jaar selector
+    document.getElementById('jaarSelector').addEventListener('change', switchJaar);
+
+    // Filters
+    document.getElementById('filterVak').addEventListener('change', applyFilters);
+    document.getElementById('filterKlas').addEventListener('change', applyFilters);
+    document.getElementById('filterStatus').addEventListener('change', applyFilters);
+    document.getElementById('filterSearch').addEventListener('input', applyFilters);
+    document.getElementById('filterSectie').addEventListener('change', applyFilters);
+
+    // Export knoppen
+    document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
+    document.getElementById('btnNieuweKlas').addEventListener('click', openNieuweKlasDialog);
+    document.getElementById('btnNieuweKlasAnnuleer').addEventListener('click', () => {
+        document.getElementById('nieuweKlasModal').classList.remove('active');
+    });
+    document.getElementById('btnNieuweKlasBevestig').addEventListener('click', bevestigNieuweKlas);
+    document.getElementById('nieuweKlasNaam').addEventListener('keydown', e => {
+        if (e.key === 'Enter') bevestigNieuweKlas();
+    });
+    // Sluit modals bij klik op overlay
+    ['koppelingModal','nieuweKlasModal'].forEach(id => {
+        document.getElementById(id).addEventListener('click', e => {
+            if (e.target.id === id) document.getElementById(id).classList.remove('active');
+        });
+    });
+    document.getElementById('btnKoppelingAnnuleer').addEventListener('click', () => {
+        document.getElementById('koppelingModal').classList.remove('active');
+    });
+    document.getElementById('btnKoppelingOpslaan').addEventListener('click', saveKoppeling);
+    document.getElementById('btnExportPDF').addEventListener('click', exportPDF);
+
+    // Vergelijk selects
+    document.getElementById('vergKlasA').addEventListener('change', renderVergelijk);
+    document.getElementById('vergKlasB').addEventListener('change', renderVergelijk);
+    document.getElementById('vergVak').addEventListener('change', renderVergelijk);
+
     await loadUser();
     await loadJaren();
-    await loadTeachers();
     await loadOverview();
 });
 
+// ── Gebruiker ──────────────────────────────────────────────────────────────────
 async function loadUser() {
-    const res  = await fetch('/api/me');
-    const data = await res.json();
-    document.getElementById('schoolInfo').textContent =
-        `${data.user.full_name} — ${data.user.school?.name || ''}`;
-}
-
-async function loadJaren() {
-    const res  = await fetch('/api/school/years');
+    const res = await fetch('/api/me');
     if (!res.ok) return;
     const data = await res.json();
-    const sel  = document.getElementById('jaarSelector');
+    currentUser = data.user;
+    document.getElementById('schoolInfo').textContent =
+        (currentUser.school?.name || '') + ' — schooloverzicht leerdoelen';
+}
+
+// ── Schooljaren ────────────────────────────────────────────────────────────────
+async function loadJaren() {
+    const res = await fetch('/api/school/years');
+    if (!res.ok) return;
+    const data = await res.json();
+    const sel = document.getElementById('jaarSelector');
     sel.innerHTML = '';
-    data.years.forEach(y => {
-        const opt   = document.createElement('option');
-        opt.value   = y.id;
-        opt.textContent = y.label + (y.is_active ? ' (huidig)' : '');
-        if (y.is_active) { opt.selected = true; activeYearId = y.id; }
+    (data.years || []).forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y.id; opt.textContent = y.label;
+        if (y.is_active) opt.selected = true;
         sel.appendChild(opt);
     });
-    if (!activeYearId && data.years.length) activeYearId = data.years[0].id;
 }
 
 async function switchJaar() {
-    activeYearId = document.getElementById('jaarSelector').value || null;
     await loadOverview();
 }
 
-async function loadTeachers() {
-    const res  = await fetch('/api/users');
-    const data = await res.json();
-    teachers   = data.users.filter(u => u.role === 'teacher');
-    renderTeacherList();
-    populateTeacherFilter();
-    populateKlasFilter();
-}
-
-function populateKlasFilter() {
-    const allKlassen = [...new Set(
-        teachers.flatMap(t => (t.classes || []).map(c => c.name))
-    )].sort();
-    const sel = document.getElementById('filterKlas');
-    sel.innerHTML = '<option value="all">Alle klassen</option>';
-    allKlassen.forEach(k => {
-        const o = document.createElement('option');
-        o.value = o.textContent = k;
-        sel.appendChild(o);
-    });
-}
-
-function renderTeacherList() {
-    // Nieuwe chips in teacherChips (nieuwe layout)
-    const chips = document.getElementById('teacherChips');
-    if (chips) {
-        chips.innerHTML = !teachers.length
-            ? '<em style="color:var(--gray-500)">Nog geen leerkrachten</em>'
-            : teachers.map(t => `
-                <div class="teacher-chip">
-                    <span class="name">${t.full_name}</span>
-                    <span class="klas">${(t.classes||[]).map(c=>c.name).join(', ') || ''}</span>
-                </div>`).join('');
-    }
-    // Toon/verberg de sectie
-    const section = document.getElementById('teachersSection');
-    if (section) section.style.display = teachers.length ? 'block' : 'none';
-}
-
-function updateVakStats() {
-    if (!overviewData) return;
-    const container = document.getElementById('vakStatsContent');
-    const vakStats  = document.getElementById('vakStats');
-    if (!container || !vakStats) return;
-
-    const stats = {};
-    Object.values(overviewData.assessments_by_teacher || {}).forEach(tv => {
-        Object.entries(tv).forEach(([vakId, goals]) => {
-            if (!stats[vakId]) stats[vakId] = { groen:0, oranje:0, roze:0, total:0 };
-            Object.values(goals).forEach(s => {
-                stats[vakId].total++;
-                if (s === 'groen')  stats[vakId].groen++;
-                if (s === 'oranje') stats[vakId].oranje++;
-                if (s === 'roze')   stats[vakId].roze++;
-            });
-        });
-    });
-
-    const sorted = Object.entries(stats).sort((a,b) => vakNaam(a[0]).localeCompare(vakNaam(b[0]),'nl'));
-    if (!sorted.length) { vakStats.style.display = 'none'; return; }
-
-    vakStats.style.display = 'block';
-    container.innerHTML = sorted.map(([vakId, s]) => {
-        const total = s.total;
-        const gPct  = total ? s.groen  / total * 100 : 0;
-        const oPct  = total ? s.oranje / total * 100 : 0;
-        const rPct  = total ? s.roze   / total * 100 : 0;
-        return `
-        <div class="vak-card">
-            <div class="vak-card-header">
-                <h3>${vakNaam(vakId)}</h3>
-                <span class="percentage">${total} beoordelingen</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-bar-inner">
-                    <div class="progress-groen" style="width:${gPct}%"></div>
-                    <div class="progress-oranje" style="width:${oPct}%"></div>
-                    <div class="progress-roze" style="width:${rPct}%"></div>
-                </div>
-            </div>
-            <div class="vak-card-stats">
-                <span><div class="dot dot-groen"></div> ${s.groen} groen</span>
-                <span><div class="dot dot-oranje"></div> ${s.oranje} oranje</span>
-                <span><div class="dot dot-roze"></div> ${s.roze} roze</span>
-            </div>
-        </div>`;
-    }).join('');
-}
-
+// ── Overview ───────────────────────────────────────────────────────────────────
 async function loadOverview() {
-    const vakFilter = document.getElementById('filterVak').value || 'all';
-    const params    = new URLSearchParams();
-    if (vakFilter !== 'all') params.set('vak_id', vakFilter);
-    if (activeYearId)        params.set('year_id', activeYearId);
-    const url = `/api/school/overview?${params.toString()}`;
-    const res  = await fetch(url);
-    if (!res.ok) { showNotification('Kon overzicht niet laden', 'error'); return; }
+    const yearId = document.getElementById('jaarSelector').value;
+    const url    = '/api/school/overview' + (yearId ? '?year_id=' + yearId : '');
+    const res    = await fetch(url);
+    if (!res.ok) { showNotification('Fout bij laden overzicht', 'error'); return; }
     overviewData = await res.json();
-
-    // Laad vak data voor doelomschrijvingen
     await loadVakData();
     updateStats();
-    updateVakStats();
-    populateVakFilter();
-    populateTeacherFilter();
-    populateSectieFilter();
+    renderKlassen();
+    renderKlasProgress();
+    renderKoppelingTab();
+    renderVakStats();
+    populateFilters();
     applyFilters();
+    populateVergelijkSelects();
 }
 
+// ── Vak data ───────────────────────────────────────────────────────────────────
 async function loadVakData() {
-    // Verzamel unieke vakken uit assessments
     const vakIds = new Set();
-    Object.values(overviewData.assessments_by_teacher).forEach(teacherVakken => {
-        Object.keys(teacherVakken).forEach(v => vakIds.add(v));
+    Object.values(overviewData.assessments_by_class).forEach(vakken => {
+        Object.keys(vakken).forEach(v => vakIds.add(v));
     });
-
     for (const vakId of vakIds) {
-        if (!vakData[vakId]) {
-            const res = await fetch(`/api/doelen/${vakId}`);
-            if (res.ok) {
-                vakData[vakId] = await res.json();
-                processVakGoals(vakId);
-            }
+        if (!vakCache[vakId]) {
+            try {
+                const res = await fetch('/api/doelen/' + vakId);
+                if (res.ok) { vakCache[vakId] = await res.json(); processVakGoals(vakId); }
+            } catch(e) { console.warn('Kon', vakId, 'niet laden'); }
         }
     }
 }
 
 function processVakGoals(vakId) {
-    const data = vakData[vakId];
+    const data = vakCache[vakId];
     if (!data?.rijen) return;
     const sectieLookup = {};
     data.rijen.forEach(r => {
@@ -836,14 +472,23 @@ function processVakGoals(vakId) {
         }));
 }
 
-function updateStats() {
-    const byTeacher = overviewData.assessments_by_teacher;
-    const vakken    = new Set();
-    let groen=0, oranje=0, roze=0;
+function maakVakNaam(id) {
+    const m = { aardrijkskunde:'Aardrijkskunde', burgerschap:'Burgerschap', frans:'Frans',
+        geschiedenis:'Geschiedenis', ict:'ICT', 'leren-leren':'Leren leren',
+        'lichamelijke-opvoeding':'Lichamelijke opvoeding', 'muzische-vorming':'Muzische vorming',
+        nederlands:'Nederlands', 'sociale-vaardigheden':'Sociale vaardigheden',
+        'wetenschap-techniek':'Wetenschap en techniek', wiskunde:'Wiskunde' };
+    return m[id] || id.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+}
 
-    Object.values(byTeacher).forEach(tv => {
-        Object.entries(tv).forEach(([vakId, goals]) => {
-            vakken.add(vakId);
+// ── Stats ──────────────────────────────────────────────────────────────────────
+function updateStats() {
+    const byClass = overviewData.assessments_by_class || {};
+    const vakIds  = new Set();
+    let groen=0, oranje=0, roze=0;
+    Object.values(byClass).forEach(vakken => {
+        Object.entries(vakken).forEach(([v, goals]) => {
+            vakIds.add(v);
             Object.values(goals).forEach(s => {
                 if (s==='groen') groen++;
                 else if (s==='oranje') oranje++;
@@ -851,561 +496,417 @@ function updateStats() {
             });
         });
     });
-
-    document.getElementById('statTeachers').textContent = overviewData.teachers.length;
-    document.getElementById('statVakken').textContent   = vakken.size;
+    document.getElementById('statKlassen').textContent    = overviewData.classes?.length || 0;
+    document.getElementById('statVakken').textContent     = vakIds.size;
     document.getElementById('statBeoordeeld').textContent = groen+oranje+roze;
-    document.getElementById('statGroen').textContent    = groen;
-    document.getElementById('statOranje').textContent   = oranje;
-    document.getElementById('statRoze').textContent     = roze;
+    document.getElementById('statGroen').textContent      = groen;
+    document.getElementById('statOranje').textContent     = oranje;
+    document.getElementById('statRoze').textContent       = roze;
 }
 
-function populateVakFilter() {
-    const vakIds = new Set(Object.keys(allGoals));
-    const sel = document.getElementById('filterVak');
-    const cur = sel.value;
-    sel.innerHTML = '<option value="all">Alle vakken</option>';
-    [...vakIds].sort((a,b) => vakNaam(a).localeCompare(vakNaam(b),'nl')).forEach(v => {
-        const o = document.createElement('option');
-        o.value = v; o.textContent = vakNaam(v);
-        sel.appendChild(o);
-    });
-    sel.value = cur;
-}
-
-function populateTeacherFilter() {
-    const sel = document.getElementById('filterTeacher');
-    sel.innerHTML = '<option value="all">Alle leerkrachten</option>';
-    teachers.forEach(t => {
-        const o = document.createElement('option');
-        o.value = t.id; o.textContent = t.full_name;
-        sel.appendChild(o);
-    });
-}
-
-function populateSectieFilter() {
-    const sel = document.getElementById('filterSectie');
-    if (!sel) return;
-    const cur = sel.value;
-    const secties = new Set();
-    Object.values(allGoals).forEach(goals => {
-        goals.forEach(g => { if (g.sectie) secties.add(g.sectie); });
-    });
-    sel.innerHTML = '<option value="all">Alle secties</option>';
-    [...secties].sort((a, b) => a.localeCompare(b, 'nl')).forEach(s => {
-        const o = document.createElement('option');
-        o.value = o.textContent = s;
-        sel.appendChild(o);
-    });
-    sel.value = cur || 'all';
-}
-
-function applyFilters() {
-    if (!overviewData) return;
-    const vakFilter     = document.getElementById('filterVak').value;
-    const teacherFilter = document.getElementById('filterTeacher').value;
-    const klasFilter    = document.getElementById('filterKlas')?.value || 'all';
-    const statusFilter  = document.getElementById('filterStatus').value;
-    const sectieFilter  = document.getElementById('filterSectie')?.value || 'all';
-    const search        = document.getElementById('filterSearch').value.toLowerCase();
-    const leeftijdFilter = [...document.querySelectorAll('.leeftijd-checkbox input:checked')].map(cb => cb.value);
-
-    // Filter leerkrachten op geselecteerde klas én op leerkrachtfilter
-    let shownTeachers = teacherFilter === 'all'
-        ? overviewData.teachers
-        : overviewData.teachers.filter(t => t.id == teacherFilter);
-
-    if (klasFilter !== 'all') {
-        shownTeachers = shownTeachers.filter(t =>
-            (t.classes || []).some(c => c.name === klasFilter)
-        );
-    }
-
-    const shownVakken = vakFilter === 'all' ? Object.keys(allGoals) : [vakFilter];
-
-    // Build header
-    let hdr = `<tr><th class="goal-header">Doel</th><th>Leeftijden</th>`;
-    shownTeachers.forEach(t => {
-        hdr += `<th class="teacher-header">${t.full_name}</th>`;
-    });
-    hdr += '<th>Samenvatting</th></tr>';
-    document.getElementById('tableHead').innerHTML = hdr;
-
-    // Build rows
-    const rows = [];
-    shownVakken.forEach(vakId => {
-        (allGoals[vakId] || []).forEach(goal => {
-            if (search && !`${goal.goNr} ${goal.inhoud}`.toLowerCase().includes(search)) return;
-            if (leeftijdFilter.length > 0 && !leeftijdFilter.some(l => (goal.leeftijden||[]).includes(l))) return;
-            if (sectieFilter !== 'all' && goal.sectie !== sectieFilter) return;
-
-            const statussen = shownTeachers.map(t => {
-                return overviewData.assessments_by_teacher[t.id]?.[vakId]?.[goal.id] || '';
-            });
-
-            if (statusFilter === 'groen'  && !statussen.some(s => s === 'groen'))  return;
-            if (statusFilter === 'oranje' && !statussen.some(s => s === 'oranje')) return;
-            if (statusFilter === 'roze'   && !statussen.some(s => s === 'roze'))   return;
-            if (statusFilter === 'niemand' && statussen.some(s => s)) return;
-            if (statusFilter === 'verschil') {
-                const filled = statussen.filter(s => s);
-                if (filled.length <= 1 || new Set(filled).size <= 1) return;
-            }
-
-            rows.push({ vakId, goal, statussen });
-        });
-    });
-
-    if (!rows.length) {
-        document.getElementById('tableBody').innerHTML =
-            `<tr><td colspan="${shownTeachers.length+3}" class="empty-state">Geen doelen gevonden</td></tr>`;
-        return;
-    }
-
-    document.getElementById('tableBody').innerHTML = rows.map(({ goal, statussen }) => {
-        const groen  = statussen.filter(s=>s==='groen').length;
-        const oranje = statussen.filter(s=>s==='oranje').length;
-        const roze   = statussen.filter(s=>s==='roze').length;
-        const total  = statussen.length || 1;
-
-        let row = `<tr>
-            <td class="goal-cell">
-                <div class="goal-code">${goal.goNr}</div>
-                <div class="goal-desc" title="${goal.inhoud}">${goal.inhoud}</div>
-            </td>
-            <td>${goal.leeftijden.map(l=>`<span class="leeftijd-badge">${l}</span>`).join(' ')}</td>`;
-
-        statussen.forEach(s => {
-            const sym = s==='groen'?'✓':s==='oranje'?'~':s==='roze'?'!':'○';
-            row += `<td><div class="status-indicator ${s||'none'}">${sym}</div></td>`;
-        });
-
-        row += `<td>
-            <div class="progress-bar">
-                <div class="progress-bar-inner">
-                    <div class="p-groen"  style="width:${groen/total*100}%"></div>
-                    <div class="p-oranje" style="width:${oranje/total*100}%"></div>
-                    <div class="p-roze"   style="width:${roze/total*100}%"></div>
-                </div>
-            </div>
-        </td></tr>`;
-        return row;
+// ── Tab: Klassen ───────────────────────────────────────────────────────────────
+function renderKlassen() {
+    const chips   = document.getElementById('klasChips');
+    const klassen = overviewData.classes || [];
+    if (!klassen.length) { chips.innerHTML = '<div class="empty">Geen klassen gevonden</div>'; return; }
+    chips.innerHTML = klassen.map(k => {
+        const teachers = (k.teachers||[]).map(t=>t.full_name).join(', ') || '(geen leerkrachten)';
+        return `<div class="klas-chip">
+            <div class="klas-name">🏫 ${k.name}</div>
+            <div class="klas-teachers">${teachers}</div>
+        </div>`;
     }).join('');
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function vakNaam(id) {
-    return id.replace(/^doelenset-bao-/, '').replace(/-/g, ' ')
-             .replace(/\b\w/g, c => c.toUpperCase());
+function renderKlasProgress() {
+    const el      = document.getElementById('klasProgressContent');
+    const klassen = overviewData.classes || [];
+    const byClass = overviewData.assessments_by_class || {};
+    if (!klassen.length) { el.innerHTML = '<div class="empty">Geen klassen</div>'; return; }
+    // Filter op leerkrachten (niet directeurs/ICT)
+    const teacherUsers = allUsers.filter(u => u.role === 'teacher' || u.role === 'director');
+    el.innerHTML = '<div style="display:flex;flex-direction:column;gap:.5rem;">' + klassen.map(k => {
+        const vakken = byClass[k.id] || {};
+        let g=0,o=0,r=0;
+        Object.values(vakken).forEach(goals => Object.values(goals).forEach(s => {
+            if (s==='groen') g++; else if (s==='oranje') o++; else if (s==='roze') r++;
+        }));
+        const t = g+o+r;
+        return `<div class="vak-card">
+            <div class="vak-card-header"><h3>${k.name}</h3><span style="font-size:.8rem;color:var(--gray-500)">${t} beoordelingen</span></div>
+            <div class="progress-bar"><div class="progress-inner">
+                <div class="p-groen"  style="width:${t>0?g/t*100:0}%"></div>
+                <div class="p-oranje" style="width:${t>0?o/t*100:0}%"></div>
+                <div class="p-roze"   style="width:${t>0?r/t*100:0}%"></div>
+            </div></div>
+            <div class="vak-legend">
+                <span><span class="dot" style="background:var(--status-groen)"></span>${g} groen</span>
+                <span><span class="dot" style="background:var(--status-oranje)"></span>${o} oranje</span>
+                <span><span class="dot" style="background:var(--status-roze)"></span>${r} roze</span>
+            </div>
+        </div>`;
+    }).join('') + '</div>';
 }
 
-function exportToCSV() {
-    if (!overviewData) { showNotification('Nog geen data om te exporteren', 'warning'); return; }
-    const shownVakken  = Object.keys(allGoals);
-    const shownTeachers = overviewData.teachers;
-
-    let csv = 'Vak,Doelnummer,Omschrijving,Leeftijden';
-    shownTeachers.forEach(t => { csv += `,"${t.full_name}"`; });
-    csv += ',Groen,Oranje,Roze\n';
-
-    shownVakken.forEach(vakId => {
-        (allGoals[vakId] || []).forEach(goal => {
-            const statussen = shownTeachers.map(t =>
-                overviewData.assessments_by_teacher[t.id]?.[vakId]?.[goal.id] || '');
-            const groen  = statussen.filter(s => s === 'groen').length;
-            const oranje = statussen.filter(s => s === 'oranje').length;
-            const roze   = statussen.filter(s => s === 'roze').length;
-            const desc   = (goal.inhoud || '').replace(/"/g, '""');
-            csv += `"${vakNaam(vakId)}","${goal.goNr}","${desc}","${(goal.leeftijden||[]).join(', ')}"`;
-            statussen.forEach(s => { csv += `,"${s || '-'}"`; });
-            csv += `,${groen},${oranje},${roze}\n`;
+// ── Tab: Per vak ───────────────────────────────────────────────────────────────
+function renderVakStats() {
+    const el      = document.getElementById('vakStatsContent');
+    const byClass = overviewData.assessments_by_class || {};
+    const totals  = {};
+    Object.values(byClass).forEach(vakken => {
+        Object.entries(vakken).forEach(([v, goals]) => {
+            if (!totals[v]) totals[v] = {groen:0,oranje:0,roze:0};
+            Object.values(goals).forEach(s => {
+                if (s==='groen') totals[v].groen++;
+                else if (s==='oranje') totals[v].oranje++;
+                else if (s==='roze') totals[v].roze++;
+            });
         });
     });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = `Leerdoelen_Export_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a); URL.revokeObjectURL(url);
-    showNotification('CSV geëxporteerd!', 'success');
+    const sorted = Object.entries(totals).sort((a,b)=>maakVakNaam(a[0]).localeCompare(maakVakNaam(b[0]),'nl'));
+    if (!sorted.length) { el.innerHTML = '<div class="empty">Nog geen beoordelingen</div>'; return; }
+    el.innerHTML = sorted.map(([v,st]) => {
+        const t = st.groen+st.oranje+st.roze;
+        return `<div class="vak-card">
+            <div class="vak-card-header"><h3>${maakVakNaam(v)}</h3><span style="font-size:.8rem;color:var(--gray-500)">${t} beoordelingen</span></div>
+            <div class="progress-bar"><div class="progress-inner">
+                <div class="p-groen"  style="width:${t>0?st.groen/t*100:0}%"></div>
+                <div class="p-oranje" style="width:${t>0?st.oranje/t*100:0}%"></div>
+                <div class="p-roze"   style="width:${t>0?st.roze/t*100:0}%"></div>
+            </div></div>
+            <div class="vak-legend">
+                <span><span class="dot" style="background:var(--status-groen)"></span>${st.groen} groen</span>
+                <span><span class="dot" style="background:var(--status-oranje)"></span>${st.oranje} oranje</span>
+                <span><span class="dot" style="background:var(--status-roze)"></span>${st.roze} roze</span>
+            </div>
+        </div>`;
+    }).join('');
 }
 
-function exportToPDF() {
-    if (!overviewData) { showNotification('Nog geen data om te exporteren', 'warning'); return; }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4');
+// ── Tab: Doelen detail ─────────────────────────────────────────────────────────
+function populateFilters() {
+    const byClass = overviewData.assessments_by_class || {};
+    const vakIds  = new Set();
+    Object.values(byClass).forEach(v => Object.keys(v).forEach(id => vakIds.add(id)));
 
-    const vakFilter     = document.getElementById('filterVak').value;
-    const teacherFilter = document.getElementById('filterTeacher').value;
-    const statusFilter  = document.getElementById('filterStatus').value;
-    const sectieFilter  = document.getElementById('filterSectie')?.value || 'all';
-    const search        = document.getElementById('filterSearch').value.toLowerCase();
-    const leeftijdFilter = [...document.querySelectorAll('.leeftijd-checkbox input:checked')].map(cb => cb.value);
+    const vakSel = document.getElementById('filterVak');
+    vakSel.innerHTML = '<option value="all">Alle vakken</option>';
+    [...vakIds].sort((a,b)=>maakVakNaam(a).localeCompare(maakVakNaam(b),'nl')).forEach(v => {
+        const o = document.createElement('option'); o.value=v; o.textContent=maakVakNaam(v); vakSel.appendChild(o);
+    });
 
-    const shownVakken   = vakFilter === 'all' ? Object.keys(allGoals) : [vakFilter];
-    const shownTeachers = teacherFilter === 'all'
-        ? overviewData.teachers
-        : overviewData.teachers.filter(t => t.id == teacherFilter);
+    const klasSel = document.getElementById('filterKlas');
+    klasSel.innerHTML = '<option value="all">Alle klassen</option>';
+    (overviewData.classes||[]).forEach(k => {
+        const o = document.createElement('option'); o.value=k.id; o.textContent=k.name; klasSel.appendChild(o);
+    });
+}
 
-    // Titel
-    doc.setFontSize(16);
-    doc.text('Leerdoelen Overzicht — Directeur', 14, 15);
-    doc.setFontSize(9);
-    doc.setTextColor(100);
-    doc.text(`Export: ${new Date().toLocaleDateString('nl-BE')}`, 14, 21);
+function populateSectieFilter(vakId) {
+    const sel = document.getElementById('filterSectie');
+    sel.innerHTML = '<option value="all">Alle secties</option>';
+    if (!vakId || vakId === 'all' || !allGoals[vakId]) return;
+    const secties = [...new Set(allGoals[vakId].map(g => g.sectie).filter(Boolean))].sort();
+    secties.forEach(s => {
+        const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o);
+    });
+}
 
-    // Headers
-    const headers = ['Vak', 'Code', 'Omschrijving', 'Leeftijd',
-        ...shownTeachers.map(t => t.full_name), '✓', '~', '!'];
+function applyFilters() {
+    const vakFilter    = document.getElementById('filterVak').value;
+    const klasFilter   = document.getElementById('filterKlas').value;
+    const statusFilter = document.getElementById('filterStatus').value;
+    const leeftFilter  = [...document.querySelectorAll('#leeftijdCbs input:checked')].map(c=>c.value);
+    const search       = document.getElementById('filterSearch').value.toLowerCase();
 
-    // Rijen
+    const sectieFilter = document.getElementById('filterSectie').value;
+
+    // Sectie filter opties bijwerken als vak wijzigt
+    populateSectieFilter(vakFilter);
+
+    const vakkenToShow = vakFilter === 'all' ? Object.keys(allGoals) : [vakFilter];
+    const klassen      = klasFilter === 'all'
+        ? (overviewData.classes||[])
+        : (overviewData.classes||[]).filter(k => k.id == klasFilter);
+
     const rows = [];
-    shownVakken.forEach(vakId => {
-        (allGoals[vakId] || []).forEach(goal => {
-            if (search && !`${goal.goNr} ${goal.inhoud} ${goal.sectie||''}`.toLowerCase().includes(search)) return;
-            if (leeftijdFilter.length && !leeftijdFilter.some(l => (goal.leeftijden||[]).includes(l))) return;
+    vakkenToShow.forEach(vakId => {
+        (allGoals[vakId]||[]).forEach(goal => {
+            if (search && !(goal.goNr+' '+goal.inhoud).toLowerCase().includes(search)) return;
+            if (leeftFilter.length > 0 && !leeftFilter.some(l=>goal.leeftijden.includes(l))) return;
             if (sectieFilter !== 'all' && goal.sectie !== sectieFilter) return;
-
-            const statussen = shownTeachers.map(t =>
-                overviewData.assessments_by_teacher[t.id]?.[vakId]?.[goal.id] || '');
-
-            if (statusFilter === 'groen'  && !statussen.some(s => s === 'groen'))  return;
-            if (statusFilter === 'oranje' && !statussen.some(s => s === 'oranje')) return;
-            if (statusFilter === 'roze'   && !statussen.some(s => s === 'roze'))   return;
-            if (statusFilter === 'niemand' && statussen.some(s => s)) return;
-            if (statusFilter === 'verschil') {
-                const filled = statussen.filter(s => s);
-                if (filled.length <= 1 || new Set(filled).size <= 1) return;
+            const statussen = klassen.map(k => (overviewData.assessments_by_class[k.id]?.[vakId]?.[goal.id])||'');
+            if (statusFilter==='groen'     && !statussen.some(s=>s==='groen'))  return;
+            if (statusFilter==='oranje'    && !statussen.some(s=>s==='oranje')) return;
+            if (statusFilter==='roze'      && !statussen.some(s=>s==='roze'))   return;
+            if (statusFilter==='consensus' && !statussen.every(s=>s==='groen')) return;
+            if (statusFilter==='verschil') {
+                const filled = statussen.filter(Boolean);
+                if (filled.length<=1 || new Set(filled).size<=1) return;
             }
+            if (statusFilter==='niemand' && statussen.some(Boolean)) return;
+            rows.push({vakId, goal, statussen, klassen});
+        });
+    });
+    renderTable(rows, klassen);
+}
 
-            const groen  = statussen.filter(s => s === 'groen').length;
-            const oranje = statussen.filter(s => s === 'oranje').length;
-            const roze   = statussen.filter(s => s === 'roze').length;
+function renderTable(rows, klassen) {
+    const thead = document.getElementById('tblHead');
+    const tbody = document.getElementById('tblBody');
+    let hdr = '<tr><th class="goal-col">Doel</th><th style="min-width:72px;">Leeftijden</th>';
+    klassen.forEach(k => {
+        const label = k.name.length > 6 ? k.name.substring(0,6) + '…' : k.name;
+        hdr += `<th class="klas-col" title="${k.name}">${label}</th>`;
+    });
+    hdr += '<th class="sum-col">∑</th></tr>';
+    thead.innerHTML = hdr;
+    if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="${klassen.length+3}" class="empty">Geen doelen gevonden met huidige filters</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = rows.map(({goal,statussen}) => {
+        let tr = `<tr>
+            <td class="goal-cell"><div class="goal-nr">${goal.goNr}</div><div class="goal-desc" title="${goal.inhoud}">${goal.inhoud}</div></td>
+            <td><div class="lft-badges">${goal.leeftijden.map(l=>`<span class="lft-badge">${l}</span>`).join('')}</div></td>`;
+        statussen.forEach(s => {
+            const sym = s==='groen'?'✓':s==='oranje'?'~':s==='roze'?'!':'○';
+            tr += `<td><div class="si ${s||'none'}">${sym}</div></td>`;
+        });
+        const g=statussen.filter(s=>s==='groen').length;
+        const o=statussen.filter(s=>s==='oranje').length;
+        const r=statussen.filter(s=>s==='roze').length;
+        const t=statussen.length||1;
+        tr += `<td class="sum-cell"><div class="sum-bar">
+            <div class="p-groen"  style="width:${g/t*100}%"></div>
+            <div class="p-oranje" style="width:${o/t*100}%"></div>
+            <div class="p-roze"   style="width:${r/t*100}%"></div>
+        </div></td></tr>`;
+        return tr;
+    }).join('');
+}
 
-            rows.push([
-                vakNaam(vakId),
-                goal.goNr,
-                (goal.inhoud || '').substring(0, 70) + (goal.inhoud?.length > 70 ? '…' : ''),
-                (goal.leeftijden || []).join(', '),
-                ...statussen.map(s => s === 'groen' ? '✓' : s === 'oranje' ? '~' : s === 'roze' ? '!' : '-'),
-                groen, oranje, roze
+// ── Tab: Vergelijken ───────────────────────────────────────────────────────────
+function populateVergelijkSelects() {
+    ['vergKlasA','vergKlasB'].forEach(id => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '<option value="">-- Kies klas --</option>';
+        (overviewData.classes||[]).forEach(k => {
+            const o = document.createElement('option'); o.value=k.id; o.textContent=k.name; sel.appendChild(o);
+        });
+    });
+    const vakSel = document.getElementById('vergVak');
+    vakSel.innerHTML = '<option value="">-- Kies vak --</option>';
+    const vakIds = new Set();
+    Object.values(overviewData.assessments_by_class||{}).forEach(v => Object.keys(v).forEach(id => vakIds.add(id)));
+    [...vakIds].sort((a,b)=>maakVakNaam(a).localeCompare(maakVakNaam(b),'nl')).forEach(v => {
+        const o = document.createElement('option'); o.value=v; o.textContent=maakVakNaam(v); vakSel.appendChild(o);
+    });
+}
+
+function renderVergelijk() {
+    const idA   = document.getElementById('vergKlasA').value;
+    const idB   = document.getElementById('vergKlasB').value;
+    const vakId = document.getElementById('vergVak').value;
+    const el    = document.getElementById('vergelijkResult');
+    if (!idA || !idB || !vakId) { el.innerHTML = '<div class="empty">Kies twee klassen en een vak</div>'; return; }
+    if (idA === idB) { el.innerHTML = '<div class="empty">Kies twee verschillende klassen</div>'; return; }
+    const klasA  = overviewData.classes.find(k=>k.id==idA);
+    const klasB  = overviewData.classes.find(k=>k.id==idB);
+    const goalsA = overviewData.assessments_by_class[idA]?.[vakId] || {};
+    const goalsB = overviewData.assessments_by_class[idB]?.[vakId] || {};
+    const goals  = allGoals[vakId] || [];
+    if (!goals.length) { el.innerHTML = '<div class="empty">Vak nog niet geladen of geen doelen</div>'; return; }
+    let html = `<div class="table-wrap"><table>
+        <thead><tr><th class="goal-col">Doel</th>
+        <th class="klas-col" title="${klasA?.name||'A'}">${(klasA?.name||'A').substring(0,8)}</th>
+        <th class="klas-col" title="${klasB?.name||'B'}">${(klasB?.name||'B').substring(0,8)}</th>
+        </tr></thead><tbody>`;
+    goals.forEach(goal => {
+        const sA = goalsA[goal.id]||'', sB = goalsB[goal.id]||'';
+        const symA = sA==='groen'?'✓':sA==='oranje'?'~':sA==='roze'?'!':'○';
+        const symB = sB==='groen'?'✓':sB==='oranje'?'~':sB==='roze'?'!':'○';
+        html += `<tr class="${sA===sB?'diff-row-same':'diff-row-differ'}">
+            <td class="goal-cell"><div class="goal-nr">${goal.goNr}</div><div class="goal-desc">${goal.inhoud}</div></td>
+            <td><div class="si ${sA||'none'}">${symA}</div></td>
+            <td><div class="si ${sB||'none'}">${symB}</div></td>
+        </tr>`;
+    });
+    const differ = goals.filter(g=>(goalsA[g.id]||'')!==(goalsB[g.id]||'')).length;
+    html += `</tbody></table></div><div style="margin-top:.75rem;font-size:.85rem;color:var(--gray-500);">${goals.length} doelen — ${differ} verschillen</div>`;
+    el.innerHTML = html;
+}
+
+// ── Export CSV ─────────────────────────────────────────────────────────────────
+function exportCSV() {
+    const vakFilter  = document.getElementById('filterVak').value;
+    const klasFilter = document.getElementById('filterKlas').value;
+    const klassen    = klasFilter==='all' ? (overviewData.classes||[]) : (overviewData.classes||[]).filter(k=>k.id==klasFilter);
+    let csv = 'Vak,Doelnummer,Doel,Leeftijden';
+    klassen.forEach(k => csv += ',' + k.name);
+    csv += ',Groen,Oranje,Roze\n';
+    const vakken = vakFilter==='all' ? Object.keys(allGoals) : [vakFilter];
+    vakken.forEach(vakId => {
+        (allGoals[vakId]||[]).forEach(goal => {
+            const st = klassen.map(k=>(overviewData.assessments_by_class[k.id]?.[vakId]?.[goal.id])||'');
+            csv += `"${maakVakNaam(vakId)}","${goal.goNr}","${goal.inhoud.replace(/"/g,'""')}","${goal.leeftijden.join(', ')}"`;
+            st.forEach(s => csv += `,${s||'-'}`);
+            csv += `,${st.filter(s=>s==='groen').length},${st.filter(s=>s==='oranje').length},${st.filter(s=>s==='roze').length}\n`;
+        });
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+    a.download = `Leerdoelen_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    showNotification('CSV geëxporteerd', 'success');
+}
+
+// ── Export PDF ─────────────────────────────────────────────────────────────────
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l','mm','a4');
+    const vakFilter  = document.getElementById('filterVak').value;
+    const klasFilter = document.getElementById('filterKlas').value;
+    const klassen    = klasFilter==='all' ? (overviewData.classes||[]) : (overviewData.classes||[]).filter(k=>k.id==klasFilter);
+    const vakken     = vakFilter==='all' ? Object.keys(allGoals) : [vakFilter];
+    doc.setFontSize(14); doc.text('Leerdoelen Overzicht', 14, 14);
+    doc.setFontSize(9);  doc.text(`Export: ${new Date().toLocaleDateString('nl-BE')}`, 14, 20);
+    const headers = [['Vak','Code','Doel','Leeftijd',...klassen.map(k=>k.name),'G','O','R']];
+    const rows = [];
+    vakken.forEach(vakId => {
+        (allGoals[vakId]||[]).forEach(goal => {
+            const st = klassen.map(k=>(overviewData.assessments_by_class[k.id]?.[vakId]?.[goal.id])||'');
+            rows.push([maakVakNaam(vakId), goal.goNr,
+                goal.inhoud.substring(0,55)+(goal.inhoud.length>55?'...':''),
+                goal.leeftijden.join(', '),
+                ...st.map(s=>s==='groen'?'v':s==='oranje'?'~':s==='roze'?'!':'-'),
+                st.filter(s=>s==='groen').length, st.filter(s=>s==='oranje').length, st.filter(s=>s==='roze').length,
             ]);
         });
     });
-
-    doc.autoTable({
-        head: [headers],
-        body: rows,
-        startY: 26,
-        styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak' },
-        headStyles: { fillColor: [79, 70, 229], textColor: 255, fontSize: 7 },
-        columnStyles: {
-            0: { cellWidth: 22 },
-            1: { cellWidth: 14 },
-            2: { cellWidth: 'auto' },
-            3: { cellWidth: 18 },
-        },
-        margin: { left: 10, right: 10 },
-        didParseCell: (data) => {
-            // Kleur de status cellen
-            if (data.section === 'body' && data.column.index >= 4) {
-                const v = data.cell.raw;
-                if (v === '✓') { data.cell.styles.textColor = [16, 185, 129]; data.cell.styles.fontStyle = 'bold'; }
-                if (v === '~') { data.cell.styles.textColor = [245, 158, 11]; data.cell.styles.fontStyle = 'bold'; }
-                if (v === '!') { data.cell.styles.textColor = [236, 72, 153]; data.cell.styles.fontStyle = 'bold'; }
-            }
-        }
-    });
-
-    doc.save(`Leerdoelen_Directeur_${new Date().toISOString().split('T')[0]}.pdf`);
-    showNotification('PDF geëxporteerd!', 'success');
+    doc.autoTable({head:headers,body:rows,startY:24,
+        styles:{fontSize:7,cellPadding:1.5},headStyles:{fillColor:[79,70,229]},
+        columnStyles:{0:{cellWidth:22},1:{cellWidth:14},2:{cellWidth:'auto'}},margin:{left:14,right:14}});
+    doc.save(`Leerdoelen_${new Date().toISOString().split('T')[0]}.pdf`);
+    showNotification('PDF geëxporteerd', 'success');
 }
 
-function showNotification(msg, type='success') {
+// ── Koppeling tab ─────────────────────────────────────────────────────────────
+let allUsers        = [];
+let activeKlasKoppeling = null;
+
+async function renderKoppelingTab() {
+    const el      = document.getElementById('koppelingContent');
+    const klassen = overviewData.classes || [];
+    if (!klassen.length) { el.innerHTML = '<div class="empty">Geen klassen gevonden</div>'; return; }
+
+    // Laad alle leerkrachten van de school
+    try {
+        const res = await fetch('/api/users');
+        if (res.ok) { const d = await res.json(); allUsers = d.users || []; }
+    } catch(e) { console.warn('Kon gebruikers niet laden'); }
+
+    // Filter op leerkrachten (niet directeurs/ICT)
+    const teacherUsers = allUsers.filter(u => u.role === 'teacher' || u.role === 'director');
+    el.innerHTML = '<div style="display:flex;flex-direction:column;gap:.5rem;">' + klassen.map(k => {
+        const teachers = (k.teachers||[]).map(t => t.full_name).join(', ') || '<em style="color:var(--gray-400)">Geen leerkrachten</em>';
+        return `<div class="klas-chip-card">
+            <div class="klas-info" data-action="openKoppeling" data-id="${k.id}" data-name="${k.name.replace(/"/g,'&quot;')}" data-teachers="${JSON.stringify((k.teachers||[]).map(t=>t.id)).replace(/"/g,'&quot;')}">
+                <div class="klas-name">🏫 ${k.name} <span style="font-size:.72rem;background:var(--primary);color:white;padding:.1rem .4rem;border-radius:4px;margin-left:.35rem;">Wijzigen</span></div>
+                <div class="klas-teachers">${teachers}</div>
+            </div>
+            <button class="btn-delete" data-action="deleteKlas" data-id="${k.id}" data-name="${k.name.replace(/"/g,'&quot;')}" title="Klas verwijderen">🗑</button>
+        </div>`;
+    }).join('') + '</div>';
+}
+
+document.addEventListener('click', function(e) {
+    // Verwijder klas
+    const delBtn = e.target.closest('[data-action="deleteKlas"]');
+    if (delBtn) {
+        const id   = parseInt(delBtn.dataset.id);
+        const name = delBtn.dataset.name;
+        if (!confirm(`Klas "${name}" verwijderen? Alle beoordelingen voor deze klas gaan verloren.`)) return;
+        fetch(`/api/classes/${id}`, {method: 'DELETE'})
+            .then(r => { if (r.ok) { showNotification(`Klas "${name}" verwijderd`, 'success'); loadOverview(); }
+                         else showNotification('Verwijderen mislukt', 'error'); });
+        return;
+    }
+
+    // Wijzig leerkrachten
+    const card = e.target.closest('[data-action="openKoppeling"]');
+    if (!card) return;
+    activeKlasKoppeling = parseInt(card.dataset.id);
+    const name     = card.dataset.name;
+    const teachers = JSON.parse(card.dataset.teachers.replace(/&quot;/g, '"'));
+
+    document.getElementById('koppelingModalTitle').textContent = `Leerkrachten voor ${name}`;
+
+    const container = document.getElementById('koppelingCheckboxes');
+    const teacherUsers = allUsers.filter(u => u.role === 'teacher' || u.role === 'director');
+    if (!teacherUsers.length) {
+        container.innerHTML = '<em style="color:var(--gray-400)">Geen leerkrachten beschikbaar. Voeg eerst leerkrachten toe via Gebruikersbeheer.</em>';
+    } else {
+        container.innerHTML = teacherUsers.map(u => `
+            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.35rem;border-radius:4px;">
+                <input type="checkbox" value="${u.id}" ${teachers.includes(u.id)?'checked':''}>
+                <span>${u.full_name} <span style="color:var(--gray-400);font-size:.8rem;">(${u.email})</span></span>
+            </label>`).join('');
+    }
+    document.getElementById('koppelingModal').classList.add('active');
+});
+
+function openNieuweKlasDialog() {
+    document.getElementById('nieuweKlasNaam').value = '';
+    document.getElementById('nieuweKlasError').textContent = '';
+    document.getElementById('nieuweKlasModal').classList.add('active');
+    setTimeout(() => document.getElementById('nieuweKlasNaam').focus(), 50);
+}
+
+async function bevestigNieuweKlas() {
+    const name = document.getElementById('nieuweKlasNaam').value.trim();
+    const errEl = document.getElementById('nieuweKlasError');
+    if (!name) { errEl.textContent = 'Vul een naam in.'; return; }
+    const res = await fetch('/api/classes', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name})
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Aanmaken mislukt'; return; }
+    document.getElementById('nieuweKlasModal').classList.remove('active');
+    showNotification(`Klas "${data.class.name}" aangemaakt`, 'success');
+    await loadOverview();
+}
+
+async function saveKoppeling() {
+    if (!activeKlasKoppeling) return;
+    const checked = [...document.querySelectorAll('#koppelingCheckboxes input:checked')].map(i => parseInt(i.value));
+
+    // Gebruik de admin route om leerkrachten aan klas te koppelen
+    const res = await fetch(`/api/classes/${activeKlasKoppeling}/teachers`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ teacher_ids: checked })
+    });
+    if (!res.ok) { showNotification('Opslaan mislukt', 'error'); return; }
+    document.getElementById('koppelingModal').classList.remove('active');
+    showNotification('Koppeling opgeslagen', 'success');
+    await loadOverview();  // herlaad zodat klas-chips bijgewerkt worden
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab===name));
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('active', el.id==='tab-'+name));
+}
+
+// ── Notificaties ───────────────────────────────────────────────────────────────
+function showNotification(msg, type) {
     const el = document.getElementById('notification');
-    el.textContent = msg;
-    el.className   = `notification ${type} show`;
+    el.textContent = msg; el.className = 'notification '+type+' show';
     setTimeout(() => el.classList.remove('show'), 3000);
 }
-
-// ── Tab navigatie ─────────────────────────────────────────────────────────────
-function switchTab(tab) {
-    ['doelen', 'klassen', 'vergelijk'].forEach(t => {
-        document.getElementById(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
-        document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
-    });
-    if (tab === 'klassen')  renderKlasOverzicht();
-    if (tab === 'vergelijk') setupVergelijking();
-}
-
-// ── Klasoverzicht ─────────────────────────────────────────────────────────────
-function renderKlasOverzicht() {
-    if (!overviewData) return;
-    const container = document.getElementById('klasOverzichtContent');
-
-    // Groepeer leerkrachten per klas
-    const klasMap = {};   // { klasNaam: [teacher, ...] }
-    const noKlas  = [];
-
-    overviewData.teachers.forEach(t => {
-        const klassen = t.classes || [];
-        if (!klassen.length) {
-            noKlas.push(t);
-        } else {
-            klassen.forEach(c => {
-                (klasMap[c.name] = klasMap[c.name] || []).push(t);
-            });
-        }
-    });
-
-    if (!Object.keys(klasMap).length && !noKlas.length) {
-        container.innerHTML = '<p style="color:var(--gray-400);font-style:italic;">Geen klassen gevonden. Koppel leerkrachten aan klassen via het ICT-beheerscherm.</p>';
-        return;
-    }
-
-    const byTeacher = overviewData.assessments_by_teacher;
-
-    function teacherStats(t) {
-        const vakken = byTeacher[t.id] || {};
-        let groen=0, oranje=0, roze=0, total=0;
-        Object.values(vakken).forEach(goals => {
-            Object.values(goals).forEach(s => {
-                total++;
-                if (s==='groen') groen++;
-                else if (s==='oranje') oranje++;
-                else if (s==='roze') roze++;
-            });
-        });
-        return { groen, oranje, roze, total, beoordeeld: groen+oranje+roze };
-    }
-
-    function klasCard(naam, leraren) {
-        const totaalDoelen = Object.keys(allGoals).reduce((sum, v) => sum + (allGoals[v]?.length || 0), 0);
-        const rows = leraren.map(t => {
-            const s   = teacherStats(t);
-            const pct = totaalDoelen > 0 ? Math.round(s.beoordeeld / totaalDoelen * 100) : 0;
-            return `
-                <div class="klas-progress-row">
-                    <span class="klas-label" title="${t.email}">${t.full_name.split(' ')[0]}</span>
-                    <div class="klas-progress-bar">
-                        <div style="width:${totaalDoelen>0?s.groen/totaalDoelen*100:0}%;background:var(--status-groen)"></div>
-                        <div style="width:${totaalDoelen>0?s.oranje/totaalDoelen*100:0}%;background:var(--status-oranje)"></div>
-                        <div style="width:${totaalDoelen>0?s.roze/totaalDoelen*100:0}%;background:var(--status-roze)"></div>
-                    </div>
-                    <span class="klas-pct">${pct}%</span>
-                </div>`;
-        }).join('');
-
-        const heeftBeoordeeld = leraren.filter(t => teacherStats(t).beoordeeld > 0).length;
-        const badge = heeftBeoordeeld === leraren.length
-            ? `<span style="background:#d1fae5;color:#065f46;font-size:.72rem;padding:.15rem .5rem;border-radius:4px;">✓ Iedereen actief</span>`
-            : heeftBeoordeeld > 0
-                ? `<span style="background:#fef3c7;color:#92400e;font-size:.72rem;padding:.15rem .5rem;border-radius:4px;">${heeftBeoordeeld}/${leraren.length} actief</span>`
-                : `<span style="background:#fee2e2;color:#991b1b;font-size:.72rem;padding:.15rem .5rem;border-radius:4px;">○ Nog niemand</span>`;
-
-        return `
-            <div style="background:var(--gray-50);border-radius:8px;padding:1rem;margin-bottom:.75rem;">
-                <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
-                    <strong style="font-size:1rem;">🏫 ${naam}</strong>
-                    <span style="color:var(--gray-400);font-size:.82rem;">${leraren.length} leerkracht${leraren.length!==1?'en':''}</span>
-                    ${badge}
-                </div>
-                ${rows}
-            </div>`;
-    }
-
-    let html = Object.entries(klasMap).sort((a,b) => a[0].localeCompare(b[0],'nl'))
-        .map(([naam, leraren]) => klasCard(naam, leraren)).join('');
-
-    if (noKlas.length) {
-        html += `<div style="border:1px dashed var(--gray-300);border-radius:8px;padding:1rem;">
-            <strong style="color:var(--gray-500);font-size:.9rem;">Geen klas toegewezen (${noKlas.length})</strong>
-            <div style="margin-top:.5rem;">${noKlas.map(t => `<span style="font-size:.82rem;color:var(--gray-500);margin-right:.5rem;">${t.full_name}</span>`).join('')}</div>
-        </div>`;
-    }
-
-    container.innerHTML = html;
-}
-
-// ── Klasvergelijking ──────────────────────────────────────────────────────────
-function setupVergelijking() {
-    // Vul de klas dropdowns
-    const allKlassen = [...new Set(
-        overviewData?.teachers.flatMap(t => (t.classes||[]).map(c => c.name)) || []
-    )].sort();
-
-    ['vergelijkKlasA', 'vergelijkKlasB', 'vergelijkVak'].forEach(id => {
-        const sel = document.getElementById(id);
-        if (id.startsWith('vergelijkKlas')) {
-            const cur = sel.value;
-            sel.innerHTML = '<option value="">— Kies klas —</option>';
-            allKlassen.forEach(k => {
-                const o = document.createElement('option');
-                o.value = o.textContent = k;
-                sel.appendChild(o);
-            });
-            sel.value = cur;
-        } else {
-            // Vak select
-            const cur = sel.value;
-            sel.innerHTML = '<option value="all">Alle vakken</option>';
-            Object.keys(allGoals).sort((a,b) => vakNaam(a).localeCompare(vakNaam(b),'nl')).forEach(v => {
-                const o = document.createElement('option');
-                o.value = v; o.textContent = vakNaam(v);
-                sel.appendChild(o);
-            });
-            sel.value = cur;
-        }
-    });
-
-    renderVergelijking();
-}
-
-function renderVergelijking() {
-    const klasA  = document.getElementById('vergelijkKlasA').value;
-    const klasB  = document.getElementById('vergelijkKlasB').value;
-    const vakSel = document.getElementById('vergelijkVak').value;
-    const container = document.getElementById('vergelijkContent');
-
-    if (!klasA || !klasB) {
-        container.innerHTML = '<p style="color:var(--gray-400);font-style:italic;">Selecteer twee klassen om te vergelijken.</p>';
-        return;
-    }
-    if (klasA === klasB) {
-        container.innerHTML = '<p style="color:var(--gray-400);font-style:italic;">Kies twee verschillende klassen.</p>';
-        return;
-    }
-
-    const byTeacher = overviewData.assessments_by_teacher;
-
-    function leraarenVanKlas(naam) {
-        return overviewData.teachers.filter(t => (t.classes||[]).some(c => c.name === naam));
-    }
-
-    // Aggregeer statussen per goal per klas (gemiddeld over alle leerkrachten)
-    function klasStatussen(leraren, vakFilter) {
-        const result = {};   // { goalId: { groen: n, oranje: n, roze: n, total: n } }
-        const vakken = vakFilter === 'all' ? Object.keys(allGoals) : [vakFilter];
-        vakken.forEach(vakId => {
-            (allGoals[vakId] || []).forEach(goal => {
-                const key = `${vakId}:${goal.id}`;
-                result[key] = { label: goal.goNr, desc: goal.inhoud, vakId, goalId: goal.id, groen:0, oranje:0, roze:0, total:leraren.length };
-                leraren.forEach(t => {
-                    const s = byTeacher[t.id]?.[vakId]?.[goal.id] || '';
-                    if (s==='groen') result[key].groen++;
-                    else if (s==='oranje') result[key].oranje++;
-                    else if (s==='roze') result[key].roze++;
-                });
-            });
-        });
-        return result;
-    }
-
-    const lerarenA = leraarenVanKlas(klasA);
-    const lerarenB = leraarenVanKlas(klasB);
-
-    if (!lerarenA.length || !lerarenB.length) {
-        container.innerHTML = `<p style="color:var(--gray-400);">Een van de geselecteerde klassen heeft geen leerkrachten.</p>`;
-        return;
-    }
-
-    const statA = klasStatussen(lerarenA, vakSel);
-    const statB = klasStatussen(lerarenB, vakSel);
-    const allKeys = [...new Set([...Object.keys(statA), ...Object.keys(statB)])];
-
-    // Bereken score per goal (% beoordeeld als groen+oranje+roze)
-    function score(stat) {
-        return stat.total > 0 ? (stat.groen + stat.oranje + stat.roze) / stat.total : 0;
-    }
-
-    // Toon enkel goals met verschil of beide beoordeeld
-    const rows = allKeys.map(k => {
-        const a = statA[k] || { groen:0, oranje:0, roze:0, total: lerarenA.length, label: k };
-        const b = statB[k] || { groen:0, oranje:0, roze:0, total: lerarenB.length, label: k };
-        const pctA = Math.round(score(a) * 100);
-        const pctB = Math.round(score(b) * 100);
-        const diff = Math.abs(pctA - pctB);
-        return { key: k, a, b, pctA, pctB, diff };
-    }).filter(r => r.pctA > 0 || r.pctB > 0)
-      .sort((x, y) => y.diff - x.diff);   // grootste verschil eerst
-
-    if (!rows.length) {
-        container.innerHTML = '<p style="color:var(--gray-400);font-style:italic;">Nog geen beoordelingen in de geselecteerde klassen.</p>';
-        return;
-    }
-
-    const diffColor = diff => diff >= 50 ? '#ef4444' : diff >= 25 ? '#f59e0b' : '#10b981';
-
-    container.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
-            <div style="text-align:center;padding:.75rem;background:var(--gray-50);border-radius:8px;">
-                <div style="font-size:1.5rem;font-weight:700;color:var(--primary);">${lerarenA.length}</div>
-                <div style="font-size:.8rem;color:var(--gray-500);">Leerkrachten klas ${klasA}</div>
-            </div>
-            <div style="text-align:center;padding:.75rem;background:var(--gray-50);border-radius:8px;">
-                <div style="font-size:1.5rem;font-weight:700;color:var(--primary);">${lerarenB.length}</div>
-                <div style="font-size:.8rem;color:var(--gray-500);">Leerkrachten klas ${klasB}</div>
-            </div>
-        </div>
-        <p style="font-size:.82rem;color:var(--gray-400);margin-bottom:.75rem;">
-            ${rows.length} beoordeelde doelen — gesorteerd op grootste verschil. Balk toont % leerkrachten dat een status gaf.
-        </p>
-        <div style="overflow-x:auto;">
-        <table style="width:100%;font-size:.82rem;border-collapse:collapse;">
-            <thead style="background:var(--gray-50);">
-                <tr>
-                    <th style="padding:.5rem;text-align:left;border-bottom:2px solid var(--gray-200);">Doel</th>
-                    <th style="padding:.5rem;text-align:center;border-bottom:2px solid var(--gray-200);min-width:130px;">${klasA}</th>
-                    <th style="padding:.5rem;text-align:center;border-bottom:2px solid var(--gray-200);min-width:50px;">Δ</th>
-                    <th style="padding:.5rem;text-align:center;border-bottom:2px solid var(--gray-200);min-width:130px;">${klasB}</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rows.map(r => `
-                    <tr style="border-bottom:1px solid var(--gray-100);">
-                        <td style="padding:.4rem .5rem;">
-                            <strong>${r.a.label || r.key.split(':')[1]}</strong>
-                            <div style="color:var(--gray-400);font-size:.75rem;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                                 title="${r.a.desc || ''}">${r.a.desc || ''}</div>
-                        </td>
-                        <td style="padding:.4rem .5rem;">
-                            <div class="vergelijk-bar-wrap">
-                                <div style="height:100%;display:flex;">
-                                    <div style="width:${r.a.total>0?r.a.groen/r.a.total*100:0}%;background:var(--status-groen)"></div>
-                                    <div style="width:${r.a.total>0?r.a.oranje/r.a.total*100:0}%;background:var(--status-oranje)"></div>
-                                    <div style="width:${r.a.total>0?r.a.roze/r.a.total*100:0}%;background:var(--status-roze)"></div>
-                                </div>
-                            </div>
-                            <div style="text-align:center;font-size:.75rem;color:var(--gray-500);">${r.pctA}%</div>
-                        </td>
-                        <td style="text-align:center;padding:.4rem;font-weight:700;font-size:.85rem;color:${diffColor(r.diff)};">
-                            ${r.diff > 0 ? r.diff + '%' : '='}
-                        </td>
-                        <td style="padding:.4rem .5rem;">
-                            <div class="vergelijk-bar-wrap">
-                                <div style="height:100%;display:flex;">
-                                    <div style="width:${r.b.total>0?r.b.groen/r.b.total*100:0}%;background:var(--status-groen)"></div>
-                                    <div style="width:${r.b.total>0?r.b.oranje/r.b.total*100:0}%;background:var(--status-oranje)"></div>
-                                    <div style="width:${r.b.total>0?r.b.roze/r.b.total*100:0}%;background:var(--status-roze)"></div>
-                                </div>
-                            </div>
-                            <div style="text-align:center;font-size:.75rem;color:var(--gray-500);">${r.pctB}%</div>
-                        </td>
-                    </tr>`).join('')}
-            </tbody>
-        </table>
-        </div>`;
-}
-
-
-// ── Event delegation voor dynamisch gegenereerde elementen ────────────────────
-document.addEventListener('click', function(e) {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    // (geen acties meer via event delegation in directeur dashboard)
-});
 </script>
 </body>
 </html>
