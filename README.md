@@ -30,7 +30,7 @@ cp .env.example .env
 docker compose up -d
 
 # 4. Superadmin wachtwoord instellen
-# Ga naar http://localhost/auth/setup
+# Ga naar https://leerdoelen.sgr5.be/auth/setup
 ```
 
 ---
@@ -57,8 +57,8 @@ docker compose up -d
 
 ### Stap 1: Superadmin setup (eenmalig)
 ```
-http://jouwdomain.be/auth/setup
-→ Stel wachtwoord in voor admin@leerdoelen.local
+http://leerdoelen.scholengroep.be/auth/setup
+→ Stel wachtwoord in voor admin@leerdoelen.local (is een vaste waarde)
 ```
 
 ### Stap 2: Scholengroep ICT toevoegen (superadmin)
@@ -108,7 +108,7 @@ docker compose exec db pg_dump -U leerdoelen leerdoelen > backup_$(date +%Y%m%d)
 
 ### Doelen updaten
 ```bash
-# Nieuwe JSON bestanden kopiëren
+# Nieuwe JSON bestanden kopiëren | kan ook in de WebUI door scholengroep ICT
 cp -r doelen/ /pad/naar/leerdoelen/doelen/
 docker compose restart backend
 ```
@@ -120,93 +120,36 @@ docker compose logs -f backend
 
 ---
 
-## CI/CD via Gitea Actions
+## CI/CD via Github Actions
 
 ### Hoe het werkt
 
 Bij elke push op `main`:
 1. Runner bouwt de Docker image van `./backend`
-2. Image wordt gepusht naar de Gitea Container Registry met twee tags:
+2. Image wordt gepusht naar de Github Container Registry met twee tags:
    - `:latest` — altijd de meest recente versie
    - `:sha-<commithash>` — voor traceerbaarheid en rollback
-3. Runner SSH't naar de VPS → `docker compose pull && docker compose up -d`
 
-### Eenmalige setup in Gitea
-
-#### 1. Repository variabelen (Settings → Actions → Variables)
-
-| Naam | Waarde | Uitleg |
-|---|---|---|
-| `GITEA_REGISTRY` | `gitea.jouwdomein.be` | Hostname van je Gitea instantie |
-
-#### 2. Repository secrets (Settings → Actions → Secrets)
-
-| Naam | Waarde | Uitleg |
-|---|---|---|
-| `REGISTRY_USER` | `jouw-gitea-gebruikersnaam` | Gitea login voor de registry |
-| `REGISTRY_TOKEN` | `gitea_xxxx...` | Gitea Access Token (Settings → Applications → Generate token, scope: `package:write`) |
-| `DEPLOY_HOST` | `123.456.789.0` | IP of hostnaam van de app-VPS |
-| `DEPLOY_USER` | `deploy` | SSH gebruiker op de VPS |
-| `DEPLOY_SSH_KEY` | `-----BEGIN OPENSSH...` | Privésleutel (zie stap 3) |
-| `DEPLOY_PORT` | `22` | SSH poort (weglaten = standaard 22) |
-| `DEPLOY_PATH` | `/opt/leerdoelen` | Pad naar de docker-compose map op de VPS |
-
-#### 3. SSH deploy key aanmaken
-
-Voer dit uit op je **lokale machine** (niet op de VPS):
-
-```bash
-ssh-keygen -t ed25519 -C "gitea-deploy" -f ~/.ssh/gitea_deploy -N ""
-```
-
-Publieke sleutel toevoegen aan de VPS:
-```bash
-cat ~/.ssh/gitea_deploy.pub | ssh user@jouw-vps "cat >> ~/.ssh/authorized_keys"
-```
-
-Privésleutel kopiëren naar Gitea secret `DEPLOY_SSH_KEY`:
-```bash
-cat ~/.ssh/gitea_deploy
-```
-
-#### 4. `.env` op de VPS aanpassen
-
-Voeg toe aan `/opt/leerdoelen/.env`:
-```
-BACKEND_IMAGE=gitea.jouwdomein.be/jouw-org/leerdoelen-tracker:latest
-```
-
-#### 5. Eerste push
-
-```bash
-git init
-git remote add origin https://gitea.jouwdomein.be/jouw-org/leerdoelen-tracker.git
-git add .
-git commit -m "Initial commit"
-git push -u origin main
-```
-
-De pipeline start automatisch. Je kan de voortgang volgen via
-**Gitea → jouw repo → Actions**.
-
-### Handmatig deployen
-
-Via de Gitea UI: **Actions → Build, Push & Deploy → Run workflow**
-
-Of via de VPS zelf (zonder pipeline):
-```bash
-cd /opt/leerdoelen
-docker compose pull backend
-docker compose up -d --no-deps backend
-```
+Bij elke tag met `v*` om met versies en releases te werken
+   - `:vx.x.x` — pinnen op stabiele versies
 
 ### Rollback naar vorige versie
 
 ```bash
 # Bekijk beschikbare tags in de registry
 # Pas de image tag aan in .env:
-BACKEND_IMAGE=gitea.jouwdomein.be/jouw-org/leerdoelen-tracker:sha-a1b2c3d4
+BACKEND_IMAGE=ghcr.io/jouw-org/leerdoelen-tracker:sha-a1b2c3d4
 
 docker compose pull backend
 docker compose up -d --no-deps backend
 ```
+
+---
+
+## ⚖️ Licentie
+
+Copyright © 2025-2026 GO! Scholengroep 5. Alle rechten voorbehouden.
+
+Deze software is eigendom van GO! Scholengroep 5 en is uitsluitend bestemd voor intern gebruik binnen de scholengroep en de aangesloten scholen. Verspreiding, publicatie of gebruik buiten de organisatie is niet toegestaan zonder schriftelijke toestemming.
+
+Zie het [LICENSE](./LICENSE) bestand voor de volledige licentietekst.

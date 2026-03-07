@@ -30,7 +30,7 @@ services:
   backend:
     # In productie: image uit de Gitea registry (gezet door CI/CD pipeline)
     # Lokaal ontwikkelen: verander naar 'build: ./backend'
-    image: ${BACKEND_IMAGE:-leerdoelen-backend:local}
+    image: ${BACKEND_IMAGE:-leerdoelen_tracker:local}
     build:
       context: ./backend
       # 'build' wordt genegeerd als 'image' al bestaat in de registry.

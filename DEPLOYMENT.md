@@ -5,7 +5,7 @@ Hoe je die image daarna uitrolt op jouw server is volledig aan jou — hieronder
 
 ---
 
-## Stap 1 — Repo instellen in Gitea
+## Stap 1 — Repo instellen in Github
 
 Ga naar **Settings → Actions** van jouw fork/kopie van deze repo en stel in:
 
