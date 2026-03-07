@@ -10,7 +10,7 @@ python-dotenv==1.1.0
 werkzeug==3.1.6
 sqlalchemy==2.0.41
 authlib>=1.6.6
-requests==2.32.3
+requests==2.32.4
 redis==5.2.1                # backend voor flask-limiter in productie
 pandas==2.2.3               # Excel verwerking (xlsx upload → JSON conversie)
 openpyxl==3.1.5             # pandas Excel engine
