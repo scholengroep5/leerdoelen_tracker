@@ -9,7 +9,7 @@ gunicorn==23.0.0
 python-dotenv==1.1.0
 werkzeug==3.1.3
 sqlalchemy==2.0.41
-authlib==1.4.1
+authlib>=1.6.6
 requests==2.32.3
 redis==5.2.1                # backend voor flask-limiter in productie
 pandas==2.2.3               # Excel verwerking (xlsx upload → JSON conversie)
