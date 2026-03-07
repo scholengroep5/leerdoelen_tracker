@@ -1,0 +1,77 @@
+{
+  "versie": "2025-01",
+  "vakken": [
+    {
+      "id": "doelenset-bao-aardrijkskunde",
+      "naam": "Aardrijkskunde",
+      "aantalDoelzinnen": 276,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-burgerschap",
+      "naam": "Burgerschap",
+      "aantalDoelzinnen": 148,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-frans",
+      "naam": "Frans",
+      "aantalDoelzinnen": 109,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-geschiedenis",
+      "naam": "Geschiedenis",
+      "aantalDoelzinnen": 243,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-ict",
+      "naam": "ICT",
+      "aantalDoelzinnen": 94,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-leren-leren",
+      "naam": "Leren leren",
+      "aantalDoelzinnen": 114,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-lichamelijke-opvoeding",
+      "naam": "Lichamelijke opvoeding",
+      "aantalDoelzinnen": 190,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-muzische-vorming",
+      "naam": "Muzische vorming",
+      "aantalDoelzinnen": 98,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-nederlands",
+      "naam": "Nederlands",
+      "aantalDoelzinnen": 629,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-sociale-vaardigheden",
+      "naam": "Sociale vaardigheden",
+      "aantalDoelzinnen": 68,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-wetenschap-techniek",
+      "naam": "Wetenschap en techniek",
+      "aantalDoelzinnen": 535,
+      "versie": "2025-01"
+    },
+    {
+      "id": "doelenset-bao-wiskunde",
+      "naam": "Wiskunde",
+      "aantalDoelzinnen": 1011,
+      "versie": "2025-01"
+    }
+  ]
+}
