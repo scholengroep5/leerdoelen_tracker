@@ -957,7 +957,15 @@ function openModal(id) {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
     document.getElementById(`modal-${id}`)?.classList.add('active');
 }
-function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); }
+function closeModal() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    // Reset gebruiker-formulier zodat velden niet blijven plakken
+    ['addUserFirst','addUserLast','addUserEmail'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+    const roleEl = document.getElementById('addUserRole'); if (roleEl) roleEl.selectedIndex = 0;
+    const errEl = document.getElementById('addUser-error'); if (errEl) errEl.style.display = 'none';
+}
 document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target===o) closeModal(); }));
 function notify(msg, type='success') {
     const el = document.getElementById('notification');

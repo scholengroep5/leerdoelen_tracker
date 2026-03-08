@@ -513,6 +513,11 @@ function openModal() {
 function closeModal() {
     document.getElementById('addModal').classList.remove('active');
     document.getElementById('addError').style.display = 'none';
+    // Reset velden zodat ze niet blijven plakken bij volgend gebruik
+    ['addFirst','addLast','addEmail'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+    const roleEl = document.getElementById('addRole'); if (roleEl) roleEl.selectedIndex = 0;
 }
 
 
