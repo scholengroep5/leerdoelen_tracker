@@ -650,7 +650,7 @@ async function loadAuditLog(page = 1) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);">Geen entries gevonden</td></tr>';
     } else {
         tbody.innerHTML = data.entries.map(e => {
-            const ts   = new Date(e.timestamp).toLocaleString('nl-BE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+            const ts   = new Date(e.timestamp + 'Z').toLocaleString('nl-BE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Brussels'});
             const detail = e.detail ? (() => { try { return Object.entries(JSON.parse(e.detail)).map(([k,v]) => `<span style="font-size:.75rem;background:var(--gray-100);padding:.1rem .3rem;border-radius:3px;">${k}: ${v}</span>`).join(' '); } catch { return e.detail; } })() : '';
             return `<tr>
                 <td style="white-space:nowrap;font-size:.8rem;">${ts}</td>
