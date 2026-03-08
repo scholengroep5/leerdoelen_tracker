@@ -313,6 +313,63 @@
     </div>
 </div>
 
+<!-- Import wizard modal -->
+<div class="modal-overlay" id="importModal">
+    <div class="modal-inner" style="max-width:480px;">
+        <!-- Stap 1: preview -->
+        <div id="importStap1">
+            <h2>📥 Beoordelingen importeren</h2>
+            <p style="font-size:.85rem;color:var(--gray-400);margin-bottom:1rem;">
+                Bestand ingelezen. Controleer de gegevens voor je verder gaat.
+            </p>
+            <div id="importPreview" style="background:var(--gray-50);border-radius:8px;padding:.9rem;font-size:.85rem;margin-bottom:1rem;"></div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="sluitImportModal()">Annuleren</button>
+                <button class="btn btn-primary" onclick="importNaarStap2()">Volgende →</button>
+            </div>
+        </div>
+        <!-- Stap 2: klas kiezen -->
+        <div id="importStap2" style="display:none;">
+            <h2>📥 Kies een klas</h2>
+            <p style="font-size:.85rem;color:var(--gray-400);margin-bottom:1rem;">
+                Aan welke klas wil je deze beoordelingen koppelen?
+            </p>
+            <select id="importKlasSelect" style="width:100%;padding:.6rem .75rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.9rem;margin-bottom:1rem;"></select>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="importNaarStap1()">← Terug</button>
+                <button class="btn btn-primary" onclick="importNaarStap3()">Volgende →</button>
+            </div>
+        </div>
+        <!-- Stap 3: merge strategie -->
+        <div id="importStap3" style="display:none;">
+            <h2>📥 Bestaande beoordelingen</h2>
+            <p style="font-size:.85rem;color:var(--gray-400);margin-bottom:1rem;">
+                Wat moet er gebeuren als een beoordeling in de klas al bestaat?
+            </p>
+            <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem;">
+                <label style="display:flex;align-items:flex-start;gap:.6rem;padding:.75rem;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer;" id="strategyLabelOverwrite">
+                    <input type="radio" name="mergeStrategy" value="overwrite" style="margin-top:3px;flex-shrink:0;" onchange="updateStrategyLabels()">
+                    <span>
+                        <strong>Overschrijven</strong><br>
+                        <span style="font-size:.8rem;color:var(--gray-400);">Alle beoordelingen uit de JSON worden ingeladen, ook als er al een status staat.</span>
+                    </span>
+                </label>
+                <label style="display:flex;align-items:flex-start;gap:.6rem;padding:.75rem;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer;" id="strategyLabelSkip">
+                    <input type="radio" name="mergeStrategy" value="skip_existing" checked style="margin-top:3px;flex-shrink:0;" onchange="updateStrategyLabels()">
+                    <span>
+                        <strong>Alleen nieuwe toevoegen</strong><br>
+                        <span style="font-size:.8rem;color:var(--gray-400);">Bestaande beoordelingen blijven onaangepast. Enkel doelen zonder status krijgen een waarde.</span>
+                    </span>
+                </label>
+            </div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="importNaarStap2()">← Terug</button>
+                <button class="btn btn-success" onclick="bevestigImport()">✓ Importeren</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="notification" id="notification"></div>
 
 <script nonce="{{ csp_nonce() }}">
@@ -349,6 +406,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     bind('ebgFilter',      'change', applyFilters);
     bind('sectieFilter',   'change', applyFilters);
     document.querySelectorAll('.leeftijd-checkboxes input').forEach(cb => cb.addEventListener('change', applyFilters));
+    // Sluit importModal bij klik buiten het venster
+    document.getElementById('importModal').addEventListener('click', e => { if (e.target.id === 'importModal') sluitImportModal(); });
+    updateStrategyLabels();
     try { await loadUser(); } catch(e) { console.error('loadUser fout:', e); }
     await loadVakken();
 });
@@ -684,28 +744,111 @@ function updateStats() {
         (activeKlasId && currentVakId) ? (groen+oranje+roze) + '/' + total + ' beoordeeld' : '';
 }
 
-// ── Legacy import ─────────────────────────────────────────────────────────────
+// ── Legacy import wizard ───────────────────────────────────────────────────────
+let importWizardData = null; // parsed JSON van het bestand
+
 async function importLegacyJson(file) {
     if (!file) return;
-    if (!activeKlasId) { showNotification('Selecteer eerst een klas voor je importeert', 'warning'); return; }
     let data;
     try {
         data = JSON.parse(await file.text());
-        if (!data.vakken) { showNotification('Ongeldig bestand', 'error'); return; }
+        if (!data.vakken) { showNotification('Ongeldig bestand: geen vakken gevonden', 'error'); return; }
     } catch(e) { showNotification('Ongeldig JSON bestand', 'error'); return; }
 
+    importWizardData = data;
+
+    // Stap 1: preview tonen
+    const aantalVakken = Object.keys(data.vakken).length;
+    const aantalBeoordelingen = Object.values(data.vakken).reduce((sum, v) => {
+        const st = v.statussen || v;
+        return sum + Object.keys(st).length;
+    }, 0);
+    document.getElementById('importPreview').innerHTML = `
+        <table style="width:100%;border-collapse:collapse;">
+            <tr><td style="padding:.25rem 0;color:var(--gray-500);width:40%;">Leerkracht</td><td><strong>${data.leerkracht || '—'}</strong></td></tr>
+            <tr><td style="padding:.25rem 0;color:var(--gray-500);">Klas (legacy)</td><td><strong>${data.klas || '—'}</strong></td></tr>
+            <tr><td style="padding:.25rem 0;color:var(--gray-500);">Exportdatum</td><td><strong>${data.exportDatum || '—'}</strong></td></tr>
+            <tr><td style="padding:.25rem 0;color:var(--gray-500);">Vakken</td><td><strong>${aantalVakken}</strong></td></tr>
+            <tr><td style="padding:.25rem 0;color:var(--gray-500);">Beoordelingen</td><td><strong>${aantalBeoordelingen}</strong></td></tr>
+        </table>
+    `;
+    toonImportStap(1);
+    document.getElementById('importModal').classList.add('active');
+}
+
+function toonImportStap(nr) {
+    [1,2,3].forEach(i => {
+        document.getElementById('importStap' + i).style.display = (i === nr) ? 'block' : 'none';
+    });
+}
+
+function importNaarStap1() { toonImportStap(1); }
+
+function importNaarStap2() {
+    // Vul klas dropdown met de klassen van de leerkracht
+    const sel = document.getElementById('importKlasSelect');
+    sel.innerHTML = '';
+    const klasOpts = document.querySelectorAll('#klasSelector option');
+    let aantalOpties = 0;
+    klasOpts.forEach(opt => {
+        if (opt.value) {
+            const o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.textContent;
+            // Preselecteer de actieve klas
+            if (parseInt(opt.value) === activeKlasId) o.selected = true;
+            sel.appendChild(o);
+            aantalOpties++;
+        }
+    });
+    if (aantalOpties === 0) {
+        showNotification('Je hebt nog geen klassen. Vraag je beheerder om je aan een klas te koppelen.', 'warning');
+        sluitImportModal();
+        return;
+    }
+    toonImportStap(2);
+}
+
+function importNaarStap3() {
+    if (!document.getElementById('importKlasSelect').value) {
+        showNotification('Selecteer een klas', 'warning'); return;
+    }
+    // Reset naar standaard (skip_existing)
+    document.querySelector('input[name="mergeStrategy"][value="skip_existing"]').checked = true;
+    updateStrategyLabels();
+    toonImportStap(3);
+}
+
+function updateStrategyLabels() {
+    const val = document.querySelector('input[name="mergeStrategy"]:checked')?.value;
+    document.getElementById('strategyLabelOverwrite').style.borderColor = val === 'overwrite'    ? 'var(--primary)' : 'var(--gray-300)';
+    document.getElementById('strategyLabelSkip').style.borderColor      = val === 'skip_existing' ? 'var(--primary)' : 'var(--gray-300)';
+}
+
+function sluitImportModal() {
+    document.getElementById('importModal').classList.remove('active');
+    importWizardData = null;
+}
+
+async function bevestigImport() {
+    const klasId   = parseInt(document.getElementById('importKlasSelect').value);
+    const strategy = document.querySelector('input[name="mergeStrategy"]:checked')?.value || 'skip_existing';
+    if (!klasId || !importWizardData) return;
+
+    sluitImportModal();
     showNotification('Bezig met importeren...', 'warning');
     try {
         const res = await fetch('/api/assessments/bulk-import', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ class_id: activeKlasId, vakken: data.vakken })
+            body: JSON.stringify({ class_id: klasId, vakken: importWizardData.vakken, merge_strategy: strategy })
         });
         const result = await res.json();
         if (!res.ok) { showNotification(result.error || 'Import mislukt', 'error'); return; }
-        showNotification('Import klaar: ' + result.totaal + ' beoordelingen' + (result.fouten > 0 ? ', ' + result.fouten + ' fouten' : ''),
-            result.fouten > 0 ? 'warning' : 'success');
-        if (currentVakId) await switchVak();
+        const msg = `Import klaar: ${result.toegevoegd} toegevoegd, ${result.overgeslagen} overgeslagen` +
+                    (result.fouten > 0 ? `, ${result.fouten} fouten` : '');
+        showNotification(msg, result.fouten > 0 ? 'warning' : 'success');
+        if (currentVakId && activeKlasId === klasId) await switchVak();
     } catch(e) { showNotification('Netwerkfout tijdens import', 'error'); }
 }
 

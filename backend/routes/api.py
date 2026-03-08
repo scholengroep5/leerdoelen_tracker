@@ -227,11 +227,15 @@ def save_opmerking():
 def bulk_import_assessments():
     """
     Importeer beoordelingen vanuit legacy standalone JSON export.
-    Body: { "class_id": 1, "vakken": { "vak_id": { "goal_id": "status" } } }
+    Body: { "class_id": 1, "vakken": { "vak_id": { "goal_id": "status" } }, "merge_strategy": "skip_existing"|"overwrite" }
     """
-    data     = request.get_json() or {}
-    class_id = data.get('class_id')
-    vakken   = data.get('vakken', {})
+    data           = request.get_json() or {}
+    class_id       = data.get('class_id')
+    vakken         = data.get('vakken', {})
+    merge_strategy = data.get('merge_strategy', 'skip_existing')  # standaard: bestaande niet aanraken
+
+    if merge_strategy not in ('skip_existing', 'overwrite'):
+        merge_strategy = 'skip_existing'
 
     if not class_id:
         return jsonify({'error': 'class_id is verplicht'}), 400
@@ -253,8 +257,9 @@ def bulk_import_assessments():
     if not school_year:
         return jsonify({'error': 'Geen actief schooljaar'}), 400
 
-    totaal = 0
-    fouten = 0
+    toegevoegd  = 0
+    overgeslagen = 0
+    fouten      = 0
 
     for vak_id, vak_data in vakken.items():
         if not isinstance(vak_id, str) or len(vak_id) > 100:
@@ -286,8 +291,12 @@ def bulk_import_assessments():
                 ).first()
 
                 if assessment:
-                    assessment.status     = status
-                    assessment.updated_at = datetime.utcnow()
+                    if merge_strategy == 'overwrite':
+                        assessment.status     = status
+                        assessment.updated_at = datetime.utcnow()
+                        toegevoegd += 1
+                    else:
+                        overgeslagen += 1
                 else:
                     db.session.add(Assessment(
                         class_id=class_id,
@@ -296,7 +305,7 @@ def bulk_import_assessments():
                         goal_id=goal_id,
                         status=status,
                     ))
-                totaal += 1
+                    toegevoegd += 1
             except Exception:
                 db.session.rollback()
                 fouten += 1
@@ -304,8 +313,8 @@ def bulk_import_assessments():
     db.session.commit()
     audit_log('assessment.bulk_import', 'assessment',
               target_type='class', target_id=str(class_id),
-              detail={'totaal': totaal, 'fouten': fouten})
-    return jsonify({'totaal': totaal, 'fouten': fouten})
+              detail={'toegevoegd': toegevoegd, 'overgeslagen': overgeslagen, 'fouten': fouten, 'strategie': merge_strategy})
+    return jsonify({'toegevoegd': toegevoegd, 'overgeslagen': overgeslagen, 'fouten': fouten})
 
 
 # ── Directeur schooloverzicht ──────────────────────────────────────────────────
