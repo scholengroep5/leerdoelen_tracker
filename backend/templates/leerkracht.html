@@ -846,13 +846,15 @@ async function bevestigImport() {
     const strategy = document.querySelector('input[name="mergeStrategy"]:checked')?.value || 'skip_existing';
     if (!klasId || !importWizardData) return;
 
+    // Sla de vakken op VOOR sluitImportModal() importWizardData op null zet
+    const vakken = importWizardData.vakken;
     sluitImportModal();
     showNotification('Bezig met importeren...', 'warning');
     try {
         const res = await fetch('/api/assessments/bulk-import', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ class_id: klasId, vakken: importWizardData.vakken, merge_strategy: strategy })
+            body: JSON.stringify({ class_id: klasId, vakken, merge_strategy: strategy })
         });
         const result = await res.json();
         if (!res.ok) { showNotification(result.error || 'Import mislukt', 'error'); return; }
