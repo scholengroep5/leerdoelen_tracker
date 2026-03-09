@@ -37,6 +37,7 @@ def create_app():
     app.config['SECRET_KEY']                  = os.environ['SECRET_KEY']
     app.config['SQLALCHEMY_DATABASE_URI']     = os.environ['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_SESSION_OPTIONS']  = {'expire_on_commit': True}
     app.config['BASE_URL']                    = os.environ.get('BASE_URL', 'http://localhost')
     app.config['ORG_NAME']                    = os.environ.get('ORG_NAME', 'GO! Scholengroep')
 
@@ -139,7 +140,7 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return User.query.filter_by(id=int(user_id)).first()
 
     @login_manager.unauthorized_handler
     def unauthorized():

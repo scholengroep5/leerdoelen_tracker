@@ -407,8 +407,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnAddKlas') && bind('btnAddKlas', 'click', openAddKlas);
     document.getElementById('btnCancelUser') && bind('btnCancelUser', 'click', closeModal);
     document.getElementById('btnConfirmUser') && bind('btnConfirmUser', 'click', addUser);
-    document.getElementById('auditCategory') && bind('auditCategory', 'change', loadAuditLog);
-    document.getElementById('auditSearch') && bind('auditSearch', 'input', loadAuditLog);
+    document.getElementById('auditCategory') && bind('auditCategory', 'change', () => loadAuditLog(1));
+    document.getElementById('auditSearch') && bind('auditSearch', 'input', () => loadAuditLog(1));
     document.getElementById('btnSaveSso')  && bind('btnSaveSso',  'click', saveSso);
     document.getElementById('btnClearSso') && bind('btnClearSso', 'click', clearSso);
     // Redirect URI is altijd bekend — vul meteen in zodat het niet "Laden..." blijft

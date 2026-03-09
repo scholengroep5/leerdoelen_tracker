@@ -410,9 +410,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnAddJaar') && bind('btnAddJaar', 'click', () => openModal('addJaar'));
     document.getElementById('btnAddSchool') && bind('btnAddSchool', 'click', () => openModal('addSchool'));
     document.getElementById('btnAddUser') && bind('btnAddUser', 'click', () => openModal('addUser'));
-    bind('auditCategory', 'change', loadAuditLog);
-    document.getElementById('auditSchoolFilter') && bind('auditSchoolFilter', 'change', loadAuditLog);
-    bind('auditSearch', 'input', loadAuditLog);
+    bind('auditCategory', 'change', () => loadAuditLog(1));
+    document.getElementById('auditSchoolFilter') && bind('auditSchoolFilter', 'change', () => loadAuditLog(1));
+    bind('auditSearch', 'input', () => loadAuditLog(1));
     document.getElementById('btnCancelSchool') && bind('btnCancelSchool', 'click', closeModal);
     document.getElementById('btnSaveSchool') && bind('btnSaveSchool', 'click', addSchool);
     document.getElementById('btnCancelEditSch') && bind('btnCancelEditSch', 'click', closeModal);
@@ -757,7 +757,7 @@ function updateSchoolCountBadge(visibleCount) {
     if (!el) return;
     const total = schools.length;
     if (visibleCount === undefined || visibleCount === total) {
-        el.textContent = `${total} school${total !== 1 ? 'en' : ''}`;
+        el.textContent = `${total} ${total !== 1 ? 'scholen' : 'school'}`;
     } else {
         el.textContent = `${visibleCount} van ${total} scholen`;
     }
