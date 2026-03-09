@@ -74,7 +74,6 @@ def _get_or_create_user(email, first_name, last_name, oid, tid):
         user.last_name       = last_name  or user.last_name
         user.email           = email
         user.entra_tenant_id = tid
-        db.session.commit()
         return user, False
 
     user = User.query.filter_by(email=email).first()
@@ -84,7 +83,6 @@ def _get_or_create_user(email, first_name, last_name, oid, tid):
         user.entra_tenant_id = tid
         user.first_name      = first_name or user.first_name
         user.last_name       = last_name  or user.last_name
-        db.session.commit()
         return user, False
 
     school = _find_school_for_email(email)
@@ -95,7 +93,6 @@ def _get_or_create_user(email, first_name, last_name, oid, tid):
         entra_tenant_id=tid, is_active=True,
     )
     db.session.add(user)
-    db.session.commit()
     return user, True
 
 
@@ -286,7 +283,6 @@ def _get_or_create_google_user(email, first_name, last_name, google_sub):
         user.first_name = first_name or user.first_name
         user.last_name  = last_name  or user.last_name
         user.email      = email
-        db.session.commit()
         return user, False
 
     user = User.query.filter_by(email=email).first()
@@ -295,7 +291,6 @@ def _get_or_create_google_user(email, first_name, last_name, google_sub):
         user.oauth_id       = google_sub
         user.first_name     = first_name or user.first_name
         user.last_name      = last_name  or user.last_name
-        db.session.commit()
         return user, False
 
     school = _find_school_for_email(email)
@@ -306,7 +301,6 @@ def _get_or_create_google_user(email, first_name, last_name, google_sub):
         is_active=True,
     )
     db.session.add(user)
-    db.session.commit()
     return user, True
 
 
