@@ -322,10 +322,13 @@
             <p style="font-size:.85rem;color:var(--gray-400);margin-bottom:1rem;">
                 Bestand ingelezen. Controleer de gegevens voor je verder gaat.
             </p>
-            <div id="importPreview" style="background:var(--gray-50);border-radius:8px;padding:.9rem;font-size:.85rem;margin-bottom:1rem;"></div>
+            <div id="importPreview" style="background:var(--gray-50);border-radius:8px;padding:.9rem;font-size:.85rem;margin-bottom:.75rem;"></div>
+            <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:.75rem;font-size:.82rem;color:#92400e;margin-bottom:1rem;">
+                ⚠️ <strong>Opgelet:</strong> opmerkingen die je in de vorige versie hebt ingegeven worden niet meegenomen in de JSON export en kunnen dus niet overgezet worden.
+            </div>
             <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-                <button class="btn btn-secondary" onclick="sluitImportModal()">Annuleren</button>
-                <button class="btn btn-primary" onclick="importNaarStap2()">Volgende →</button>
+                <button class="btn btn-secondary" id="btnImportAnnuleer1">Annuleren</button>
+                <button class="btn btn-primary" id="btnImportVolgende1">Volgende →</button>
             </div>
         </div>
         <!-- Stap 2: klas kiezen -->
@@ -336,8 +339,8 @@
             </p>
             <select id="importKlasSelect" style="width:100%;padding:.6rem .75rem;border:1px solid var(--gray-300);border-radius:6px;font-size:.9rem;margin-bottom:1rem;"></select>
             <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-                <button class="btn btn-secondary" onclick="importNaarStap1()">← Terug</button>
-                <button class="btn btn-primary" onclick="importNaarStap3()">Volgende →</button>
+                <button class="btn btn-secondary" id="btnImportTerug2">← Terug</button>
+                <button class="btn btn-primary" id="btnImportVolgende2">Volgende →</button>
             </div>
         </div>
         <!-- Stap 3: merge strategie -->
@@ -348,14 +351,14 @@
             </p>
             <div style="display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem;">
                 <label style="display:flex;align-items:flex-start;gap:.6rem;padding:.75rem;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer;" id="strategyLabelOverwrite">
-                    <input type="radio" name="mergeStrategy" value="overwrite" style="margin-top:3px;flex-shrink:0;" onchange="updateStrategyLabels()">
+                    <input type="radio" name="mergeStrategy" value="overwrite" style="margin-top:3px;flex-shrink:0;" id="strategyOverwrite">
                     <span>
                         <strong>Overschrijven</strong><br>
                         <span style="font-size:.8rem;color:var(--gray-400);">Alle beoordelingen uit de JSON worden ingeladen, ook als er al een status staat.</span>
                     </span>
                 </label>
                 <label style="display:flex;align-items:flex-start;gap:.6rem;padding:.75rem;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer;" id="strategyLabelSkip">
-                    <input type="radio" name="mergeStrategy" value="skip_existing" checked style="margin-top:3px;flex-shrink:0;" onchange="updateStrategyLabels()">
+                    <input type="radio" name="mergeStrategy" value="skip_existing" checked style="margin-top:3px;flex-shrink:0;" id="strategySkip">
                     <span>
                         <strong>Alleen nieuwe toevoegen</strong><br>
                         <span style="font-size:.8rem;color:var(--gray-400);">Bestaande beoordelingen blijven onaangepast. Enkel doelen zonder status krijgen een waarde.</span>
@@ -363,8 +366,8 @@
                 </label>
             </div>
             <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-                <button class="btn btn-secondary" onclick="importNaarStap2()">← Terug</button>
-                <button class="btn btn-success" onclick="bevestigImport()">✓ Importeren</button>
+                <button class="btn btn-secondary" id="btnImportTerug3">← Terug</button>
+                <button class="btn btn-success" id="btnImportBevestig">✓ Importeren</button>
             </div>
         </div>
     </div>
@@ -408,6 +411,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.leeftijd-checkboxes input').forEach(cb => cb.addEventListener('change', applyFilters));
     // Sluit importModal bij klik buiten het venster
     document.getElementById('importModal').addEventListener('click', e => { if (e.target.id === 'importModal') sluitImportModal(); });
+    bind('btnImportAnnuleer1', 'click', sluitImportModal);
+    bind('btnImportVolgende1', 'click', importNaarStap2);
+    bind('btnImportTerug2',    'click', importNaarStap1);
+    bind('btnImportVolgende2', 'click', importNaarStap3);
+    bind('btnImportTerug3',    'click', importNaarStap2);
+    bind('btnImportBevestig',  'click', bevestigImport);
+    bind('strategyOverwrite',  'change', updateStrategyLabels);
+    bind('strategySkip',       'change', updateStrategyLabels);
     updateStrategyLabels();
     try { await loadUser(); } catch(e) { console.error('loadUser fout:', e); }
     await loadVakken();
