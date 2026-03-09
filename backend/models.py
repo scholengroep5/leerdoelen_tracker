@@ -151,8 +151,8 @@ class Assessment(db.Model):
     __tablename__ = 'assessments'
 
     id             = db.Column(db.Integer, primary_key=True)
-    user_id        = db.Column(db.Integer, db.ForeignKey('users.id',        ondelete='CASCADE'), nullable=False)
-    school_id      = db.Column(db.Integer, db.ForeignKey('schools.id',      ondelete='CASCADE'), nullable=False)
+    # Klasgebonden — geen koppeling aan individuele leerkracht
+    class_id       = db.Column(db.Integer, db.ForeignKey('classes.id',      ondelete='CASCADE'), nullable=False)
     school_year_id = db.Column(db.Integer, db.ForeignKey('school_years.id', ondelete='CASCADE'), nullable=False)
     vak_id         = db.Column(db.String(50), nullable=False)
     goal_id        = db.Column(db.String(50), nullable=False)
@@ -160,17 +160,18 @@ class Assessment(db.Model):
     opmerking      = db.Column(db.String(500), nullable=True)
     updated_at     = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    user        = db.relationship('User')
-    school      = db.relationship('School')
+    klas        = db.relationship('Class')
     school_year = db.relationship('SchoolYear', back_populates='assessments')
 
     __table_args__ = (
-        db.UniqueConstraint('user_id', 'school_year_id', 'vak_id', 'goal_id'),
+        db.UniqueConstraint('class_id', 'school_year_id', 'vak_id', 'goal_id',
+                            name='uq_assessment_class_year_vak_goal'),
     )
 
     def to_dict(self):
         return {
             'id':         self.id,
+            'class_id':   self.class_id,
             'vak_id':     self.vak_id,
             'goal_id':    self.goal_id,
             'status':     self.status,
