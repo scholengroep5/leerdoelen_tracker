@@ -426,8 +426,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Zoekbalk scholen/gebruikers
     const schoolSearchEl = document.getElementById('schoolSearchInput');
     if (schoolSearchEl) {
-        schoolSearchEl.addEventListener('input', () => {
+        schoolSearchEl.addEventListener('input', async () => {
             schoolFilter = schoolSearchEl.value.trim();
+            // Klap alle scholen open en laad gebruikers zodat op naam gezocht kan worden
+            if (schoolFilter) {
+                await Promise.all(schools.map(s => preloadUsers(s.id)));
+            }
             renderSchoolsUserTable();
         });
     }
@@ -634,12 +638,17 @@ async function loadSchoolsGrid() {
 function renderSchoolsUserTable() {
     const tbody     = document.getElementById('schoolsUserTbody');
     const term      = schoolFilter.toLowerCase();
-    // Filter: schoolnaam OF (als school al geladen) gebruikersnaam
+    // Filter: schoolnaam OF gebruikersnaam/email (over alle geladen gebruikers)
     const filtered  = schools.filter(s => {
+        if (!term) return true;
         if (s.name.toLowerCase().includes(term)) return true;
         const users = loadedUsers[s.id];
-        if (users && term) return users.some(u => u.full_name.toLowerCase().includes(term));
-        return !term;
+        if (users) return users.some(u =>
+            u.full_name.toLowerCase().includes(term) ||
+            (u.email || '').toLowerCase().includes(term)
+        );
+        // Gebruikers nog niet geladen: school tonen zodat ze zichtbaar blijven
+        return true;
     });
 
     updateSchoolCountBadge(filtered.length);
@@ -785,6 +794,14 @@ async function toggleSchool(schoolId) {
     }
 
     renderSchoolsUserTable();
+}
+
+// Laad gebruikers van een school stil op de achtergrond (voor zoekfunctie)
+async function preloadUsers(schoolId) {
+    if (loadedUsers[schoolId]) return;
+    const res  = await fetch(`/admin/schools/${schoolId}/users`);
+    const data = await res.json();
+    loadedUsers[schoolId] = data.users || [];
 }
 
 // Herlaad de gebruikers van één school (na wijziging) en herteken
@@ -933,7 +950,7 @@ async function loadAuditLog(page = 1) {
             const detail = e.detail ? (() => { try { return Object.entries(JSON.parse(e.detail)).map(([k,v]) => `<span style="font-size:.73rem;background:var(--gray-100);padding:.1rem .3rem;border-radius:3px;display:inline-block;">${k}: ${v}</span>`).join(' '); } catch { return e.detail; } })() : '';
             return `<tr>
                 <td style="white-space:nowrap;font-size:.8rem;">${ts}</td>
-                <td style="font-size:.82rem;">${e.user_name || '—'}</td>
+                <td style="font-size:.82rem;"><span title="${e.user_email || ''}" style="cursor:default;">${e.user_name || '—'}</span></td>
                 <td style="font-size:.8rem;color:var(--gray-500);">${e.school_name || '—'}</td>
                 <td><code style="font-size:.78rem;background:var(--gray-100);padding:.15rem .35rem;border-radius:3px;">${e.action}</code></td>
                 <td style="font-size:.78rem;">${detail}</td>
