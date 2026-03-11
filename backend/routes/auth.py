@@ -93,6 +93,7 @@ def _get_or_create_user(email, first_name, last_name, oid, tid):
         entra_tenant_id=tid, is_active=True,
     )
     db.session.add(user)
+    db.session.flush()  # geeft user een id zonder te committen
     return user, True
 
 
@@ -301,6 +302,7 @@ def _get_or_create_google_user(email, first_name, last_name, google_sub):
         is_active=True,
     )
     db.session.add(user)
+    db.session.flush()  # geeft user een id zonder te committen
     return user, True
 
 
