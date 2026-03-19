@@ -213,6 +213,7 @@
         <div class="stat-card" style="border-left:3px solid var(--status-oranje);"><div class="stat-value" id="statOranje">-</div><div class="stat-label">Oranje</div></div>
         <div class="stat-card" style="border-left:3px solid var(--status-roze);"><div class="stat-value" id="statRoze">-</div><div class="stat-label">Roze</div></div>
         <div class="stat-card highlight"><div class="stat-value" id="statBeoordeeld">-</div><div class="stat-label">Beoordeeld</div></div>
+        <div class="stat-card"><div class="stat-value" id="statGefilterd">-</div><div class="stat-label">Gefilterd</div></div>
     </div>
 
     <!-- Legenda -->
@@ -751,6 +752,7 @@ function updateStats() {
     document.getElementById('statOranje').textContent   = oranje || '-';
     document.getElementById('statRoze').textContent     = roze   || '-';
     document.getElementById('statBeoordeeld').textContent = total > 0 ? pct + '%' : '-';
+    document.getElementById('statGefilterd').textContent  = currentVakId ? filteredData.length : '-';
     document.getElementById('vakProgress').textContent  =
         (activeKlasId && currentVakId) ? (groen+oranje+roze) + '/' + total + ' beoordeeld' : '';
 }
