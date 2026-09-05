@@ -1,3 +1,14 @@
+> [!IMPORTANT]
+> ## Deze repository is verhuisd en gearchiveerd
+>
+> De ontwikkeling van de Leerdoelen Tracker gebeurt sinds **5 september 2026** op de GitLab van GO! Scholengroep 5:
+>
+> **`sgr5/leerdoelen_tracker`** — https://git.infra.sgr5.internal/sgr5/leerdoelen_tracker
+>
+> Die server staat op het interne SGR5-netwerk en is van buitenaf niet bereikbaar. Heb je toegang nodig, neem dan contact op met de ICT-dienst van de scholengroep.
+>
+> Volledige historiek, alle branches en tags, de issues en de pull requests zijn mee overgezet, met behoud van hun oorspronkelijke nummering. Deze repository blijft als **read-only archief** staan: issues en pull requests hier worden niet meer opgevolgd, en de GitHub Actions-workflow is vervangen door een GitLab CI-pipeline.
+
 # Leerdoelen Tracker
 
 Leerdoelen-opvolgsysteem voor GO! scholengroepen.
